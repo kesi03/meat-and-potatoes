@@ -1,0 +1,50 @@
+query GetMyShoppingLists @auth(level: USER) {
+  shoppingLists(where: {userId: {eq_expr: "auth.uid"}}) {
+    id
+    name
+    description
+    createdAt
+    shoppingListItems {
+      id
+      itemName
+      quantity
+      unit
+      isPurchased
+      notes
+      item {
+        id
+        name
+        barcode
+      }
+    }
+  }
+}
+
+mutation AddItemToShoppingList($shoppingListId: UUID!, $itemName: String!, $quantity: Int!, $unit: String!, $notes: String, $itemId: UUID) @auth(level: USER) {
+  shoppingListItem_insert(data: {
+    shoppingListId: $shoppingListId,
+    itemName: $itemName,
+    quantity: $quantity,
+    unit: $unit,
+    notes: $notes,
+    itemId: $itemId
+  }) {
+    id
+  }
+}
+
+query GetAllCategories @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public as it retrieves general category information.") {
+  categories(orderBy: [{name: ASC}]) {
+    id
+    name
+    description
+  }
+}
+
+mutation UpdateShoppingListItemQuantity($shoppingListItemId: UUID!, $newQuantity: Int!) @auth(level: USER) {
+  shoppingListItem_update(key: {id: $shoppingListItemId}, data: {
+    quantity: $newQuantity
+  }) {
+    id
+  }
+}

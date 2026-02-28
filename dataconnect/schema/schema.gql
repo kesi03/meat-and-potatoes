@@ -1,0 +1,41 @@
+type User @table {
+  displayName: String!
+  email: String!
+  createdAt: Timestamp!
+  photoUrl: String
+}
+
+type Category @table {
+  name: String!
+  createdAt: Timestamp!
+  description: String
+}
+
+type Item @table {
+  user: User!
+  category: Category
+  name: String!
+  quantity: Int!
+  unit: String!
+  createdAt: Timestamp!
+  expirationDate: Date
+  notes: String
+  barcode: String
+}
+
+type ShoppingList @table {
+  user: User!
+  name: String!
+  createdAt: Timestamp!
+  description: String
+}
+
+type ShoppingListItem @table {
+  shoppingList: ShoppingList!
+  item: Item
+  itemName: String!
+  quantity: Int!
+  unit: String!
+  notes: String
+  isPurchased: Boolean
+}

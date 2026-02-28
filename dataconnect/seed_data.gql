@@ -1,0 +1,107 @@
+mutation CreateDemoData @transaction @auth(level: USER, insecureReason: "This is seed data mutation, so it is safe to be exposed to all logged-in users.") {
+  user_insertMany(data: [
+    {
+      id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      displayName: "Alice Smith",
+      email: "alice@example.com",
+      createdAt: "2023-01-01T10:00:00Z"
+    },
+    {
+      id: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+      displayName: "Bob Johnson",
+      email: "bob@example.com",
+      createdAt: "2023-01-02T11:00:00Z"
+    }
+  ])
+  category_insertMany(data: [
+    {
+      id: "c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
+      name: "Dairy",
+      createdAt: "2023-01-03T12:00:00Z"
+    },
+    {
+      id: "d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44",
+      name: "Produce",
+      createdAt: "2023-01-04T13:00:00Z"
+    }
+  ])
+  item_insertMany(data: [
+    {
+      id: "e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a55",
+      userId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      categoryId: "c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
+      name: "Milk",
+      quantity: 1,
+      unit: "gallon",
+      createdAt: "2023-01-05T14:00:00Z",
+      expirationDate: "2023-01-10",
+      notes: "Organic whole milk"
+    },
+    {
+      id: "f5eebc99-9c0b-4ef8-bb6d-6bb9bd380a66",
+      userId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      categoryId: "d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a44",
+      name: "Apples",
+      quantity: 5,
+      unit: "count",
+      createdAt: "2023-01-06T15:00:00Z",
+      expirationDate: "2023-01-15",
+      notes: "Fuji apples"
+    },
+    {
+      id: "g6eebc99-9c0b-4ef8-bb6d-6bb9bd380a77",
+      userId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+      categoryId: "c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
+      name: "Yogurt",
+      quantity: 2,
+      unit: "cups",
+      createdAt: "2023-01-07T16:00:00Z",
+      expirationDate: "2023-01-12",
+      notes: "Greek yogurt"
+    }
+  ])
+  shoppingList_insertMany(data: [
+    {
+      id: "h7eebc99-9c0b-4ef8-bb6d-6bb9bd380a88",
+      userId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+      name: "Weekly Groceries",
+      createdAt: "2023-01-08T09:00:00Z",
+      description: "List for the coming week"
+    },
+    {
+      id: "i8eebc99-9c0b-4ef8-bb6d-6bb9bd380a99",
+      userId: "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+      name: "Pantry Restock",
+      createdAt: "2023-01-09T10:00:00Z",
+      description: "Items needed for the pantry"
+    }
+  ])
+  shoppingListItem_insertMany(data: [
+    {
+      id: "j9eebc99-9c0b-4ef8-bb6d-6bb9bd380a00",
+      shoppingListId: "h7eebc99-9c0b-4ef8-bb6d-6bb9bd380a88",
+      itemId: "e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a55",
+      itemName: "Milk",
+      quantity: 1,
+      unit: "gallon",
+      isPurchased: false
+    },
+    {
+      id: "k0eebc99-9c0b-4ef8-bb6d-6bb9bd380b11",
+      shoppingListId: "h7eebc99-9c0b-4ef8-bb6d-6bb9bd380a88",
+      itemName: "Bread",
+      quantity: 1,
+      unit: "loaf",
+      isPurchased: false
+    },
+    {
+      id: "l1eebc99-9c0b-4ef8-bb6d-6bb9bd380b22",
+      shoppingListId: "i8eebc99-9c0b-4ef8-bb6d-6bb9bd380a99",
+      itemId: "g6eebc99-9c0b-4ef8-bb6d-6bb9bd380a77",
+      itemName: "Yogurt",
+      quantity: 4,
+      unit: "cups",
+      isPurchased: true
+    }
+  ])
+}
