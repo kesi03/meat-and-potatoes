@@ -394,8 +394,7 @@ export function AppProvider({ children }: AppProviderProps) {
     };
 
     setInventory(prev => [...prev, inventoryItem]);
-    deleteItemFromList(listId, itemId);
-  }, [shoppingLists, deleteItemFromList]);
+  }, [shoppingLists]);
 
   const addInventoryItem = useCallback((item: Omit<InventoryItem, 'id' | 'dateAdded'>): InventoryItem => {
     const newItem: InventoryItem = {

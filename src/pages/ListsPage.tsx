@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Box, Fab, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControlLabel, Checkbox } from '@mui/material';
-import { Add } from '@mui/icons-material';
+import { useState, useEffect } from 'react';
+import { Box, Fab, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControlLabel, Checkbox, Typography, Alert } from '@mui/material';
+import { Add, CheckCircle } from '@mui/icons-material';
 import ListsOverview from '../components/ListsOverview';
 import ShoppingListView from '../components/ShoppingListView';
 import ItemForm from '../components/ItemForm';
@@ -15,13 +15,14 @@ interface ListsPageProps {
 
 export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
   const { t } = useTranslation();
-  const { shoppingLists, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency } = useApp();
+  const { shoppingLists, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory } = useApp();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [pickingMode, setPickingMode] = useState(false);
   const [pickedItems, setPickedItems] = useState<Set<string>>(new Set());
   const [listDialog, setListDialog] = useState({ open: false, name: '', copyFromStandard: true });
   const [itemDialog, setItemDialog] = useState({ open: false, mode: 'add', item: null as ShoppingItem | null, listId: null as string | null });
+  const [saveToInventoryDialog, setSaveToInventoryDialog] = useState({ open: false });
 
   const handleAddList = () => {
     if (listDialog.name.trim()) {
@@ -62,7 +63,33 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
   };
 
   const selectedList = shoppingLists.find(l => l.id === selectedListId);
-  const listItems = selectedList?.items.filter(item => !categoryFilter || item.category === categoryFilter) || [];
+  const listItems = selectedList?.items?.filter(item => !categoryFilter || item.category === categoryFilter) || [];
+
+  // Check if all items are picked
+  useEffect(() => {
+    if (pickingMode && selectedList && listItems.length > 0 && pickedItems.size === listItems.length) {
+      // Show dialog after a brief delay to ensure UI has updated
+      setTimeout(() => {
+        setSaveToInventoryDialog({ open: true });
+      }, 300);
+    }
+  }, [pickingMode, selectedList, listItems.length, pickedItems.size]);
+
+  const handleSavePickedItemsToInventory = () => {
+    if (!selectedListId) return;
+    
+    // Move all picked items to inventory
+    listItems.forEach(item => {
+      if (pickedItems.has(item.id)) {
+        moveItemToInventory(selectedListId, item.id, item.quantity);
+      }
+    });
+
+    // Reset picking mode and clear picked items
+    setSaveToInventoryDialog({ open: false });
+    setPickingMode(false);
+    setPickedItems(new Set());
+  };
 
   return (
     <Box sx={{ pb: 10 }}>
@@ -143,6 +170,27 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
           onDelete={itemDialog.mode === 'edit' ? () => handleDeleteItemFromList(itemDialog.item!.id) : undefined}
           isEdit={itemDialog.mode === 'edit'}
         />
+      </Dialog>
+
+      <Dialog open={saveToInventoryDialog.open} onClose={() => setSaveToInventoryDialog({ open: false })} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CheckCircle color="success" />
+          All Items Picked!
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="success" sx={{ mb: 2 }}>
+            All {listItems.length} items in this list have been picked!
+          </Alert>
+          <Typography>
+            Would you like to save these items to your inventory?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSaveToInventoryDialog({ open: false })}>Continue Shopping</Button>
+          <Button onClick={handleSavePickedItemsToInventory} variant="contained" color="success">
+            Save to Inventory
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

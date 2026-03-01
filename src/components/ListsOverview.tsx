@@ -1,4 +1,4 @@
-import { Box, Typography, Card, CardContent, CardActions, Button, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { Box, Typography, Card, CardActions, Button, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { ShoppingCart, Add } from '@mui/icons-material';
 
 interface ShoppingList {
@@ -49,7 +49,7 @@ export default function ListsOverview({ lists, onSelectList, onDeleteList, onAdd
                   </ListItemIcon>
                   <ListItemText 
                     primary={list.name} 
-                    secondary={`${list.items.length} items`} 
+                    secondary={`${list.items?.length ?? 0} items`} 
                   />
                 </ListItemButton>
                 <CardActions>
