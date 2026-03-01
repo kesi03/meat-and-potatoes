@@ -91,7 +91,16 @@ export default function AdminView({
       <Tabs 
         value={adminTab} 
         onChange={(e, v) => setAdminTab(v)}
-        sx={{ mb: 3 }}
+        variant="scrollable"
+        scrollButtons="auto"
+        sx={{ 
+          mb: 3,
+          '& .MuiTabs-scroller': {
+            '&.MuiTabs-fixed': {
+              overflow: 'visible',
+            },
+          },
+        }}
       >
         <Tab label={t('localeSettings')} />
         <Tab label={t('category')} />
