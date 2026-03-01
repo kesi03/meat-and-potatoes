@@ -19,26 +19,14 @@ export function BarcodeScanner({ onDetected }: Props) {
     if (started) return;
     setStarted(true);
 
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
     let detector: BarcodeDetector | null = null;
     let animationFrame: number;
-    let zxingReader: BrowserMultiFormatReader | null = null;
-    let usingZXing = false;
 
-    const supported = "BarcodeDetector" in window;
-
-    if (supported) {
+    if (!isIOS && "BarcodeDetector" in window) {
       detector = new BarcodeDetector({
-        formats: [
-          "ean_13",
-          "ean_8",
-          "upc_a",
-          "upc_e",
-          "code_128",
-          "code_39",
-          "itf",
-          "codabar",
-          "qr_code"
-        ]
+        formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "qr_code"]
       });
     }
 
@@ -54,88 +42,56 @@ export function BarcodeScanner({ onDetected }: Props) {
 
     if (videoRef.current) {
       videoRef.current.srcObject = mediaStream;
-      await videoRef.current.play();
+      // Only call play() once
+      videoRef.current.play().catch(() => {});
     }
 
-    await new Promise(r => setTimeout(r, 600)); // autofocus
+    // iPhone → use ZXing
+    if (isIOS) {
+      const reader = new BrowserMultiFormatReader();
+      reader.decodeFromVideoDevice(null, videoRef.current!, (result) => {
+        if (result) {
+          onDetected(result.getText());
+          reader.reset();
+          stopScanner();
+        }
+      });
+      return;
+    }
 
+    // Android → use BarcodeDetector
     async function tick() {
-      if (!usingZXing && detector && videoRef.current) {
-        try {
-          const results = await detector.detect(videoRef.current);
-          if (results.length > 0) {
-            onDetected(results[0].rawValue);
-            stopScanner();
-            return;
-          }
-        } catch (err) {
-          console.error("Detector error:", err);
+      if (detector && videoRef.current) {
+        const results = await detector.detect(videoRef.current);
+        if (results.length > 0) {
+          onDetected(results[0].rawValue);
+          stopScanner();
+          return;
         }
       }
-
       animationFrame = requestAnimationFrame(tick);
     }
 
     tick();
 
-    setTimeout(() => {
-      if (!usingZXing) {
-        usingZXing = true;
-        zxingReader = new BrowserMultiFormatReader();
-        zxingReader.decodeFromVideoDevice(
-          null,
-          videoRef.current!,
-          (result, err) => {
-            if (result) {
-              onDetected(result.getText());
-              stopScanner();
-            }
-          }
-        );
-      }
-    }, 2000);
-
     function stopScanner() {
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-      }
+      if (stream) stream.getTracks().forEach(t => t.stop());
       cancelAnimationFrame(animationFrame);
-      if (zxingReader) zxingReader.reset();
     }
-
-    return () => stopScanner();
   }
 
-  useEffect(() => {
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-      }
-    };
-  }, [stream]);
-
   return (
-    <div style={{ width: "100%", textAlign: "center" }}>
+    <div>
       {!started && (
-        <button
-          onClick={startScanner}
-          style={{ padding: "12px 20px", fontSize: "16px", marginBottom: "12px" }}
-        >
-          Start Scanning
-        </button>
+        <button onClick={startScanner}>Start scanning</button>
       )}
 
       <video
         ref={videoRef}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          borderRadius: "8px"
-        }}
         playsInline
         muted
         autoPlay
+        style={{ width: "100%", height: "auto", objectFit: "cover" }}
       />
     </div>
   );
