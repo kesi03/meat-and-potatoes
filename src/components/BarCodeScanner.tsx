@@ -1,6 +1,5 @@
-import { Button } from '@mui/material';
-import { useEffect, useRef, useState } from 'react';
-import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
+import { useEffect, useRef, useState } from "react";
+import { BrowserMultiFormatReader } from "@zxing/library";
 
 type Props = {
   onDetected: (value: string) => void;
@@ -22,6 +21,8 @@ export function BarcodeScanner({ onDetected }: Props) {
 
     let detector: BarcodeDetector | null = null;
     let animationFrame: number;
+    let zxingReader: BrowserMultiFormatReader | null = null;
+    let usingZXing = false;
 
     const supported = "BarcodeDetector" in window;
 
@@ -41,52 +42,65 @@ export function BarcodeScanner({ onDetected }: Props) {
       });
     }
 
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        }
-      });
-
-      setStream(mediaStream);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        await videoRef.current.play();
+    const mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
       }
+    });
 
-      // Allow autofocus to settle
-      await new Promise(r => setTimeout(r, 600));
+    setStream(mediaStream);
 
-      async function tick() {
-        if (detector && videoRef.current) {
-          try {
-            const results = await detector.detect(videoRef.current);
-            if (results.length > 0) {
-              onDetected(results[0].rawValue);
-              stopScanner();
-              return;
-            }
-          } catch (err) {
-            console.error("Detector error:", err);
-          }
-        }
-
-        animationFrame = requestAnimationFrame(tick);
-      }
-
-      tick();
-    } catch (err) {
-      console.error("Camera error:", err);
+    if (videoRef.current) {
+      videoRef.current.srcObject = mediaStream;
+      await videoRef.current.play();
     }
+
+    await new Promise(r => setTimeout(r, 600)); // autofocus
+
+    async function tick() {
+      if (!usingZXing && detector && videoRef.current) {
+        try {
+          const results = await detector.detect(videoRef.current);
+          if (results.length > 0) {
+            onDetected(results[0].rawValue);
+            stopScanner();
+            return;
+          }
+        } catch (err) {
+          console.error("Detector error:", err);
+        }
+      }
+
+      animationFrame = requestAnimationFrame(tick);
+    }
+
+    tick();
+
+    setTimeout(() => {
+      if (!usingZXing) {
+        usingZXing = true;
+        zxingReader = new BrowserMultiFormatReader();
+        zxingReader.decodeFromVideoDevice(
+          null,
+          videoRef.current!,
+          (result, err) => {
+            if (result) {
+              onDetected(result.getText());
+              stopScanner();
+            }
+          }
+        );
+      }
+    }, 2000);
 
     function stopScanner() {
       if (stream) {
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach(t => t.stop());
       }
       cancelAnimationFrame(animationFrame);
+      if (zxingReader) zxingReader.reset();
     }
 
     return () => stopScanner();
@@ -95,7 +109,7 @@ export function BarcodeScanner({ onDetected }: Props) {
   useEffect(() => {
     return () => {
       if (stream) {
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach(t => t.stop());
       }
     };
   }, [stream]);
@@ -103,16 +117,12 @@ export function BarcodeScanner({ onDetected }: Props) {
   return (
     <div style={{ width: "100%", textAlign: "center" }}>
       {!started && (
-        <Button
+        <button
           onClick={startScanner}
-          style={{
-            padding: "12px 20px",
-            fontSize: "16px",
-            marginBottom: "12px"
-          }}
+          style={{ padding: "12px 20px", fontSize: "16px", marginBottom: "12px" }}
         >
-          <BarcodeReaderIcon />Start Scanning
-        </Button>
+          Start Scanning
+        </button>
       )}
 
       <video

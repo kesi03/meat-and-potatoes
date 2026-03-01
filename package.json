@@ -15,6 +15,7 @@
     "@mui/icons-material": "^7.3.8",
     "@mui/material": "^7.3.8",
     "@toolpad/core": "^0.16.0",
+    "@zxing/library": "^0.21.3",
     "country-flag-icons": "^1.6.15",
     "firebase": "^12.10.0",
     "i18next": "^25.8.13",
