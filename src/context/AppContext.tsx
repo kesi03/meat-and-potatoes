@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from 'react';
 import { generateId, STANDARD_ITEMS, CurrencyCode, DEFAULT_CURRENCY } from '../meat';
-import { db, COLLECTIONS } from '../firebase';
-import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { ref, set, get } from 'firebase/database';
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -11,6 +11,7 @@ export interface FirebaseConfig {
   messagingSenderId: string;
   appId: string;
   measurementId?: string;
+  databaseURL?: string;
 }
 
 export interface Category {
@@ -334,10 +335,10 @@ export function AppProvider({ children }: AppProviderProps) {
     }
   }, [firebaseConfig]);
 
-  // Auto-sync to Firebase with debounce
+  // Auto-sync to Firebase Realtime Database with debounce
   useEffect(() => {
-    // Only sync if Firebase is configured
-    if (!firebaseConfig?.apiKey) {
+    // Only sync if Firebase is configured and db is initialized
+    if (!firebaseConfig?.apiKey || !db || typeof db === 'object' && Object.keys(db).length === 0) {
       return;
     }
 
@@ -345,7 +346,7 @@ export function AppProvider({ children }: AppProviderProps) {
     const timeout = setTimeout(async () => {
       setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
       try {
-        await setDoc(doc(db, COLLECTIONS.SETTINGS, USER_DOC_ID), {
+        await set(ref(db, 'userData'), {
           categories,
           shoppingLists,
           inventory,
@@ -354,9 +355,10 @@ export function AppProvider({ children }: AppProviderProps) {
           lastUpdated: new Date().toISOString(),
         });
         setSyncStatus({ lastSynced: new Date(), isSyncing: false, error: null });
-        console.log('Auto-synced to Firebase');
+        console.log('Auto-synced to Firebase Realtime Database');
       } catch (error) {
-        setSyncStatus(prev => ({ ...prev, isSyncing: false, error: (error as Error).message }));
+        const errorMsg = (error as Error).message;
+        setSyncStatus(prev => ({ ...prev, isSyncing: false, error: errorMsg }));
         console.error('Auto-sync error:', error);
       }
     }, 1000); // Debounce for 1 second
@@ -364,11 +366,15 @@ export function AppProvider({ children }: AppProviderProps) {
     return () => clearTimeout(timeout);
   }, [categories, shoppingLists, inventory, activeListId, currency, firebaseConfig?.apiKey]);
 
-  // Sync to Firebase
+  // Sync to Firebase Realtime Database
   const syncToFirebase = useCallback(async () => {
+    if (!db || typeof db === 'object' && Object.keys(db).length === 0) {
+      setSyncStatus(prev => ({ ...prev, isSyncing: false, error: 'Firebase not initialized. Please configure Firebase settings.' }));
+      return;
+    }
     setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
     try {
-      await setDoc(doc(db, COLLECTIONS.SETTINGS, USER_DOC_ID), {
+      await set(ref(db, 'userData'), {
         categories,
         shoppingLists,
         inventory,
@@ -382,13 +388,17 @@ export function AppProvider({ children }: AppProviderProps) {
     }
   }, [categories, shoppingLists, inventory, activeListId, currency]);
 
-  // Load from Firebase
+  // Load from Firebase Realtime Database
   const loadFromFirebase = useCallback(async () => {
+    if (!db || typeof db === 'object' && Object.keys(db).length === 0) {
+      setSyncStatus(prev => ({ ...prev, isSyncing: false, error: 'Firebase not initialized. Please configure Firebase settings.' }));
+      return;
+    }
     setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
     try {
-      const docSnap = await getDoc(doc(db, COLLECTIONS.SETTINGS, USER_DOC_ID));
-      if (docSnap.exists()) {
-        const data = docSnap.data();
+      const snapshot = await get(ref(db, 'userData'));
+      if (snapshot.exists()) {
+        const data = snapshot.val();
         if (data.categories) setCategories(data.categories);
         if (data.shoppingLists) setShoppingLists(data.shoppingLists);
         if (data.inventory) setInventory(data.inventory);

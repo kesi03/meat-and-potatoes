@@ -262,6 +262,14 @@ export default function AdminView({
             label="Measurement ID (optional)"
             value={firebaseConfig?.measurementId || ''}
             onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, measurementId: e.target.value } as FirebaseConfig)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Database URL (optional)"
+            value={firebaseConfig?.databaseURL || ''}
+            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, databaseURL: e.target.value } as FirebaseConfig)}
+            placeholder="https://your-project-default-rtdb.region.firebasedatabase.app"
             sx={{ mb: 3 }}
           />
           <Button 

@@ -1,6 +1,6 @@
 import { initializeApp, FirebaseApp } from "firebase/app";
 import { getAnalytics, Analytics } from "firebase/analytics";
-import { getFirestore, Firestore } from "firebase/firestore";
+import { getDatabase, Database } from "firebase/database";
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -10,6 +10,7 @@ export interface FirebaseConfig {
   messagingSenderId: string;
   appId: string;
   measurementId?: string;
+  databaseURL?: string;
 }
 
 function getFirebaseConfig(): FirebaseConfig | null {
@@ -28,34 +29,30 @@ const firebaseConfig = getFirebaseConfig();
 
 let app: FirebaseApp;
 let analytics: Analytics;
-let db: Firestore;
+let db: Database;
 
 if (firebaseConfig && firebaseConfig.apiKey) {
   try {
     app = initializeApp(firebaseConfig);
     analytics = getAnalytics(app);
-    db = getFirestore(app);
+    db = getDatabase(app, firebaseConfig.databaseURL);
     console.log('Firebase initialized successfully');
     console.log('Firebase config:', firebaseConfig);
     console.log('Firebase app name:', app.name);
     console.log('Firebase analytics:', analytics);
-    console.log('Firebase Firestore:', db);
+    console.log('Firebase Realtime Database:', db);
   } catch (error) {
     console.error('Failed to initialize Firebase:', error);
+    // Initialize with empty config to avoid crashes
     app = initializeApp({});
     analytics = {} as Analytics;
-    db = {} as Firestore;
+    db = {} as Database;
   }
 } else {
+  console.warn('Firebase config not found in localStorage. Realtime Database syncing will not work until config is provided.');
   app = initializeApp({});
   analytics = {} as Analytics;
-  db = {} as Firestore;
+  db = {} as Database;
 }
 
 export { app, analytics, db };
-export const COLLECTIONS = {
-  SHOPPING_LISTS: 'shoppingLists',
-  INVENTORY: 'inventory',
-  CATEGORIES: 'categories',
-  SETTINGS: 'settings',
-};
