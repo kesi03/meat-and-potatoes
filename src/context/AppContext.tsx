@@ -411,6 +411,16 @@ export function AppProvider({ children }: AppProviderProps) {
     }
   }, []);
 
+  // Auto-load from Firebase on app startup
+  useEffect(() => {
+    if (firebaseConfig?.apiKey && db && typeof db === 'object' && Object.keys(db).length > 0) {
+      // Only load if we haven't loaded yet (no last sync time)
+      if (!syncStatus.lastSynced) {
+        loadFromFirebase();
+      }
+    }
+  }, [firebaseConfig?.apiKey]);
+
   const addCategory = useCallback((category: { name: string; description?: string }): Category => {
     const newCategory: Category = {
       id: generateId(),
