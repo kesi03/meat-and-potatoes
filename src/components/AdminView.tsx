@@ -18,7 +18,7 @@ import {
   TextField,
 } from '@mui/material';
 import { Add, Edit, Delete, Store } from '@mui/icons-material';
-import { CURRENCIES, formatCurrency, CurrencyCode } from '../meat';
+import { CURRENCIES, formatCurrency, CurrencyCode, getTranslatedItemName, getTranslatedCategoryName } from '../meat';
 import type { Category, ShoppingList } from '../context/AppContext';
 import { getCategoryName, getCategoryDescription } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
@@ -208,8 +208,8 @@ export default function AdminView({
                     <Avatar sx={{ bgcolor: 'primary.light' }}>{item.name[0]}</Avatar>
                   </ListItemAvatar>
                   <ListItemText 
-                    primary={item.name} 
-                    secondary={`${item.category} - ${formatCurrency(item.cost, currency)}`} 
+                    primary={getTranslatedItemName(item.name, t)} 
+                    secondary={`${getTranslatedCategoryName(item.category, t)} - ${formatCurrency(item.cost, currency)}`} 
                   />
                 </ListItem>
               ))}

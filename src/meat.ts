@@ -1,6 +1,6 @@
 export type ExpirationStatus = 'expired' | 'expiring-soon' | 'fresh' | 'unknown';
 
-export type CurrencyCode = 'GBP' | 'USD' | 'EUR' | 'SEK' | 'NOK';
+export type CurrencyCode = 'GBP' | 'USD' | 'EUR' | 'SEK' | 'NOK' | 'DKK' | 'ISK';
 
 export interface Currency {
   code: CurrencyCode;
@@ -14,7 +14,10 @@ export const CURRENCIES: Currency[] = [
   { code: 'EUR', symbol: '€', name: 'Euro' },
   { code: 'SEK', symbol: 'kr', name: 'Swedish Krona' },
   { code: 'NOK', symbol: 'kr', name: 'Norwegian Krone' },
+  { code: 'DKK', symbol: 'kr', name: 'Danish Krone' },
+  { code: 'ISK', symbol: 'kr', name: 'Icelandic Króna' },
 ];
+
 
 export const DEFAULT_CURRENCY: CurrencyCode = 'GBP';
 
@@ -24,6 +27,8 @@ const currencyLocales: Record<CurrencyCode, string> = {
   EUR: 'de-DE',
   SEK: 'sv-SE',
   NOK: 'nb-NO',
+  DKK: 'da-DK',
+  ISK: 'is-IS',
 };
 
 export function formatCurrency(amount: number, currencyCode: CurrencyCode = 'GBP'): string {
@@ -46,6 +51,32 @@ export const CATEGORIES = [
   'Household',
   'Personal Care',
 ];
+
+export const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  'Produce': 'Fresh fruits and vegetables',
+  'Dairy': 'Milk, cheese, yogurt, and other dairy products',
+  'Meat & Deli': 'Fresh meat, poultry, seafood, and deli items',
+  'Bakery': 'Bread, pastries, and other baked goods',
+  'Frozen Foods': 'Frozen meals, vegetables, and desserts',
+  'Pantry': 'Canned goods, pasta, rice, and other non-perishable items',
+  'Beverages': 'Sodas, juices, water, and other drinks',
+  'Snacks': 'Chips, cookies, nuts, and other snack foods',
+  'Household': 'Cleaning supplies, paper products, and other household items',
+  'Personal Care': 'Toiletries, beauty products, and other personal care items',
+};
+
+export const STANDARD_CATEGORY_I18N_KEYS: Record<string, string> = {
+  'Produce': 'categoryProduce',
+  'Dairy': 'categoryDairy',
+  'Meat & Deli': 'categoryMeatDeli',
+  'Bakery': 'categoryBakery',
+  'Frozen Foods': 'categoryFrozenFoods',
+  'Pantry': 'categoryPantry',
+  'Beverages': 'categoryBeverages',
+  'Snacks': 'categorySnacks',
+  'Household': 'categoryHousehold',
+  'Personal Care': 'categoryPersonalCare',
+};
 
 export const LOCATIONS = [
   'Fridge',
@@ -120,6 +151,31 @@ export const STANDARD_ITEMS: StandardItem[] = [
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
+
+export function getTranslationKeyForItem(itemName: string): string | null {
+  return STANDARD_ITEM_I18N_KEYS[itemName] || null;
+}
+
+export function getTranslatedItemName(itemName: string, t: (key: string) => string): string {
+  const i18nKey = getTranslationKeyForItem(itemName);
+  return i18nKey ? t(i18nKey) : itemName;
+}
+
+export function getTranslationKeyForCategory(categoryName: string): string | null {
+  const key = STANDARD_CATEGORY_I18N_KEYS[categoryName];
+  return key || null;
+}
+
+export function getTranslatedCategoryName(categoryName: string, t: (key: string) => string): string {
+  const i18nKey = getTranslationKeyForCategory(categoryName);
+  return i18nKey ? t(i18nKey) : categoryName;
+}
+
+export function getCurrencyByCode(code: CurrencyCode): Currency | null {
+  return CURRENCIES.find(c => c.code === code) || null;
+}
+
+
 
 export function getExpirationStatus(bestByDate: string | null): ExpirationStatus {
   if (!bestByDate) return 'unknown';
