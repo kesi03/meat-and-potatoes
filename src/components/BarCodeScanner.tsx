@@ -1,4 +1,6 @@
+import { Button } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 
 type Props = {
   onDetected: (value: string) => void;
@@ -101,7 +103,7 @@ export function BarcodeScanner({ onDetected }: Props) {
   return (
     <div style={{ width: "100%", textAlign: "center" }}>
       {!started && (
-        <button
+        <Button
           onClick={startScanner}
           style={{
             padding: "12px 20px",
@@ -109,8 +111,8 @@ export function BarcodeScanner({ onDetected }: Props) {
             marginBottom: "12px"
           }}
         >
-          Start Scanning
-        </button>
+          <BarcodeReaderIcon />Start Scanning
+        </Button>
       )}
 
       <video
