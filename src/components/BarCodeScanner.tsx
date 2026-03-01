@@ -12,22 +12,41 @@ declare class BarcodeDetector {
 export function BarcodeScanner({ onDetected }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [started, setStarted] = useState(false);
 
-  useEffect(() => {
+  async function startScanner() {
+    if (started) return;
+    setStarted(true);
+
     let detector: BarcodeDetector | null = null;
     let animationFrame: number;
 
-    async function start() {
-      const supported = 'BarcodeDetector' in window;
+    const supported = "BarcodeDetector" in window;
 
-      if (supported) {
-        detector = new BarcodeDetector({
-          formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'qr_code']
-        });
-      }
+    if (supported) {
+      detector = new BarcodeDetector({
+        formats: [
+          "ean_13",
+          "ean_8",
+          "upc_a",
+          "upc_e",
+          "code_128",
+          "code_39",
+          "qr_code",
+          "itf",
+          "codabar",
+          "data_matrix"
+        ]
+      });
+    }
 
+    try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
+        video: {
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
       });
 
       setStream(mediaStream);
@@ -39,37 +58,71 @@ export function BarcodeScanner({ onDetected }: Props) {
 
       async function tick() {
         if (detector && videoRef.current) {
-          const results = await detector.detect(videoRef.current);
-          if (results.length > 0) {
-            onDetected(results[0].rawValue);
-            stop();
-            return;
+          try {
+            const results = await detector.detect(videoRef.current);
+            if (results.length > 0) {
+              onDetected(results[0].rawValue);
+              stopScanner();
+              return;
+            }
+          } catch (err) {
+            console.error("Barcode detection error:", err);
           }
         }
+
         animationFrame = requestAnimationFrame(tick);
       }
 
       tick();
+    } catch (err) {
+      console.error("Camera error:", err);
     }
 
-    function stop() {
+    function stopScanner() {
       if (stream) {
-        stream.getTracks().forEach(t => t.stop());
+        stream.getTracks().forEach((t) => t.stop());
       }
       cancelAnimationFrame(animationFrame);
     }
 
-    start();
+    return () => stopScanner();
+  }
 
-    return () => stop();
-  }, [onDetected]);
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, [stream]);
 
   return (
-    <video
-      ref={videoRef}
-      style={{ width: '100%', height: 'auto' }}
-      playsInline
-      muted
-    />
+    <div style={{ width: "100%", textAlign: "center" }}>
+      {!started && (
+        <button
+          onClick={startScanner}
+          style={{
+            padding: "12px 20px",
+            fontSize: "16px",
+            marginBottom: "12px"
+          }}
+        >
+          Start Scanning
+        </button>
+      )}
+
+      <video
+        ref={videoRef}
+        style={{
+          width: "100%",
+          height: "auto",
+          objectFit: "cover",
+          borderRadius: "8px"
+        }}
+        playsInline
+        muted
+        autoPlay
+      />
+    </div>
   );
 }
