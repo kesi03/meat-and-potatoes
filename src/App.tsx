@@ -30,7 +30,7 @@ function AppContent() {
 
     <>
       <AppBar />
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 2, mt: 8 }}>
       {location.pathname === '/' && <ListsPage onMoveToInventory={handleMoveToInventory} />}
       {location.pathname === '/lists' && <ListsPage onMoveToInventory={handleMoveToInventory} />}
       {location.pathname === '/inventory' && <InventoryPage />}

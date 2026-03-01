@@ -20,7 +20,8 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { getExpirationStatus, getDaysUntilExpiration, formatCurrency, CurrencyCode } from '../meat';
-import type { ShoppingItem } from '../context/AppContext';
+import type { ShoppingItem, Category } from '../context/AppContext';
+import { getCategoryName } from '../context/AppContext';
 
 interface ItemCardProps {
   item: ShoppingItem;
@@ -28,7 +29,7 @@ interface ItemCardProps {
   onToggle: () => void;
   onEdit: () => void;
   onMoveToInventory?: () => void;
-  categories: Array<{ id: string; name: string }>;
+  categories: Category[];
   currency: CurrencyCode;
   showMoveToInventory?: boolean;
 }
@@ -43,7 +44,7 @@ export default function ItemCard({
   currency,
   showMoveToInventory = true,
 }: ItemCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const expirationStatus = getExpirationStatus(item.bestByDate);
   const daysLeft = getDaysUntilExpiration(item.bestByDate);
 
@@ -63,11 +64,15 @@ export default function ItemCard({
             <Box>
               <Typography variant="subtitle1" fontWeight={600}>{item.name}</Typography>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <Chip label={item.category} size="small" />
-                {item.bestByDate && (
+                {(() => {
+                  const cat = categories.find(c => c.name === item.category);
+                  const translatedName = cat ? getCategoryName(cat, i18n.language) : item.category;
+                  return <Chip label={translatedName} size="small" />;
+                })()}
+                {item.bestByDate && daysLeft !== null && (
                   <Chip
                     size="small"
-                    color={statusColors[expirationStatus]}
+                    color={statusColors[expirationStatus] as 'error' | 'warning' | 'success' | 'default'}
                     label={daysLeft < 0 ? `Expired ${Math.abs(daysLeft)}d ago` : daysLeft === 0 ? 'Expires today' : `${daysLeft}d left`}
                     icon={expirationStatus === 'expired' ? <Warning /> : expirationStatus === 'expiring-soon' ? <Warning /> : <CheckCircle />}
                   />

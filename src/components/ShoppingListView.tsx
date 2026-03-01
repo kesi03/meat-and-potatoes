@@ -20,9 +20,11 @@ import {
   ArrowBack,
 } from '@mui/icons-material';
 import ItemCard from './ItemCard';
-import type { ShoppingItem } from '../context/AppContext';
+import type { ShoppingItem, Category } from '../context/AppContext';
+import { getCategoryName } from '../context/AppContext';
 import type { CurrencyCode } from '../meat';
 import { formatCurrency } from '../meat';
+import { useTranslation } from 'react-i18next';
 
 interface ShoppingListViewProps {
   list?: {
@@ -32,7 +34,7 @@ interface ShoppingListViewProps {
     items: ShoppingItem[];
   };
   items: ShoppingItem[];
-  categories: Array<{ id: string; name: string }>;
+  categories: Category[];
   categoryFilter: string;
   setCategoryFilter: (filter: string) => void;
   onAddItem: () => void;
@@ -64,6 +66,7 @@ export default function ShoppingListView({
   setPickedItems,
   onBack,
 }: ShoppingListViewProps) {
+  const { i18n } = useTranslation();
   const totalCost = items.reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
   const pickedCost = items.filter(item => pickedItems.has(item.id)).reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
 
@@ -104,7 +107,7 @@ export default function ShoppingListView({
           <>
             <Chip label="All" onClick={() => setCategoryFilter('')} color={!categoryFilter ? 'primary' : 'default'} />
             {categories.map(cat => (
-              <Chip key={cat.id} label={cat.name} onClick={() => setCategoryFilter(cat.name)} color={categoryFilter === cat.name ? 'primary' : 'default'} />
+              <Chip key={cat.id} label={getCategoryName(cat, i18n.language)} onClick={() => setCategoryFilter(cat.name)} color={categoryFilter === cat.name ? 'primary' : 'default'} />
             ))}
           </>
         )}

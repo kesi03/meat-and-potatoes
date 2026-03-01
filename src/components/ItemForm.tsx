@@ -13,11 +13,12 @@ import {
 } from '@mui/material';
 import { Delete, MoveToInbox } from '@mui/icons-material';
 import { LOCATIONS, CURRENCIES, CurrencyCode } from '../meat';
-import type { ShoppingItem, Category } from '../context/AppContext';
+import type { ShoppingItem, InventoryItem, Category } from '../context/AppContext';
+import { getCategoryName } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
 
 interface ItemFormProps {
-  item?: ShoppingItem | null;
+  item?: ShoppingItem | InventoryItem | null;
   categories: Category[];
   onSave: (data: any) => void;
   onCancel?: () => void;
@@ -37,7 +38,8 @@ export default function ItemForm({
   isEdit,
   showHomeQuantity,
 }: ItemFormProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const invItem = item as InventoryItem | undefined;
   const [formData, setFormData] = useState({
     name: item?.name || '',
     category: item?.category || categories[0]?.name || '',
@@ -48,8 +50,8 @@ export default function ItemForm({
     nutritionalInfo: item?.nutritionalInfo || '',
     weightSize: item?.weightSize || '',
     bestByDate: item?.bestByDate || '',
-    location: item?.location || 'Fridge',
-    homeQuantity: item?.homeQuantity || 1,
+    location: invItem?.location || 'Fridge',
+    homeQuantity: invItem?.homeQuantity || 1,
   });
 
   const handleChange = (field: string) => (e: any) => {
@@ -59,9 +61,9 @@ export default function ItemForm({
   const handleSubmit = () => {
     onSave({
       ...formData,
-      quantity: parseInt(formData.quantity) || 1,
-      cost: parseFloat(formData.cost) || 0,
-      homeQuantity: showHomeQuantity ? (parseInt(formData.homeQuantity) || 1) : formData.homeQuantity,
+      quantity: parseInt(String(formData.quantity)) || 1,
+      cost: parseFloat(String(formData.cost)) || 0,
+      homeQuantity: showHomeQuantity ? (parseInt(String(formData.homeQuantity)) || 1) : formData.homeQuantity,
     });
   };
 
@@ -82,10 +84,10 @@ export default function ItemForm({
             required
           />
           <FormControl fullWidth>
-            <InputLabel>Category</InputLabel>
-            <Select value={formData.category || ''} onChange={handleChange('category')} label="Category">
+            <InputLabel>{t('category')}</InputLabel>
+            <Select value={formData.category || ''} onChange={handleChange('category')} label={t('category')}>
               {categories.map(cat => (
-                <MenuItem key={cat.id} value={cat.name}>{cat.name}</MenuItem>
+                <MenuItem key={cat.id} value={cat.name}>{getCategoryName(cat, i18n.language)}</MenuItem>
               ))}
             </Select>
           </FormControl>

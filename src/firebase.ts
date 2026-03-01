@@ -1,20 +1,51 @@
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc } from "firebase/firestore";
+import { initializeApp, FirebaseApp } from "firebase/app";
+import { getAnalytics, Analytics } from "firebase/analytics";
+import { getFirestore, Firestore } from "firebase/firestore";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCWL78tVJcYfHoaz4cCu3_Eo_6PO1vW2fw",
-  authDomain: "meat-and-potatoes-86149.firebaseapp.com",
-  projectId: "meat-and-potatoes-86149",
-  storageBucket: "meat-and-potatoes-86149.firebasestorage.app",
-  messagingSenderId: "807562708584",
-  appId: "1:807562708584:web:1e668778003a083260dddd",
-  measurementId: "G-D53SRDFZFJ"
-};
+export interface FirebaseConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  storageBucket: string;
+  messagingSenderId: string;
+  appId: string;
+  measurementId?: string;
+}
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
+function getFirebaseConfig(): FirebaseConfig | null {
+  const stored = localStorage.getItem('shopping-inventory-app-firebaseConfig');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+const firebaseConfig = getFirebaseConfig();
+
+let app: FirebaseApp;
+let analytics: Analytics;
+let db: Firestore;
+
+if (firebaseConfig && firebaseConfig.apiKey) {
+  try {
+    app = initializeApp(firebaseConfig);
+    analytics = getAnalytics(app);
+    db = getFirestore(app);
+  } catch (error) {
+    console.error('Failed to initialize Firebase:', error);
+    app = initializeApp({});
+    analytics = {} as Analytics;
+    db = {} as Firestore;
+  }
+} else {
+  app = initializeApp({});
+  analytics = {} as Analytics;
+  db = {} as Firestore;
+}
 
 export { app, analytics, db };
 export const COLLECTIONS = {
