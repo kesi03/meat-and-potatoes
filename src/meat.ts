@@ -64,6 +64,33 @@ export interface StandardItem {
   cost: number;
 }
 
+// Map of standard item names to i18n keys for translation
+export const STANDARD_ITEM_I18N_KEYS: Record<string, string> = {
+  'Milk': 'itemMilk',
+  'Bread': 'itemBread',
+  'Butter': 'itemButter',
+  'Eggs': 'itemEggs',
+  'Cheese': 'itemCheese',
+  'Chicken Breast': 'itemChickenBreast',
+  'Rice': 'itemRice',
+  'Pasta': 'itemPasta',
+  'Cereal': 'itemCereal',
+  'Orange Juice': 'itemOrangeJuice',
+  'Apples': 'itemApples',
+  'Bananas': 'itemBananas',
+  'Lettuce': 'itemLettuce',
+  'Tomatoes': 'itemTomatoes',
+  'Ground Beef': 'itemGroundBeef',
+  'Bacon': 'itemBacon',
+  'Yogurt': 'itemYogurt',
+  'Ice Cream': 'itemIceCream',
+  'Frozen Pizza': 'itemFrozenPizza',
+  'Paper Towels': 'itemPaperTowels',
+  'Dish Soap': 'itemDishSoap',
+  'Toothpaste': 'itemToothpaste',
+  'Shampoo': 'itemShampoo',
+};
+
 export const STANDARD_ITEMS: StandardItem[] = [
   { name: 'Milk', category: 'Dairy', quantity: 1, cost: 3.99 },
   { name: 'Bread', category: 'Bakery', quantity: 1, cost: 2.99 },

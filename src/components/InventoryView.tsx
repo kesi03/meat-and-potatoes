@@ -7,8 +7,9 @@ import {
   ListItemText,
   Avatar,
   Chip,
+  IconButton,
 } from '@mui/material';
-import { Store, Warning, CheckCircle } from '@mui/icons-material';
+import { Store, Warning, CheckCircle, Edit, Delete } from '@mui/icons-material';
 import { getExpirationStatus, formatCurrency, CurrencyCode, getDaysUntilExpiration } from '../meat';
 import type { InventoryItem, Category } from '../context/AppContext';
 import { getCategoryName } from '../context/AppContext';
@@ -72,6 +73,7 @@ export default function InventoryView({
                     item={item}
                     currency={currency}
                     onEdit={() => onEditItem(item)}
+                    onDelete={() => onDeleteItem(item.id)}
                     getTranslatedCategoryName={getTranslatedCategoryName}
                   />
                 ))}
@@ -88,10 +90,11 @@ interface InventoryListItemProps {
   item: InventoryItem;
   currency: CurrencyCode;
   onEdit: () => void;
+  onDelete: () => void;
   getTranslatedCategoryName: (catName: string) => string;
 }
 
-function InventoryListItem({ item, currency, onEdit, getTranslatedCategoryName }: InventoryListItemProps) {
+function InventoryListItem({ item, currency, onEdit, onDelete, getTranslatedCategoryName }: InventoryListItemProps) {
   const expirationStatus = getExpirationStatus(item.bestByDate);
   const daysLeft = getDaysUntilExpiration(item.bestByDate);
 
@@ -112,15 +115,23 @@ function InventoryListItem({ item, currency, onEdit, getTranslatedCategoryName }
         borderColor: `${statusColors[expirationStatus]}.main`,
       }}
       secondaryAction={
-        <Box sx={{ textAlign: 'right' }}>
-          <Typography variant="body2" color="text.secondary">
-            Home: {item.homeQuantity}
-          </Typography>
-          {item.bestByDate && (
-            <Typography variant="caption" color={`${statusColors[expirationStatus]}.main`}>
-              {daysLeft !== null && (daysLeft < 0 ? `Expired ${Math.abs(daysLeft)}d` : `${daysLeft}d left`)}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ textAlign: 'right', mr: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Home: {item.homeQuantity}
             </Typography>
-          )}
+            {item.bestByDate && (
+              <Typography variant="caption" color={`${statusColors[expirationStatus]}.main`}>
+                {daysLeft !== null && (daysLeft < 0 ? `Expired ${Math.abs(daysLeft)}d` : `${daysLeft}d left`)}
+              </Typography>
+            )}
+          </Box>
+          <IconButton onClick={onEdit} size="small">
+            <Edit fontSize="small" />
+          </IconButton>
+          <IconButton onClick={onDelete} size="small" color="error">
+            <Delete fontSize="small" />
+          </IconButton>
         </Box>
       }
     >
