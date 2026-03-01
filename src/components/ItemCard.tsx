@@ -19,7 +19,7 @@ import {
   CheckCircle,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { getExpirationStatus, getDaysUntilExpiration, formatCurrency, CurrencyCode } from '../meat';
+import { getExpirationStatus, getDaysUntilExpiration, formatCurrency, CurrencyCode, getTranslatedItemName } from '../meat';
 import type { ShoppingItem, Category } from '../context/AppContext';
 import { getCategoryName } from '../context/AppContext';
 
@@ -62,7 +62,7 @@ export default function ItemCard({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
             <Avatar sx={{ bgcolor: 'primary.light' }}>{item.name?.[0]}</Avatar>
             <Box>
-              <Typography variant="subtitle1" fontWeight={600}>{item.name}</Typography>
+              <Typography variant="subtitle1" fontWeight={600}>{getTranslatedItemName(item.name, t)}</Typography>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 {(() => {
                   const cat = categories.find(c => c.name === item.category);

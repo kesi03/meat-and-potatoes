@@ -23,7 +23,7 @@ import ItemCard from './ItemCard';
 import type { ShoppingItem, Category } from '../context/AppContext';
 import { getCategoryName } from '../context/AppContext';
 import type { CurrencyCode } from '../meat';
-import { formatCurrency } from '../meat';
+import { formatCurrency, getTranslatedItemName } from '../meat';
 import { useTranslation } from 'react-i18next';
 
 interface ShoppingListViewProps {
@@ -66,7 +66,7 @@ export default function ShoppingListView({
   setPickedItems,
   onBack,
 }: ShoppingListViewProps) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const totalCost = items.reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
   const pickedCost = items.filter(item => pickedItems.has(item.id)).reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
 
@@ -158,7 +158,7 @@ export default function ShoppingListView({
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText 
-                      primary={item.name} 
+                      primary={getTranslatedItemName(item.name, t)} 
                       secondary={`Qty: ${item.quantity}`} 
                     />
                   </ListItem>
