@@ -35,6 +35,11 @@ if (firebaseConfig && firebaseConfig.apiKey) {
     app = initializeApp(firebaseConfig);
     analytics = getAnalytics(app);
     db = getFirestore(app);
+    console.log('Firebase initialized successfully');
+    console.log('Firebase config:', firebaseConfig);
+    console.log('Firebase app name:', app.name);
+    console.log('Firebase analytics:', analytics);
+    console.log('Firebase Firestore:', db);
   } catch (error) {
     console.error('Failed to initialize Firebase:', error);
     app = initializeApp({});

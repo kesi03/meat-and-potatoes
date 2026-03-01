@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from 'react';
 import { generateId, STANDARD_ITEMS, CurrencyCode, DEFAULT_CURRENCY } from '../meat';
 import { db, COLLECTIONS } from '../firebase';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
@@ -334,6 +334,36 @@ export function AppProvider({ children }: AppProviderProps) {
     }
   }, [firebaseConfig]);
 
+  // Auto-sync to Firebase with debounce
+  useEffect(() => {
+    // Only sync if Firebase is configured
+    if (!firebaseConfig?.apiKey) {
+      return;
+    }
+
+    // Set a debounce timeout to avoid excessive writes
+    const timeout = setTimeout(async () => {
+      setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
+      try {
+        await setDoc(doc(db, COLLECTIONS.SETTINGS, USER_DOC_ID), {
+          categories,
+          shoppingLists,
+          inventory,
+          activeListId,
+          currency,
+          lastUpdated: new Date().toISOString(),
+        });
+        setSyncStatus({ lastSynced: new Date(), isSyncing: false, error: null });
+        console.log('Auto-synced to Firebase');
+      } catch (error) {
+        setSyncStatus(prev => ({ ...prev, isSyncing: false, error: (error as Error).message }));
+        console.error('Auto-sync error:', error);
+      }
+    }, 1000); // Debounce for 1 second
+
+    return () => clearTimeout(timeout);
+  }, [categories, shoppingLists, inventory, activeListId, currency, firebaseConfig?.apiKey]);
+
   // Sync to Firebase
   const syncToFirebase = useCallback(async () => {
     setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
@@ -492,7 +522,7 @@ export function AppProvider({ children }: AppProviderProps) {
     return shoppingLists.find(list => list.id === activeListId) || shoppingLists[0];
   }, [shoppingLists, activeListId]);
 
-  const value: AppContextType = {
+  const value: AppContextType = useMemo(() => ({
     categories,
     shoppingLists,
     inventory,
@@ -521,7 +551,7 @@ export function AppProvider({ children }: AppProviderProps) {
     getActiveList,
     syncToFirebase,
     loadFromFirebase,
-  };
+  }), [categories, shoppingLists, inventory, activeListId, currency, language, firebaseConfig, syncStatus, addCategory, updateCategory, deleteCategory, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, moveItemToInventory, addInventoryItem, updateInventoryItem, deleteInventoryItem, getActiveList, syncToFirebase, loadFromFirebase]);
 
   return (
     <AppContext.Provider value={value}>
