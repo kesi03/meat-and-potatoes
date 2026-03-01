@@ -15,11 +15,14 @@ import {
   IconButton,
   Button,
   Avatar,
+  TextField,
 } from '@mui/material';
 import { Add, Edit, Delete, Store } from '@mui/icons-material';
 import { CURRENCIES, formatCurrency, CurrencyCode } from '../meat';
 import type { Category, ShoppingList } from '../context/AppContext';
+import { getCategoryName, getCategoryDescription } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
+import { FirebaseConfig } from '../context/AppContext';
 import GB from 'country-flag-icons/react/3x2/GB';
 import GBWLS from 'country-flag-icons/react/3x2/GB-WLS';
 import GBSCT from 'country-flag-icons/react/3x2/GB-SCT';
@@ -32,6 +35,7 @@ import FO from 'country-flag-icons/react/3x2/FO';
 import IS from 'country-flag-icons/react/3x2/IS';
 import IM from 'country-flag-icons/react/3x2/IM';
 import CornishFlag from '../flags/CornishFlag.svg';
+import ManxFlag from '../flags/ManxFlag.svg';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', Flag: GB },
@@ -44,6 +48,7 @@ const LANGUAGES = [
   { code: 'no', name: 'Norwegian', Flag: NO },
   { code: 'fo', name: 'Faroese', Flag: FO },
   { code: 'is', name: 'Icelandic', Flag: IS },
+  { code: 'gv', name: 'Manx', Flag: ManxFlag },
   { code: 'kw', name: 'Cornish', Flag: CornishFlag },
 ];
 
@@ -56,6 +61,8 @@ interface AdminViewProps {
   onCurrencyChange: (currency: CurrencyCode) => void;
   language: string;
   onLanguageChange: (language: string) => void;
+  firebaseConfig: FirebaseConfig | null;
+  onFirebaseConfigChange: (config: FirebaseConfig | null) => void;
   standardList?: ShoppingList;
   onEditStandardItem: (item: any) => void;
   onAddStandardItem: () => void;
@@ -70,6 +77,8 @@ export default function AdminView({
   onCurrencyChange,
   language,
   onLanguageChange,
+  firebaseConfig,
+  onFirebaseConfigChange,
   standardList,
   onEditStandardItem,
   onAddStandardItem,
@@ -87,6 +96,7 @@ export default function AdminView({
         <Tab label={t('localeSettings')} />
         <Tab label={t('category')} />
         <Tab label={t('standardList')} />
+        <Tab label="Firebase" />
       </Tabs>
 
       {adminTab === 0 && (
@@ -157,7 +167,7 @@ export default function AdminView({
                 <ListItemAvatar>
                   <Avatar sx={{ bgcolor: 'primary.light' }}><Store /></Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={cat.name} secondary={cat.description} />
+                <ListItemText primary={getCategoryName(cat, language)} secondary={getCategoryDescription(cat, language)} />
               </ListItem>
             ))}
           </List>
@@ -196,6 +206,75 @@ export default function AdminView({
               ))}
             </List>
           )}
+        </Box>
+      )}
+
+      {adminTab === 3 && (
+        <Box>
+          <Typography variant="h6" gutterBottom>Firebase Configuration</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Configure your Firebase settings. Changes will require a page reload.
+          </Typography>
+          <TextField
+            fullWidth
+            label="API Key"
+            value={firebaseConfig?.apiKey || ''}
+            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, apiKey: e.target.value } as FirebaseConfig)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Auth Domain"
+            value={firebaseConfig?.authDomain || ''}
+            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, authDomain: e.target.value } as FirebaseConfig)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Project ID"
+            value={firebaseConfig?.projectId || ''}
+            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, projectId: e.target.value } as FirebaseConfig)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Storage Bucket"
+            value={firebaseConfig?.storageBucket || ''}
+            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, storageBucket: e.target.value } as FirebaseConfig)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Messaging Sender ID"
+            value={firebaseConfig?.messagingSenderId || ''}
+            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, messagingSenderId: e.target.value } as FirebaseConfig)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="App ID"
+            value={firebaseConfig?.appId || ''}
+            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, appId: e.target.value } as FirebaseConfig)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Measurement ID (optional)"
+            value={firebaseConfig?.measurementId || ''}
+            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, measurementId: e.target.value } as FirebaseConfig)}
+            sx={{ mb: 3 }}
+          />
+          <Button 
+            variant="contained" 
+            onClick={() => {
+              if (firebaseConfig) {
+                localStorage.setItem('shopping-inventory-app-firebaseConfig', JSON.stringify(firebaseConfig));
+                window.location.reload();
+              }
+            }}
+          >
+            Save & Reload
+          </Button>
         </Box>
       )}
     </Box>

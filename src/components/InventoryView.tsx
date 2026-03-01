@@ -11,6 +11,8 @@ import {
 import { Store, Warning, CheckCircle } from '@mui/icons-material';
 import { getExpirationStatus, formatCurrency, CurrencyCode, getDaysUntilExpiration } from '../meat';
 import type { InventoryItem, Category } from '../context/AppContext';
+import { getCategoryName } from '../context/AppContext';
+import { useTranslation } from 'react-i18next';
 
 interface InventoryViewProps {
   inventory: InventoryItem[];
@@ -36,6 +38,13 @@ export default function InventoryView({
   onDeleteItem,
   currency,
 }: InventoryViewProps) {
+  const { i18n } = useTranslation();
+  
+  const getTranslatedCategoryName = (catName: string) => {
+    const cat = categories.find(c => c.name === catName);
+    return cat ? getCategoryName(cat, i18n.language) : catName;
+  };
+  
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
@@ -53,8 +62,8 @@ export default function InventoryView({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {Object.entries(inventoryByCategory).map(([category, items]) => (
             <Box key={category}>
-              <Typography variant="h6" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Store /> {category}
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Store /> {getTranslatedCategoryName(category)}
               </Typography>
               <List>
                 {items.map(item => (
@@ -63,6 +72,7 @@ export default function InventoryView({
                     item={item}
                     currency={currency}
                     onEdit={() => onEditItem(item)}
+                    getTranslatedCategoryName={getTranslatedCategoryName}
                   />
                 ))}
               </List>
@@ -78,9 +88,10 @@ interface InventoryListItemProps {
   item: InventoryItem;
   currency: CurrencyCode;
   onEdit: () => void;
+  getTranslatedCategoryName: (catName: string) => string;
 }
 
-function InventoryListItem({ item, currency, onEdit }: InventoryListItemProps) {
+function InventoryListItem({ item, currency, onEdit, getTranslatedCategoryName }: InventoryListItemProps) {
   const expirationStatus = getExpirationStatus(item.bestByDate);
   const daysLeft = getDaysUntilExpiration(item.bestByDate);
 
@@ -120,7 +131,7 @@ function InventoryListItem({ item, currency, onEdit }: InventoryListItemProps) {
         primary={item.name} 
         secondary={
           <Box component="span" sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Chip label={item.category} size="small" />
+            <Chip label={getTranslatedCategoryName(item.category)} size="small" />
             {item.location && <Chip label={item.location} size="small" variant="outlined" />}
             {item.cost && <Typography variant="caption">{formatCurrency(item.cost, currency)}</Typography>}
           </Box>

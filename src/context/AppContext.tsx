@@ -3,10 +3,35 @@ import { generateId, STANDARD_ITEMS, CurrencyCode, DEFAULT_CURRENCY } from '../m
 import { db, COLLECTIONS } from '../firebase';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 
+export interface FirebaseConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  storageBucket: string;
+  messagingSenderId: string;
+  appId: string;
+  measurementId?: string;
+}
+
 export interface Category {
   id: string;
   name: string;
   description: string;
+  translations?: Record<string, { name?: string; description?: string }>;
+}
+
+export function getCategoryName(category: Category, language: string): string {
+  if (language === 'en' || !category.translations) {
+    return category.name;
+  }
+  return category.translations[language]?.name || category.name;
+}
+
+export function getCategoryDescription(category: Category, language: string): string {
+  if (language === 'en' || !category.translations) {
+    return category.description;
+  }
+  return category.translations[language]?.description || category.description;
 }
 
 export interface ShoppingItem {
@@ -48,10 +73,12 @@ interface AppContextType {
   activeListId: string;
   currency: CurrencyCode;
   language: string;
+  firebaseConfig: FirebaseConfig | null;
   syncStatus: SyncStatus;
   setActiveListId: (id: string) => void;
   setCurrency: (currency: CurrencyCode) => void;
   setLanguage: (language: string) => void;
+  setFirebaseConfig: (config: FirebaseConfig | null) => void;
   addCategory: (category: { name: string; description?: string }) => Category;
   updateCategory: (id: string, updates: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
@@ -78,16 +105,136 @@ const USER_DOC_ID = 'user-data';
 import i18n from '../i18n';
 
 const DEFAULT_CATEGORIES: Category[] = [
-  { id: '1', name: 'Produce', description: 'Fresh fruits and vegetables' },
-  { id: '2', name: 'Dairy', description: 'Milk, cheese, eggs, yogurt' },
-  { id: '3', name: 'Meat & Deli', description: 'Fresh meat and deli items' },
-  { id: '4', name: 'Bakery', description: 'Bread, pastries, baked goods' },
-  { id: '5', name: 'Frozen Foods', description: 'Frozen meals and vegetables' },
-  { id: '6', name: 'Pantry', description: 'Canned goods, pasta, rice, cereals' },
-  { id: '7', name: 'Beverages', description: 'Drinks, juices, water' },
-  { id: '8', name: 'Snacks', description: 'Chips, crackers, treats' },
-  { id: '9', name: 'Household', description: 'Cleaning supplies, paper products' },
-  { id: '10', name: 'Personal Care', description: 'Toiletries, hygiene products' },
+  { id: '1', name: 'Produce', description: 'Fresh fruits and vegetables', translations: { 
+    cy: { name: 'Toraidhean', description: 'Ffrwythau a llysiau ffres' },
+    gd: { name: 'Toraidhean', description: 'Fionnarais isealbh' },
+    sv: { name: 'Frukt & Grönt', description: 'Frukt och grönsaker' },
+    fi: { name: 'Tuoretuotteet', description: 'Tuoreet hedelmät ja vihannekset' },
+    ga: { name: 'Torthaí', description: 'Torthaí agus glasraí úra' },
+    da: { name: 'Frugt & Grønt', description: 'Frugt og grøntsager' },
+    no: { name: 'Frukt & Grønnsaker', description: 'Frukt og grønnsaker' },
+    fo: { name: 'Frukt & Grønt', description: 'Frukt og grønir' },
+    is: { name: 'Ávextir & Grænmeti', description: 'Ávextir og grænmeti' },
+    gv: { name: 'Frogh as Bess', description: 'Frogh as bessyn' },
+    kw: { name: 'Frug ha Lys', description: 'Frug ha lys' }
+  } },
+  { id: '2', name: 'Dairy', description: 'Milk, cheese, eggs, yogurt', translations: { 
+    cy: { name: 'Dealan', description: 'Llaeth, caws, wyau, iogwrt' },
+    gd: { name: 'Dealan', description: 'Milk, càis, ubhal, càise' },
+    sv: { name: 'Mejeri', description: 'Mjölk, ost, ägg, yogurt' },
+    fi: { name: 'Maitotuotteet', description: 'Maito, juusto, munat, jogurtti' },
+    ga: { name: 'Déirí', description: 'Milk, cáis, ubh, iogart' },
+    da: { name: 'Mejeriprodukter', description: 'Mæl, ost, æg, yoghurt' },
+    no: { name: 'Meieriprodukter', description: 'Melk, ost, egg, yoghurt' },
+    fo: { name: 'Mjólkurvinnul', description: 'Mjólk, ost, egg, jogurt' },
+    is: { name: 'Mjólkurvörur', description: 'Mjólk, ostur, egg, jógúrt' },
+    gv: { name: 'Saain', description: 'Saain, caas, ugey, iogart' },
+    kw: { name: 'Tus', description: 'Moth, kés, odr, yey' }
+  } },
+  { id: '3', name: 'Meat & Deli', description: 'Fresh meat and deli items', translations: { 
+    cy: { name: 'Feoil & Deli', description: 'Cig ffres ac eitemau deli' },
+    gd: { name: 'Feoil & Deli', description: 'Feoil ùr agus bathar deli' },
+    sv: { name: 'Kött & Chark', description: 'Färskt kött och charkuterier' },
+    fi: { name: 'Liha & Charkuteriat', description: 'Tuore liha ja leikkeleet' },
+    ga: { name: 'Feoil & Deli', description: 'Feoil úr agus miasa deli' },
+    da: { name: 'Kød & Charcuteri', description: 'Frisk kød og charcuteri' },
+    no: { name: 'Kjøtt & Charcuterie', description: 'Ferskt kjøtt og delikatesser' },
+    fo: { name: 'Kjøt & Deli', description: 'Ferskt kjøt og deli' },
+    is: { name: 'Kjöt & Vinnuvörur', description: 'Ferskt kjöt og vinnuvörur' },
+    gv: { name: 'Feih as Deli', description: 'Feih as ealyn deli' },
+    kw: { name: 'Kig ha Deli', description: 'Kig fres ha eyn deli' }
+  } },
+  { id: '4', name: 'Bakery', description: 'Bread, pastries, baked goods', translations: { 
+    cy: { name: 'Bunnaich', description: 'Bara, pastai, nwydau bobi' },
+    gd: { name: 'Bunnaich', description: 'Bread, pastais, bathar bèicte' },
+    sv: { name: 'Bageri', description: 'Bröd, kakor, bakverk' },
+    fi: { name: 'Leipomotuotteet', description: 'Leipä, leivonnaiset, leivät' },
+    ga: { name: 'Bia an tsoithí', description: 'Bread, pastail, bia bácáilte' },
+    da: { name: 'Bageri', description: 'Brød, kager, bagværk' },
+    no: { name: 'Bakeri', description: 'Brød, kaker, bakverk' },
+    fo: { name: 'Bakstur', description: 'Breið, køkur, bakstur' },
+    is: { name: 'Bakarí', description: 'Brauð, kökur, bakaðar vörur' },
+    gv: { name: 'Bunnyr', description: 'Arran, pastail, bwoid chiood' },
+    kw: { name: 'Bryn', description: 'Bar, pastys, byllys' }
+  } },
+  { id: '5', name: 'Frozen Foods', description: 'Frozen meals and vegetables', translations: { 
+    cy: { name: 'Biadh Dirite', description: 'Bwydydd a llysiau rhewllyd' },
+    gd: { name: 'Biadh Dirite', description: 'Biadh isealbh is lùban' },
+    sv: { name: 'Fryst mat', description: 'Frysta måltider och grönsaker' },
+    fi: { name: 'Pakasteet', description: 'Pakasteruuat ja vihannekset' },
+    ga: { name: 'Bia Reoite', description: 'Bia reoite isealbh' },
+    da: { name: 'Frosne fødevarer', description: 'Frosne måltider og grøntsager' },
+    no: { name: 'Frossen mat', description: 'Frosne måltider og grønnsaker' },
+    fo: { name: 'Frosin føði', description: 'Frosin matur og grønir' },
+    is: { name: 'Frosnar matvörur', description: 'Frosnar máltíðir og grænmeti' },
+    gv: { name: 'Frogh Biadhey', description: 'Biadhey roilit as bessyn' },
+    kw: { name: 'Bys', description: 'Bys ha lysow' }
+  } },
+  { id: '6', name: 'Pantry', description: 'Canned goods, pasta, rice, cereals', translations: { 
+    cy: { name: 'Pàipear', description: 'Nwydau tun, pasta, reis, grains' },
+    gd: { name: 'Pàipear', description: 'Bathar cànte, pasta, rìs, grain' },
+    sv: { name: 'Skafferi', description: 'Konserver, pasta, ris, flingor' },
+    fi: { name: 'Kuivatavarat', description: 'Säilykkeet, pasta, riisi, murot' },
+    ga: { name: 'Piopa', description: 'Canna, pasta, ríse, grainní' },
+    da: { name: 'Skafferi', description: 'Konserves, pasta, ris, kornprodukter' },
+    no: { name: 'Skafferi', description: 'Konserver, pasta, ris, kornprodukter' },
+    fo: { name: 'Skáp', description: 'Glasúr, pasta, rís, korn' },
+    is: { name: 'Þurrkaðar vörur', description: 'Dósir, pasta, hrísgrjón, korn' },
+    gv: { name: 'Pannyr', description: 'Eealyn kannit, pasta, rys, grain' },
+    kw: { name: 'Sopper', description: 'Ternys, pasta, rys, greun' }
+  } },
+  { id: '7', name: 'Beverages', description: 'Drinks, juices, water', translations: { 
+    cy: { name: 'Deoch', description: 'Diodydd, sbeirdd, dŵr' },
+    gd: { name: 'Deoch', description: 'Deochan, sùghan, uisge' },
+    sv: { name: 'Drycker', description: 'Drycker, juicer, vatten' },
+    fi: { name: 'Juomat', description: 'Juomat, mehut, vesi' },
+    ga: { name: 'Deocha', description: 'Deocha, sú, uisce' },
+    da: { name: 'Drikkevarer', description: 'Drikkevarer, saft, vand' },
+    no: { name: 'Drikkevarer', description: 'Drikkevarer, juice, vann' },
+    fo: { name: 'Drekka', description: 'Drekka, savir, vatn' },
+    is: { name: 'Drykkir', description: 'Drykkir, safar, vatn' },
+    gv: { name: 'Jough', description: 'Joughyn, shugh, ushtey' },
+    kw: { name: 'Dhydhyow', description: 'Dyvrow, sugyow, dowr' }
+  } },
+  { id: '8', name: 'Snacks', description: 'Chips, crackers, treats', translations: { 
+    cy: { name: 'Biadh-bhioch', description: 'Sips, crackairs, trêt' },
+    gd: { name: 'Biadh-bhioch', description: 'Craiceanan, briosgaidean, trèata' },
+    sv: { name: 'Snacks', description: 'Chips, kex, godis' },
+    fi: { name: 'Välipalat', description: 'Sipsit, keksit, herkut' },
+    ga: { name: 'Biashasta', description: 'Siplis, craiceáin, trèatáin' },
+    da: { name: 'Snacks', description: 'Chips, kiks, slik' },
+    no: { name: 'Snacks', description: 'Chips, kjeks, godteri' },
+    fo: { name: 'Snacks', description: 'Chips, køkur, søtmat' },
+    is: { name: 'Vínarvörur', description: 'Chips, kex, nammi' },
+    gv: { name: 'Snacks', description: 'Snacks, crackairs, trèats' },
+    kw: { name: 'Snacks', description: 'Snacks, crackairs, treyts' }
+  } },
+  { id: '9', name: 'Household', description: 'Cleaning supplies, paper products', translations: { 
+    cy: { name: 'Taigh', description: 'Cyflenwadau glanio, nwydau papur' },
+    gd: { name: 'Taigh', description: 'Bathar glanaidh, bathar pàipeir' },
+    sv: { name: 'Hushåll', description: 'Rengöringsprodukter, pappersprodukter' },
+    fi: { name: 'Kotitalous', description: 'Siivoustuotteet, paperituotteet' },
+    ga: { name: 'Teach', description: 'Soláthairsí glanta, táirgí páipéir' },
+    da: { name: 'Husholdning', description: 'Rengøringsprodukter, papirsprodukter' },
+    no: { name: 'Husholdning', description: 'Rengjøringsprodukter, papirprodukter' },
+    fo: { name: 'Húsgagn', description: 'Reinsiefni, pappirsproduktir' },
+    is: { name: 'Heimilisvörur', description: 'Hreinsivörur, pappavörur' },
+    gv: { name: 'Thie', description: 'Eealyn glanno, eealyn pabyr' },
+    kw: { name: 'Trevow', description: 'Paper, inn' }
+  } },
+  { id: '10', name: 'Personal Care', description: 'Toiletries, hygiene products', translations: { 
+    cy: { name: 'Cùram pearsanta', description: 'Toiletries, cynhyrchion glanweiriol' },
+    gd: { name: 'Cùram pearsanta', description: 'Toiletries, bathar slàinteachais' },
+    sv: { name: 'Personlig vård', description: 'Toalettartiklar, hygienprodukter' },
+    fi: { name: 'Henkilökohtainen hygienia', description: 'Wc-paperit, hygieniatuotteet' },
+    ga: { name: 'Cúram pearsanta', description: 'Toiléirí, táirgí sláintíochta' },
+    da: { name: 'Personlig pleje', description: 'Toilettartikler, hygiejneprodukter' },
+    no: { name: 'Personlig pleie', description: 'Toalettartikler, hygieneprodukter' },
+    fo: { name: 'Persónligr røkt', description: 'Toalettarkar, hygiejniskar vørur' },
+    is: { name: 'Persónleg hygiene', description: 'Klósettpappír, hreinlætisvörur' },
+    gv: { name: 'Curaid', description: 'Toiletee, eealyn glan' },
+    kw: { name: 'Kensa Bersonel', description: 'Toaltres, trêjyow' }
+  } },
 ];
 
 const DEFAULT_LISTS: ShoppingList[] = [
@@ -144,6 +291,11 @@ export function AppProvider({ children }: AppProviderProps) {
     return lang;
   });
 
+  const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig | null>(() => {
+    const stored = localStorage.getItem(`${STORAGE_KEY}-firebaseConfig`);
+    return stored ? JSON.parse(stored) : null;
+  });
+
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
     lastSynced: null,
     isSyncing: false,
@@ -175,6 +327,12 @@ export function AppProvider({ children }: AppProviderProps) {
     localStorage.setItem(`${STORAGE_KEY}-language`, language);
     i18n.changeLanguage(language);
   }, [language]);
+
+  useEffect(() => {
+    if (firebaseConfig) {
+      localStorage.setItem(`${STORAGE_KEY}-firebaseConfig`, JSON.stringify(firebaseConfig));
+    }
+  }, [firebaseConfig]);
 
   // Sync to Firebase
   const syncToFirebase = useCallback(async () => {
@@ -341,10 +499,12 @@ export function AppProvider({ children }: AppProviderProps) {
     activeListId,
     currency,
     language,
+    firebaseConfig,
     syncStatus,
     setActiveListId,
     setCurrency,
     setLanguage,
+    setFirebaseConfig,
     addCategory,
     updateCategory,
     deleteCategory,
