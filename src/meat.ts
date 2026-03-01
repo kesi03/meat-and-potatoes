@@ -172,6 +172,25 @@ export function getDeviceInfo() {
   return { isAndroid, isIOS, isMobile };
 }
 
+export async function lookupProduct(barcode: string) {
+  const url = `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (!data.product) {
+    return null;
+  }
+
+  return {
+    name: data.product.product_name,
+    brand: data.product.brands,
+    image: data.product.image_front_small_url,
+    quantity: data.product.quantity,
+    categories: data.product.categories,
+  };
+}
+
 
 export function getTranslationKeyForCategory(categoryName: string): string | null {
   const key = STANDARD_CATEGORY_I18N_KEYS[categoryName];
