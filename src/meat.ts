@@ -161,6 +161,18 @@ export function getTranslatedItemName(itemName: string, t: (key: string) => stri
   return i18nKey ? t(i18nKey) : itemName;
 }
 
+export function getDeviceInfo() {
+  const ua = navigator.userAgent || navigator.vendor || (window as any).opera || '';
+
+  const isAndroid = /android/i.test(ua);
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+
+  const isMobile = isAndroid || isIOS;
+
+  return { isAndroid, isIOS, isMobile };
+}
+
+
 export function getTranslationKeyForCategory(categoryName: string): string | null {
   const key = STANDARD_CATEGORY_I18N_KEYS[categoryName];
   return key || null;
