@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Fab, Dialog, DialogTitle, Button } from '@mui/material';
+import { Box, Fab, Dialog, DialogTitle } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import InventoryView from '../components/InventoryView';
 import ItemForm from '../components/ItemForm';
@@ -7,7 +7,7 @@ import { useApp } from '../context/AppContext';
 import type { InventoryItem } from '../context/AppContext';
 
 export default function InventoryPage() {
-  const { inventory, categories, currency, addInventoryItem, updateInventoryItem, deleteInventoryItem } = useApp();
+  const { inventory, categories, currency, addInventoryItem, updateInventoryItem, deleteInventoryItem, clearInventory } = useApp();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
@@ -70,6 +70,13 @@ export default function InventoryPage() {
     }
   };
 
+  const handleClearAll = () => {
+    if (inventory.length === 0) return;
+    if (window.confirm('Are you sure you want to remove all items from inventory?')) {
+      clearInventory();
+    }
+  };
+
   return (
     <Box sx={{ pb: 10 }}>
       <InventoryView
@@ -79,7 +86,7 @@ export default function InventoryPage() {
         expirationStats={getExpirationStats()}
         onEditItem={handleEditItem}
         onDeleteItem={deleteInventoryItem}
-        onAddItem={handleAddItem}
+        onClearInventory={handleClearAll}
         currency={currency}
       />
 

@@ -8,6 +8,7 @@ import {
   Avatar,
   Chip,
   IconButton,
+  Button,
 } from '@mui/material';
 import { Store, Warning, CheckCircle, Edit, Delete } from '@mui/icons-material';
 import { getExpirationStatus, formatCurrency, CurrencyCode, getDaysUntilExpiration } from '../meat';
@@ -26,7 +27,7 @@ interface InventoryViewProps {
   };
   onEditItem: (item: InventoryItem) => void;
   onDeleteItem: (id: string) => void;
-  onAddItem: () => void;
+  onClearInventory: () => void;
   currency: CurrencyCode;
 }
 
@@ -37,6 +38,7 @@ export default function InventoryView({
   expirationStats,
   onEditItem,
   onDeleteItem,
+  onClearInventory,
   currency,
 }: InventoryViewProps) {
   const { i18n } = useTranslation();
@@ -48,13 +50,24 @@ export default function InventoryView({
   
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" gutterBottom>Expiration Status</Typography>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Chip icon={<Warning />} label={`Expired: ${expirationStats.expired.length}`} color="error" />
-          <Chip icon={<Warning />} label={`Expiring Soon: ${expirationStats.expiringSoon.length}`} color="warning" />
-          <Chip icon={<CheckCircle />} label={`Fresh: ${expirationStats.fresh.length}`} color="success" />
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box>
+          <Typography variant="h6" gutterBottom>Expiration Status</Typography>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <Chip icon={<Warning />} label={`Expired: ${expirationStats.expired.length}`} color="error" />
+            <Chip icon={<Warning />} label={`Expiring Soon: ${expirationStats.expiringSoon.length}`} color="warning" />
+            <Chip icon={<CheckCircle />} label={`Fresh: ${expirationStats.fresh.length}`} color="success" />
+          </Box>
         </Box>
+        <Button
+          variant="outlined"
+          color="error"
+          startIcon={<Delete />}
+          onClick={onClearInventory}
+          disabled={inventory.length === 0}
+        >
+          Clear All
+        </Button>
       </Box>
 
       {inventory.length === 0 ? (

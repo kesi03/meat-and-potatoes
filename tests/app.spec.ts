@@ -112,6 +112,27 @@ test.describe('Shopping List App', () => {
     await expect(page.getByText('My Lists')).toBeVisible();
   });
 
+  test('should clear inventory using remove all button', async ({ page }) => {
+    // go to inventory tab
+    await page.getByRole('tab', { name: /inventory/i }).click();
+
+    // add an item so inventory is not empty
+    await page.getByRole('button', { name: /add item/i }).click();
+    await page.getByLabel('Item Name').fill('Test Item');
+    await page.getByRole('combobox', { name: /category/i }).click();
+    await page.getByRole('option').first().click();
+    await page.getByRole('button', { name: /save/i }).click();
+
+    await expect(page.getByText('Test Item')).toBeVisible();
+
+    // stub confirm to automatically agree
+    await page.evaluate(() => window.confirm = () => true);
+    await page.getByRole('button', { name: /clear all/i }).click();
+
+    // inventory should now be empty message
+    await expect(page.getByText('Your inventory is empty. Add items from your shopping lists.')).toBeVisible();
+  });
+
   test('should select currency', async ({ page }) => {
     // Navigate to Admin tab
     await page.getByRole('tab', { name: /admin/i }).click();

@@ -93,6 +93,7 @@ interface AppContextType {
   addInventoryItem: (item: Omit<InventoryItem, 'id' | 'dateAdded'>) => InventoryItem;
   updateInventoryItem: (id: string, updates: Partial<InventoryItem>) => void;
   deleteInventoryItem: (id: string) => void;
+  clearInventory: () => void;
   getActiveList: () => ShoppingList | undefined;
   syncToFirebase: () => Promise<void>;
   loadFromFirebase: () => Promise<void>;
@@ -417,6 +418,10 @@ export function AppProvider({ children }: AppProviderProps) {
     setInventory(prev => prev.filter(item => item.id !== id));
   }, []);
 
+  const clearInventory = useCallback(() => {
+    setInventory([]);
+  }, []);
+
   const getActiveList = useCallback(() => {
     return shoppingLists.find(list => list.id === activeListId) || shoppingLists[0];
   }, [shoppingLists, activeListId]);
@@ -447,6 +452,7 @@ export function AppProvider({ children }: AppProviderProps) {
     addInventoryItem,
     updateInventoryItem,
     deleteInventoryItem,
+    clearInventory,
     getActiveList,
     syncToFirebase,
     loadFromFirebase,
