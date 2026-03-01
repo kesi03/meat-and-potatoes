@@ -97,6 +97,7 @@ export default function InventoryPage() {
           item={selectedItem}
           categories={categories}
           onSave={handleSaveItem}
+          onCancel={() => setDialogOpen(false)}
           onDelete={dialogMode === 'edit' ? handleDeleteItem : undefined}
           isEdit={dialogMode === 'edit'}
           showHomeQuantity
