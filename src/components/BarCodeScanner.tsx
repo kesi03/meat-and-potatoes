@@ -44,8 +44,8 @@ export function BarcodeScanner({ onDetected }: Props) {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: "environment" },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
         }
       });
 
@@ -55,6 +55,9 @@ export function BarcodeScanner({ onDetected }: Props) {
         videoRef.current.srcObject = mediaStream;
         await videoRef.current.play();
       }
+
+      // Allow autofocus to settle
+      await new Promise(r => setTimeout(r, 500));
 
       async function tick() {
         if (detector && videoRef.current) {
@@ -66,7 +69,7 @@ export function BarcodeScanner({ onDetected }: Props) {
               return;
             }
           } catch (err) {
-            console.error("Barcode detection error:", err);
+            console.error("Detector error:", err);
           }
         }
 
@@ -115,7 +118,7 @@ export function BarcodeScanner({ onDetected }: Props) {
         ref={videoRef}
         style={{
           width: "100%",
-          height: "auto",
+          height: "100%",
           objectFit: "cover",
           borderRadius: "8px"
         }}
