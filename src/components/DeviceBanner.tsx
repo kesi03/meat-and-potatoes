@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { getDeviceInfo, lookupProduct } from '../meat';
 import { BarcodeScanner } from './BarCodeScanner';
+import { Button } from '@mui/material';
+import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 
 export function DeviceBanner() {
     const [device, setDevice] = useState({ isIOS: false, isAndroid: false });
@@ -9,20 +11,32 @@ export function DeviceBanner() {
         console.log(product);
     }
 
+    const [active, setActive] = useState(false);
+
+    async function startScanner() {
+        setActive(true);
+    }
+
+    async function onDetected(code: string) {
+        console.log('Scanned:', code);
+        alert(`Scanned: ${code}`);
+        await handleScan(code);
+    }
 
 
     useEffect(() => {
         setDevice(getDeviceInfo());
     }, []);
 
-    if (device.isIOS) {
-        return <div><BarcodeScanner onDetected={(code) => { console.log('Scanned:', code); alert(`Scanned: ${code}`); handleScan(code); }} /></div>;
-    }
+    if (device.isIOS || device.isAndroid) {
+        return <>
+            {!active && (
+                <Button onClick={() => setActive(true)} startIcon={<BarcodeReaderIcon />}>Start scanning</Button>
+            )}
 
-    if (device.isAndroid) {
-        return <div><BarcodeScanner onDetected={(code) => { console.log('Scanned:', code); alert(`Scanned: ${code}`); handleScan(code); }} /></div>;
+            {active && <BarcodeScanner onDetected={onDetected} />}
+        </>;
     }
-
     return <div>Desktop or unsupported device</div>;
 }
 
