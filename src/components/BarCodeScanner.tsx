@@ -32,10 +32,9 @@ export function BarcodeScanner({ onDetected }: Props) {
           "upc_e",
           "code_128",
           "code_39",
-          "qr_code",
           "itf",
           "codabar",
-          "data_matrix"
+          "qr_code"
         ]
       });
     }
@@ -57,7 +56,7 @@ export function BarcodeScanner({ onDetected }: Props) {
       }
 
       // Allow autofocus to settle
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 600));
 
       async function tick() {
         if (detector && videoRef.current) {
