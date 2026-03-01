@@ -18,9 +18,20 @@ export const CURRENCIES: Currency[] = [
 
 export const DEFAULT_CURRENCY: CurrencyCode = 'GBP';
 
+const currencyLocales: Record<CurrencyCode, string> = {
+  GBP: 'en-GB',
+  USD: 'en-US',
+  EUR: 'de-DE',
+  SEK: 'sv-SE',
+  NOK: 'nb-NO',
+};
+
 export function formatCurrency(amount: number, currencyCode: CurrencyCode = 'GBP'): string {
-  const currency = CURRENCIES.find(c => c.code === currencyCode) || CURRENCIES[0];
-  return `${currency.symbol}${amount.toFixed(2)}`;
+  const locale = currencyLocales[currencyCode] || 'en-GB';
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currencyCode,
+  }).format(amount);
 }
 
 export const CATEGORIES = [

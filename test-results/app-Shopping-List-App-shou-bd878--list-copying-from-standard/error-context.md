@@ -1,0 +1,47 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]: Shop & Stock
+    - main [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - heading [level=5] [ref=e10]: My Lists
+          - button [ref=e11] [cursor=pointer]:
+            - img [ref=e13]
+            - text: New List
+        - generic [ref=e15]:
+          - paragraph [ref=e16]: No shopping lists yet
+          - button [ref=e17] [cursor=pointer]:
+            - img [ref=e19]
+            - text: Create Your First List
+    - tablist [ref=e24]:
+      - tab [selected] [ref=e25] [cursor=pointer]:
+        - img [ref=e26]
+        - text: Lists
+      - tab [ref=e28] [cursor=pointer]:
+        - img [ref=e29]
+        - text: Inventory
+      - tab [ref=e31] [cursor=pointer]:
+        - img [ref=e32]
+        - text: Admin
+  - dialog "New Shopping List" [ref=e37]:
+    - heading "New Shopping List" [level=2] [ref=e38]
+    - generic [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]: List Name
+        - generic [ref=e42]:
+          - textbox "List Name" [active] [ref=e43]: Weekly Shop
+          - group:
+            - generic: List Name
+      - generic [ref=e44] [cursor=pointer]:
+        - generic [ref=e45]:
+          - checkbox "Copy items from Standard List" [ref=e46]
+          - img [ref=e47]
+        - generic [ref=e49]: Copy items from Standard List
+    - generic [ref=e50]:
+      - button "Cancel" [ref=e51] [cursor=pointer]
+      - button "Create" [ref=e52] [cursor=pointer]
+```

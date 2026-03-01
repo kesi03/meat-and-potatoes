@@ -47,13 +47,15 @@ interface AppContextType {
   inventory: InventoryItem[];
   activeListId: string;
   currency: CurrencyCode;
+  language: string;
   syncStatus: SyncStatus;
   setActiveListId: (id: string) => void;
   setCurrency: (currency: CurrencyCode) => void;
+  setLanguage: (language: string) => void;
   addCategory: (category: { name: string; description?: string }) => Category;
   updateCategory: (id: string, updates: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
-  addShoppingList: (name: string) => ShoppingList;
+  addShoppingList: (name: string, items?: ShoppingItem[]) => ShoppingList;
   updateShoppingList: (id: string, updates: Partial<ShoppingList>) => void;
   deleteShoppingList: (id: string) => void;
   addItemToList: (listId: string, item: Omit<ShoppingItem, 'id'>) => ShoppingItem;
@@ -72,6 +74,8 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'shopping-inventory-app';
 const USER_DOC_ID = 'user-data';
+
+import i18n from '../i18n';
 
 const DEFAULT_CATEGORIES: Category[] = [
   { id: '1', name: 'Produce', description: 'Fresh fruits and vegetables' },
@@ -133,6 +137,13 @@ export function AppProvider({ children }: AppProviderProps) {
     return (stored as CurrencyCode) || DEFAULT_CURRENCY;
   });
 
+  const [language, setLanguage] = useState<string>(() => {
+    const stored = localStorage.getItem(`${STORAGE_KEY}-language`);
+    const lang = stored || 'en';
+    i18n.changeLanguage(lang);
+    return lang;
+  });
+
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
     lastSynced: null,
     isSyncing: false,
@@ -159,6 +170,11 @@ export function AppProvider({ children }: AppProviderProps) {
   useEffect(() => {
     localStorage.setItem(`${STORAGE_KEY}-currency`, currency);
   }, [currency]);
+
+  useEffect(() => {
+    localStorage.setItem(`${STORAGE_KEY}-language`, language);
+    i18n.changeLanguage(language);
+  }, [language]);
 
   // Sync to Firebase
   const syncToFirebase = useCallback(async () => {
@@ -217,12 +233,12 @@ export function AppProvider({ children }: AppProviderProps) {
     setCategories(prev => prev.filter(cat => cat.id !== id));
   }, []);
 
-  const addShoppingList = useCallback((name: string): ShoppingList => {
+  const addShoppingList = useCallback((name: string, items?: ShoppingItem[]): ShoppingList => {
     const newList: ShoppingList = {
       id: generateId(),
       name,
       isStandard: false,
-      items: [],
+      items: items || [],
     };
     setShoppingLists(prev => [...prev, newList]);
     setActiveListId(newList.id);
@@ -324,9 +340,11 @@ export function AppProvider({ children }: AppProviderProps) {
     inventory,
     activeListId,
     currency,
+    language,
     syncStatus,
     setActiveListId,
     setCurrency,
+    setLanguage,
     addCategory,
     updateCategory,
     deleteCategory,

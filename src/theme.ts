@@ -21,7 +21,7 @@ export type { ExpirationStatus, StandardItem } from './meat';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#2E7D32',
+      main: '#044a24',
     },
     secondary: {
       main: '#FF8F00',
@@ -37,7 +37,7 @@ const theme = createTheme({
       main: '#F57C00',
     },
     success: {
-      main: '#388E3C',
+      main: '#228B22',
     },
   },
   typography: {
