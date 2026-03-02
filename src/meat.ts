@@ -195,12 +195,31 @@ export async function lookupProduct(barcode: string) {
         quantity: data.product.quantity,
         categories: data.product.categories,
       } : null
+    },
+    {
+      name: 'RapidAPI Barcodes',
+      url: `https://barcodes1.p.rapidapi.com/?query=${barcode}`,
+      headers: {
+        'x-rapidapi-host': 'barcodes1.p.rapidapi.com',
+        'x-rapidapi-key': '6a25632df2mshd241dcfe7b1cbcdp183bbdjsn4f5102bad2ce'
+      },
+      transform: (data: any) => data?.product?.description ? {
+        name: data.product.description,
+        brand: data.product.brand || data.product.manufacturer,
+        image: data.product.image || data.product.thumbnail,
+        quantity: data.product.size || data.product.quantity,
+        categories: data.product.category || '',
+      } : null
     }
   ];
 
   for (const api of apis) {
     try {
-      const res = await fetch(api.url);
+      const options: RequestInit = {};
+      if (api.headers) {
+        options.headers = api.headers;
+      }
+      const res = await fetch(api.url, options);
       const data = await res.json();
       const result = api.transform(data);
       if (result) {

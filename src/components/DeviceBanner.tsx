@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
-import { getDeviceInfo, lookupProduct, generateId } from '../meat';
-import { Button, Dialog, DialogContent, DialogActions, Box, Typography, Avatar, TextField } from '@mui/material';
+import { getDeviceInfo, lookupProduct, generateId, CurrencyCode, getCurrencyByCode } from '../meat';
+import { Button, Dialog, DialogContent, DialogActions, Box, Typography, Avatar, TextField, FormControl, InputLabel, Select, MenuItem, InputAdornment } from '@mui/material';
 import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 import CloseIcon from '@mui/icons-material/Close';
 import BarCodeApp from './BarCode';
-import type { ShoppingItem } from '../context/AppContext';
+import type { ShoppingItem, Category } from '../context/AppContext';
 
 interface ScannedProduct {
     name: string;
@@ -18,9 +18,12 @@ interface ScannedProduct {
 interface DeviceBannerProps {
     listId: string;
     addItemToList: (listId: string, item: Omit<ShoppingItem, 'id'>) => void;
+    categories: Category[];
+    currency: CurrencyCode;
 }
 
-export function DeviceBanner({ listId, addItemToList }: DeviceBannerProps) {
+export function DeviceBanner({ listId, addItemToList, categories, currency }: DeviceBannerProps) {
+    const currencySymbol = getCurrencyByCode(currency)?.symbol || '$';
     const [device, setDevice] = useState({ isIOS: false, isAndroid: false });
     const [dialogOpen, setDialogOpen] = useState(false);
     const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null);
@@ -28,6 +31,7 @@ export function DeviceBanner({ listId, addItemToList }: DeviceBannerProps) {
     const [itemCategory, setItemCategory] = useState('');
     const [itemQuantity, setItemQuantity] = useState(1);
     const [itemCost, setItemCost] = useState(0);
+    const [bestByDate, setBestByDate] = useState('');
     const scannedRef = useRef(false);
 
     useEffect(() => {
@@ -41,6 +45,7 @@ export function DeviceBanner({ listId, addItemToList }: DeviceBannerProps) {
             setItemCategory('');
             setItemQuantity(1);
             setItemCost(0);
+            setBestByDate('');
             scannedRef.current = false;
         }
     }, [dialogOpen]);
@@ -66,7 +71,7 @@ export function DeviceBanner({ listId, addItemToList }: DeviceBannerProps) {
             barcode: scannedProduct?.barcode || '',
             nutritionalInfo: '',
             weightSize: scannedProduct?.quantity || '',
-            bestByDate: null,
+            bestByDate: bestByDate || null,
             image: scannedProduct?.image || '',
         };
 
@@ -103,12 +108,20 @@ export function DeviceBanner({ listId, addItemToList }: DeviceBannerProps) {
                                 onChange={(e) => setItemName(e.target.value)}
                                 fullWidth
                             />
-                            <TextField
-                                label="Category"
-                                value={itemCategory}
-                                onChange={(e) => setItemCategory(e.target.value)}
-                                fullWidth
-                            />
+                            <FormControl fullWidth>
+                                <InputLabel>Category</InputLabel>
+                                <Select
+                                    value={itemCategory}
+                                    label="Category"
+                                    onChange={(e) => setItemCategory(e.target.value)}
+                                >
+                                    {categories.map((cat) => (
+                                        <MenuItem key={cat.id} value={cat.name}>
+                                            {cat.name}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
                             <TextField
                                 label="Quantity"
                                 type="number"
@@ -121,7 +134,18 @@ export function DeviceBanner({ listId, addItemToList }: DeviceBannerProps) {
                                 type="number"
                                 value={itemCost}
                                 onChange={(e) => setItemCost(parseFloat(e.target.value) || 0)}
+                                InputProps={{
+                                    startAdornment: <InputAdornment position="start">{currencySymbol}</InputAdornment>,
+                                }}
                                 fullWidth
+                            />
+                            <TextField
+                                label="Best Before"
+                                type="date"
+                                value={bestByDate}
+                                onChange={(e) => setBestByDate(e.target.value)}
+                                fullWidth
+                                InputLabelProps={{ shrink: true }}
                             />
                         </Box>
                     )}

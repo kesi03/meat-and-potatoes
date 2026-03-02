@@ -102,7 +102,7 @@ export default function ShoppingListView({
             Back
           </Button>
         )}
-        {list && <DeviceBanner listId={list.id} addItemToList={addItemToList} />}
+        {list && <DeviceBanner listId={list.id} addItemToList={addItemToList} categories={categories} currency={currency} />}
 
         <ToggleButtonGroup value={pickingMode ? 'pick' : 'browse'} exclusive onChange={(e, v) => v && setPickingMode(v === 'pick')}>
           <ToggleButton value="browse"><ListIcon sx={{ mr: 1 }} />Browse</ToggleButton>
