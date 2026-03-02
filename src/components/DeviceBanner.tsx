@@ -1,21 +1,17 @@
 import { useEffect, useState } from 'react';
 import { getDeviceInfo, lookupProduct } from '../meat';
-import { BarcodeScanner } from './BarCodeScanner';
-import { Button } from '@mui/material';
+import { Button, Dialog, DialogContent, IconButton } from '@mui/material';
 import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
+import CloseIcon from '@mui/icons-material/Close';
 import BarCodeApp from './BarCode';
 
 export function DeviceBanner() {
     const [device, setDevice] = useState({ isIOS: false, isAndroid: false });
+    const [dialogOpen, setDialogOpen] = useState(false);
+
     async function handleScan(barcode: string) {
         const product = await lookupProduct(barcode);
         console.log(product);
-    }
-
-    const [active, setActive] = useState(false);
-
-    async function startScanner() {
-        setActive(true);
     }
 
     async function onDetected(code: string) {
@@ -31,11 +27,19 @@ export function DeviceBanner() {
 
     if (device.isIOS || device.isAndroid) {
         return <>
-            {!active && (
-                <Button onClick={() => setActive(true)} startIcon={<BarcodeReaderIcon />}></Button>
-            )}
+            <Button onClick={() => setDialogOpen(true)} startIcon={<BarcodeReaderIcon />}></Button>
 
-            {active && <BarCodeApp/>}
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
+                <IconButton
+                    onClick={() => setDialogOpen(false)}
+                    sx={{ position: 'absolute', right: 8, top: 8 }}
+                >
+                    <CloseIcon />
+                </IconButton>
+                <DialogContent>
+                    <BarCodeApp />
+                </DialogContent>
+            </Dialog>
         </>;
     }
     return <div>Desktop or unsupported device</div>;
