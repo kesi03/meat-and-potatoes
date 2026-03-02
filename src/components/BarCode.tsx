@@ -1,10 +1,20 @@
 import { useState, /*useRef,*/ useCallback } from 'react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import toast, { Toaster } from 'react-hot-toast';
+import { lookupProduct } from '../meat';
+
+interface ProductInfo {
+  name: string;
+  brand: string;
+  image: string;
+  quantity: string;
+  categories: string;
+}
 
 function BarCode() {
   const [currentData, setCurrentData] = useState<string>('No result');
   const [scanHistory, setScanHistory] = useState<string[]>([]);
+  const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
 
 //   // Stable audio instance
 //   const beepRef = useRef<HTMLAudioElement | null>(null);
@@ -12,18 +22,23 @@ function BarCode() {
 //     beepRef.current = new Audio('/beep.mp3');
 //   }
 
-  const handleScan = useCallback((results: { rawValue: string }[]) => {
+  const handleScan = useCallback(async (results: { rawValue: string }[]) => {
     if (!results || results.length === 0) return;
     
     const value = results[0].rawValue;
     setCurrentData(value);
     setScanHistory(prev => [...prev, value]);
 
-    // beepRef.current?.play().catch(() => {});
-
     console.log('Scanned:', value);
 
-    // toast.success(`Product scanned: ${value}`);
+    const product = await lookupProduct(value);
+    if (product) {
+      setProductInfo(product);
+      toast.success(`Found: ${product.name}`);
+    } else {
+      setProductInfo(null);
+      toast.error('Product not found');
+    }
   }, []);
 
   const handleError = useCallback((error: Error) => {
@@ -49,6 +64,18 @@ function BarCode() {
       </div>
 
       <p>Scanned Data: {currentData}</p>
+
+      {productInfo && (
+        <div className="product-info">
+          {productInfo.image && (
+            <img src={productInfo.image} alt={productInfo.name} />
+          )}
+          <p><strong>Name:</strong> {productInfo.name}</p>
+          {productInfo.brand && <p><strong>Brand:</strong> {productInfo.brand}</p>}
+          {productInfo.quantity && <p><strong>Quantity:</strong> {productInfo.quantity}</p>}
+          {productInfo.categories && <p><strong>Categories:</strong> {productInfo.categories}</p>}
+        </div>
+      )}
 
       <h2>Scan History</h2>
       <table>
