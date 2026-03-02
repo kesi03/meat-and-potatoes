@@ -20,11 +20,13 @@ interface DeviceBannerProps {
     addItemToList: (listId: string, item: Omit<ShoppingItem, 'id'>) => void;
     categories: Category[];
     currency: CurrencyCode;
+    forceShow?: boolean;
 }
 
-export function DeviceBanner({ listId, addItemToList, categories, currency }: DeviceBannerProps) {
+export function DeviceBanner({ listId, addItemToList, categories, currency, forceShow = false }: DeviceBannerProps) {
     const currencySymbol = getCurrencyByCode(currency)?.symbol || '$';
-    const [device, setDevice] = useState({ isIOS: false, isAndroid: false });
+    const device = getDeviceInfo();
+    const showScanner = forceShow || device.isIOS || device.isAndroid;
     const [dialogOpen, setDialogOpen] = useState(false);
     const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null);
     const [itemName, setItemName] = useState('');
@@ -33,10 +35,6 @@ export function DeviceBanner({ listId, addItemToList, categories, currency }: De
     const [itemCost, setItemCost] = useState(0);
     const [bestByDate, setBestByDate] = useState('');
     const scannedRef = useRef(false);
-
-    useEffect(() => {
-        setDevice(getDeviceInfo());
-    }, []);
 
     useEffect(() => {
         if (!dialogOpen) {
@@ -79,13 +77,14 @@ export function DeviceBanner({ listId, addItemToList, categories, currency }: De
         setDialogOpen(false);
     };
 
-    if (device.isIOS || device.isAndroid) {
-        return <>
-            <IconButton onClick={() => setDialogOpen(true)} sx={{ color: 'white' }}>
-                <BarcodeReaderIcon />
-            </IconButton>
+    if (showScanner) {
+        return (
+            <>
+                <IconButton onClick={() => setDialogOpen(true)} sx={{ color: 'white' }}>
+                    <BarcodeReaderIcon />
+                </IconButton>
 
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
+                <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
                 <DialogContent>
                     {!scannedProduct ? (
                         <BarCodeApp 
@@ -163,9 +162,9 @@ export function DeviceBanner({ listId, addItemToList, categories, currency }: De
                     )}
                 </DialogActions>
             </Dialog>
-        </>;
+        </>
+    );
     }
     return <div></div>;
 }
-
 

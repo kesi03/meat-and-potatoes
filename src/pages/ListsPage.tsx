@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Box, Fab, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControlLabel, Checkbox, Typography, Alert } from '@mui/material';
-import { Add, CheckCircle } from '@mui/icons-material';
+import { Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControlLabel, Checkbox, Typography, Alert } from '@mui/material';
+import { CheckCircle } from '@mui/icons-material';
 import ListsOverview from '../components/ListsOverview';
 import ShoppingListView from '../components/ShoppingListView';
 import ItemForm from '../components/ItemForm';
@@ -15,7 +15,7 @@ interface ListsPageProps {
 
 export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
   const { t } = useTranslation();
-  const { shoppingLists, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory } = useApp();
+  const { shoppingLists, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId } = useApp();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [pickingMode, setPickingMode] = useState(false);
@@ -23,6 +23,22 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
   const [listDialog, setListDialog] = useState({ open: false, name: '', copyFromStandard: true });
   const [itemDialog, setItemDialog] = useState({ open: false, mode: 'add', item: null as ShoppingItem | null, listId: null as string | null });
   const [saveToInventoryDialog, setSaveToInventoryDialog] = useState({ open: false });
+
+  useEffect(() => {
+    const checkHash = () => {
+      const listId = selectedListId || activeListId;
+      if (window.location.hash === '#add-item' && listId) {
+        setItemDialog({ open: true, mode: 'add', item: null, listId });
+        if (!selectedListId && activeListId) {
+          setSelectedListId(activeListId);
+        }
+        window.location.hash = '';
+      }
+    };
+    checkHash();
+    window.addEventListener('hashchange', checkHash);
+    return () => window.removeEventListener('hashchange', checkHash);
+  }, [activeListId, selectedListId]);
 
   const handleAddList = () => {
     if (listDialog.name.trim()) {
@@ -121,16 +137,6 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
           setPickedItems={setPickedItems}
           onBack={() => setSelectedListId(null)}
         />
-      )}
-
-      {selectedListId && (
-        <Fab
-          color="secondary"
-          sx={{ position: 'fixed', bottom: 80, right: 24 }}
-          onClick={() => handleAddItem(selectedListId)}
-        >
-          <Add />
-        </Fab>
       )}
 
       <Dialog open={listDialog.open} onClose={() => setListDialog({ open: false, name: '', copyFromStandard: true })}>

@@ -9,11 +9,13 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
+import AddIcon from '@mui/icons-material/Add';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../context/AppContext';
 import { DeviceBanner } from './DeviceBanner';
@@ -141,12 +143,22 @@ function ResponsiveAppBar() {
             ))}
           </Box>
           {activeList && (
-            <DeviceBanner 
-              listId={activeList.id} 
-              addItemToList={addItemToList} 
-              categories={categories} 
-              currency={currency} 
-            />
+            <ButtonGroup variant="contained" color="primary">
+              <Button 
+                onClick={() => window.location.href = '/lists#add-item'}
+                startIcon={<AddIcon />}
+                sx={{ color: 'white' }}
+              >
+                Add
+              </Button>
+              <DeviceBanner 
+                listId={activeList.id} 
+                addItemToList={addItemToList} 
+                categories={categories} 
+                currency={currency}
+                forceShow={true}
+              />
+            </ButtonGroup>
           )}
         </Toolbar>
       </Container>
