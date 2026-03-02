@@ -3,6 +3,7 @@ import { getDeviceInfo, lookupProduct } from '../meat';
 import { BarcodeScanner } from './BarCodeScanner';
 import { Button } from '@mui/material';
 import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
+import BarCodeApp from './BarCode';
 
 export function DeviceBanner() {
     const [device, setDevice] = useState({ isIOS: false, isAndroid: false });
@@ -34,7 +35,7 @@ export function DeviceBanner() {
                 <Button onClick={() => setActive(true)} startIcon={<BarcodeReaderIcon />}></Button>
             )}
 
-            {active && <BarcodeScanner onDetected={onDetected} />}
+            {active && <BarCodeApp/>}
         </>;
     }
     return <div>Desktop or unsupported device</div>;
