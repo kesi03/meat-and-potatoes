@@ -13,12 +13,16 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
+import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 import { useTranslation } from 'react-i18next';
+import { useApp } from '../context/AppContext';
+import { DeviceBanner } from './DeviceBanner';
 
 function ResponsiveAppBar() {
   const { t } = useTranslation();
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+  const { activeListId, addItemToList, categories, currency, getActiveList } = useApp();
 
   const pages = [
     { name: t('lists'), path: '/lists' },
@@ -42,6 +46,8 @@ function ResponsiveAppBar() {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+
+  const activeList = getActiveList();
 
   return (
     <AppBar position="fixed">
@@ -134,39 +140,17 @@ function ResponsiveAppBar() {
               </Button>
             ))}
           </Box>
-          <Box sx={{ flexGrow: 0 ,}}>
-            <Tooltip title={t('openSettings')}>
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar sx={{ color: '#e6dbc9' }} alt="A" src="/static/images/avatar/2.jpg" />
-              </IconButton>
-            </Tooltip>
-            <Menu
-              sx={{ mt: '45px' }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
+          {activeList && (
+            <DeviceBanner 
+              listId={activeList.id} 
+              addItemToList={addItemToList} 
+              categories={categories} 
+              currency={currency} 
+            />
+          )}
         </Toolbar>
       </Container>
     </AppBar>
   );
 }
 export default ResponsiveAppBar;
-// components/ResponsiveAppBar.tsx

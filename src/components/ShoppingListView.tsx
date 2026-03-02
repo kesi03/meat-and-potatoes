@@ -25,8 +25,6 @@ import { getCategoryName } from '../context/AppContext';
 import type { CurrencyCode } from '../meat';
 import { formatCurrency, getTranslatedItemName } from '../meat';
 import { useTranslation } from 'react-i18next';
-import { BarcodeScanner } from './BarCodeScanner';
-import { DeviceBanner } from './DeviceBanner';
 
 interface ShoppingListViewProps {
   list?: {
@@ -108,7 +106,6 @@ export default function ShoppingListView({
           <ToggleButton value="browse"><ListIcon sx={{ mr: 1 }} />Browse</ToggleButton>
           <ToggleButton value="pick"><PlayArrow sx={{ mr: 1 }} />Pick</ToggleButton>
         </ToggleButtonGroup>
-        {list && <DeviceBanner listId={list.id} addItemToList={addItemToList} categories={categories} currency={currency} />}
         
         {!pickingMode && (
           <>
