@@ -173,22 +173,45 @@ export function getDeviceInfo() {
 }
 
 export async function lookupProduct(barcode: string) {
-  const url = `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`;
+  const apis = [
+    {
+      name: 'Open Food Facts',
+      url: `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`,
+      transform: (data: any) => data.product ? {
+        name: data.product.product_name,
+        brand: data.product.brands,
+        image: data.product.image_front_small_url,
+        quantity: data.product.quantity,
+        categories: data.product.categories,
+      } : null
+    },
+    {
+      name: 'Open Beauty Facts',
+      url: `https://world.openbeautyfacts.org/api/v2/product/${barcode}.json`,
+      transform: (data: any) => data.product ? {
+        name: data.product.product_name,
+        brand: data.product.brands,
+        image: data.product.image_front_small_url,
+        quantity: data.product.quantity,
+        categories: data.product.categories,
+      } : null
+    }
+  ];
 
-  const res = await fetch(url);
-  const data = await res.json();
-
-  if (!data.product) {
-    return null;
+  for (const api of apis) {
+    try {
+      const res = await fetch(api.url);
+      const data = await res.json();
+      const result = api.transform(data);
+      if (result) {
+        return result;
+      }
+    } catch (error) {
+      console.error(`Error fetching from ${api.name}:`, error);
+    }
   }
 
-  return {
-    name: data.product.product_name,
-    brand: data.product.brands,
-    image: data.product.image_front_small_url,
-    quantity: data.product.quantity,
-    categories: data.product.categories,
-  };
+  return null;
 }
 
 
