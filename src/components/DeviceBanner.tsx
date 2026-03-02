@@ -163,7 +163,7 @@ export function DeviceBanner({ listId, addItemToList, categories, currency }: De
             </Dialog>
         </>;
     }
-    return <div>Desktop or unsupported device</div>;
+    return <div></div>;
 }
 
 
