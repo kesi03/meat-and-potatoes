@@ -2,8 +2,6 @@ import { useState, useRef, useCallback } from 'react';
 import BarcodeScannerComponent from 'react-qr-barcode-scanner';
 import toast, { Toaster } from 'react-hot-toast';
 
-import './App.css';
-
 function BarCode() {
   const [currentData, setCurrentData] = useState<string>('No result');
   const [scanHistory, setScanHistory] = useState<string[]>([]);
