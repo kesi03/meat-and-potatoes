@@ -1,49 +1,47 @@
-import { useState, useRef, useCallback } from 'react';
-import BarcodeScannerComponent from 'react-qr-barcode-scanner';
+import { useState, /*useRef,*/ useCallback } from 'react';
+import { Scanner } from '@yudiel/react-qr-scanner';
 import toast, { Toaster } from 'react-hot-toast';
 
 function BarCode() {
   const [currentData, setCurrentData] = useState<string>('No result');
   const [scanHistory, setScanHistory] = useState<string[]>([]);
 
-  // Stable audio instance
+//   // Stable audio instance
 //   const beepRef = useRef<HTMLAudioElement | null>(null);
 //   if (!beepRef.current) {
 //     beepRef.current = new Audio('/beep.mp3');
 //   }
 
-  // Accept the library's private type as unknown
-  const handleScan = useCallback(
-    (err: unknown, result?: unknown) => {
-      // Runtime narrowing because the library hides its type
-      const r = result as { text?: string } | undefined;
+  // onScan always returns a string
+  const handleScan = useCallback((value: any) => {
+    setCurrentData(value);
+    setScanHistory(prev => [...prev, value]);
 
-      if (r?.text) {
-        const text = r.text;
+    // beepRef.current?.play().catch(() => {});
 
-        setCurrentData(text);
-        setScanHistory(prev => [...prev, text]);
+    toast.success(`Product scanned: ${value}`);
+  }, []);
 
-        //beepRef.current?.play().catch(() => {});
-
-        toast.success(`Product scanned: ${text}`);
-      }
-    },
-    []
-  );
+  const handleError = useCallback((error: Error) => {
+    console.error(error);
+    toast.error('Camera error occurred');
+  }, []);
 
   return (
     <div className="box">
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-right" />
 
       <div className="title">Scanner</div>
 
       <div className="scan">
-        <BarcodeScannerComponent
-          width={500}
-          height={500}
-          onUpdate={handleScan}
-          delay={1500}
+        <Scanner
+          onScan={handleScan}
+          onError={(error) => handleError(error as Error)}
+          constraints={{ facingMode: 'environment' }}
+          styles={{
+            container: { width: 500, height: 500 },
+            video: { width: '100%', height: '100%' }
+          }}
         />
       </div>
 
