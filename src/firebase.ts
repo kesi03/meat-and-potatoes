@@ -31,7 +31,7 @@ let app: FirebaseApp;
 let analytics: Analytics;
 let db: Database;
 
-if (firebaseConfig && firebaseConfig.apiKey) {
+if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId && firebaseConfig.storageBucket && firebaseConfig.messagingSenderId && firebaseConfig.appId && firebaseConfig.databaseURL) {
   try {
     app = initializeApp(firebaseConfig);
     analytics = getAnalytics(app);

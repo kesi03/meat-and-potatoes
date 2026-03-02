@@ -31,7 +31,7 @@ export function DeviceBanner() {
     if (device.isIOS || device.isAndroid) {
         return <>
             {!active && (
-                <Button onClick={() => setActive(true)} startIcon={<BarcodeReaderIcon />}>Start scanning</Button>
+                <Button onClick={() => setActive(true)} startIcon={<BarcodeReaderIcon />}></Button>
             )}
 
             {active && <BarcodeScanner onDetected={onDetected} />}
