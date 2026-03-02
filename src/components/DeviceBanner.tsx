@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { getDeviceInfo, lookupProduct, generateId, CurrencyCode, getCurrencyByCode } from '../meat';
-import { Button, Dialog, DialogContent, DialogActions, Box, Typography, Avatar, TextField, FormControl, InputLabel, Select, MenuItem, InputAdornment } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogActions, Box, Typography, Avatar, TextField, FormControl, InputLabel, Select, MenuItem, InputAdornment, IconButton } from '@mui/material';
 import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 import CloseIcon from '@mui/icons-material/Close';
 import BarCodeApp from './BarCode';
@@ -81,7 +81,9 @@ export function DeviceBanner({ listId, addItemToList, categories, currency }: De
 
     if (device.isIOS || device.isAndroid) {
         return <>
-            <Button onClick={() => setDialogOpen(true)} startIcon={<BarcodeReaderIcon />}></Button>
+            <IconButton onClick={() => setDialogOpen(true)} sx={{ color: 'white' }}>
+                <BarcodeReaderIcon />
+            </IconButton>
 
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
                 <DialogContent>
