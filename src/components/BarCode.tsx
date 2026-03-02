@@ -12,8 +12,10 @@ function BarCode() {
 //     beepRef.current = new Audio('/beep.mp3');
 //   }
 
-  // onScan always returns a string
-  const handleScan = useCallback((value: any) => {
+  const handleScan = useCallback((results: { rawValue: string }[]) => {
+    if (!results || results.length === 0) return;
+    
+    const value = results[0].rawValue;
     setCurrentData(value);
     setScanHistory(prev => [...prev, value]);
 
