@@ -113,6 +113,7 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
           onEditItem={(item) => handleEditItem(item, selectedListId)}
           onDeleteItem={handleDeleteItemFromList}
           onMoveToInventory={onMoveToInventory}
+          addItemToList={addItemToList}
           currency={currency}
           pickingMode={pickingMode}
           setPickingMode={setPickingMode}

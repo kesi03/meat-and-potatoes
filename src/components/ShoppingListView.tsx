@@ -43,6 +43,7 @@ interface ShoppingListViewProps {
   onEditItem: (item: ShoppingItem) => void;
   onDeleteItem: (itemId: string) => void;
   onMoveToInventory: (item: ShoppingItem) => void;
+  addItemToList: (listId: string, item: Omit<ShoppingItem, 'id'>) => void;
   currency: CurrencyCode;
   pickingMode: boolean;
   setPickingMode: (mode: boolean) => void;
@@ -61,6 +62,7 @@ export default function ShoppingListView({
   onEditItem,
   onDeleteItem,
   onMoveToInventory,
+  addItemToList,
   currency,
   pickingMode,
   setPickingMode,
@@ -100,7 +102,7 @@ export default function ShoppingListView({
             Back
           </Button>
         )}
-        <DeviceBanner />
+        {list && <DeviceBanner listId={list.id} addItemToList={addItemToList} />}
 
         <ToggleButtonGroup value={pickingMode ? 'pick' : 'browse'} exclusive onChange={(e, v) => v && setPickingMode(v === 'pick')}>
           <ToggleButton value="browse"><ListIcon sx={{ mr: 1 }} />Browse</ToggleButton>

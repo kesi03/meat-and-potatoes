@@ -1,44 +1,141 @@
-import { useEffect, useState } from 'react';
-import { getDeviceInfo, lookupProduct } from '../meat';
-import { Button, Dialog, DialogContent, IconButton } from '@mui/material';
+import { useEffect, useState, useRef } from 'react';
+import { getDeviceInfo, lookupProduct, generateId } from '../meat';
+import { Button, Dialog, DialogContent, DialogActions, Box, Typography, Avatar, TextField } from '@mui/material';
 import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 import CloseIcon from '@mui/icons-material/Close';
 import BarCodeApp from './BarCode';
+import type { ShoppingItem } from '../context/AppContext';
 
-export function DeviceBanner() {
+interface ScannedProduct {
+    name: string;
+    brand?: string;
+    image?: string;
+    quantity?: string;
+    categories?: string;
+    barcode: string;
+}
+
+interface DeviceBannerProps {
+    listId: string;
+    addItemToList: (listId: string, item: Omit<ShoppingItem, 'id'>) => void;
+}
+
+export function DeviceBanner({ listId, addItemToList }: DeviceBannerProps) {
     const [device, setDevice] = useState({ isIOS: false, isAndroid: false });
     const [dialogOpen, setDialogOpen] = useState(false);
-
-    async function handleScan(barcode: string) {
-        const product = await lookupProduct(barcode);
-        console.log(product);
-    }
-
-    async function onDetected(code: string) {
-        console.log('Scanned:', code);
-        alert(`Scanned: ${code}`);
-        await handleScan(code);
-    }
-
+    const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null);
+    const [itemName, setItemName] = useState('');
+    const [itemCategory, setItemCategory] = useState('');
+    const [itemQuantity, setItemQuantity] = useState(1);
+    const [itemCost, setItemCost] = useState(0);
+    const scannedRef = useRef(false);
 
     useEffect(() => {
         setDevice(getDeviceInfo());
     }, []);
+
+    useEffect(() => {
+        if (!dialogOpen) {
+            setScannedProduct(null);
+            setItemName('');
+            setItemCategory('');
+            setItemQuantity(1);
+            setItemCost(0);
+            scannedRef.current = false;
+        }
+    }, [dialogOpen]);
+
+    const handleProductFound = (product: ScannedProduct) => {
+        setScannedProduct(product);
+        setItemName(product.name || '');
+        setItemCategory(product.categories?.split(',')[0]?.trim() || '');
+        setItemQuantity(1);
+        setItemCost(0);
+        scannedRef.current = true;
+    };
+
+    const handleSave = () => {
+        if (!itemName.trim()) return;
+
+        const newItem: Omit<ShoppingItem, 'id'> = {
+            name: itemName,
+            category: itemCategory || 'Uncategorized',
+            quantity: itemQuantity,
+            cost: itemCost,
+            description: scannedProduct?.brand || '',
+            barcode: scannedProduct?.barcode || '',
+            nutritionalInfo: '',
+            weightSize: scannedProduct?.quantity || '',
+            bestByDate: null,
+            image: scannedProduct?.image || '',
+        };
+
+        addItemToList(listId, newItem);
+        setDialogOpen(false);
+    };
 
     if (device.isIOS || device.isAndroid) {
         return <>
             <Button onClick={() => setDialogOpen(true)} startIcon={<BarcodeReaderIcon />}></Button>
 
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-                <IconButton
-                    onClick={() => setDialogOpen(false)}
-                    sx={{ position: 'absolute', right: 8, top: 8 }}
-                >
-                    <CloseIcon />
-                </IconButton>
                 <DialogContent>
-                    <BarCodeApp />
+                    {!scannedProduct ? (
+                        <BarCodeApp 
+                            onProductFound={handleProductFound} 
+                            autoStop={true}
+                            scannedRef={scannedRef}
+                        />
+                    ) : (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
+                            {scannedProduct.image && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                    <Avatar src={scannedProduct.image} sx={{ width: 100, height: 100 }} />
+                                </Box>
+                            )}
+                            <Typography variant="h6" textAlign="center">{scannedProduct.name}</Typography>
+                            {scannedProduct.brand && <Typography variant="body2" color="text.secondary" textAlign="center">{scannedProduct.brand}</Typography>}
+                            {scannedProduct.quantity && <Typography variant="body2" color="text.secondary" textAlign="center">{scannedProduct.quantity}</Typography>}
+                            
+                            <TextField
+                                label="Name"
+                                value={itemName}
+                                onChange={(e) => setItemName(e.target.value)}
+                                fullWidth
+                            />
+                            <TextField
+                                label="Category"
+                                value={itemCategory}
+                                onChange={(e) => setItemCategory(e.target.value)}
+                                fullWidth
+                            />
+                            <TextField
+                                label="Quantity"
+                                type="number"
+                                value={itemQuantity}
+                                onChange={(e) => setItemQuantity(parseInt(e.target.value) || 1)}
+                                fullWidth
+                            />
+                            <TextField
+                                label="Cost"
+                                type="number"
+                                value={itemCost}
+                                onChange={(e) => setItemCost(parseFloat(e.target.value) || 0)}
+                                fullWidth
+                            />
+                        </Box>
+                    )}
                 </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDialogOpen(false)} startIcon={<CloseIcon />}>
+                        Close
+                    </Button>
+                    {scannedProduct && (
+                        <Button onClick={handleSave} variant="contained">
+                            Save
+                        </Button>
+                    )}
+                </DialogActions>
             </Dialog>
         </>;
     }

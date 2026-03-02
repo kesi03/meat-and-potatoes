@@ -1,4 +1,4 @@
-import { useState, /*useRef,*/ useCallback } from 'react';
+import { useState, useCallback, MutableRefObject } from 'react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import toast, { Toaster } from 'react-hot-toast';
 import { lookupProduct } from '../meat';
@@ -11,19 +11,20 @@ interface ProductInfo {
   categories: string;
 }
 
-function BarCode() {
+interface BarCodeProps {
+  onProductFound?: (product: ProductInfo & { barcode: string }) => void;
+  autoStop?: boolean;
+  scannedRef?: MutableRefObject<boolean>;
+}
+
+function BarCode({ onProductFound, autoStop = false, scannedRef }: BarCodeProps) {
   const [currentData, setCurrentData] = useState<string>('No result');
   const [scanHistory, setScanHistory] = useState<string[]>([]);
   const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
 
-//   // Stable audio instance
-//   const beepRef = useRef<HTMLAudioElement | null>(null);
-//   if (!beepRef.current) {
-//     beepRef.current = new Audio('/beep.mp3');
-//   }
-
   const handleScan = useCallback(async (results: { rawValue: string }[]) => {
     if (!results || results.length === 0) return;
+    if (scannedRef?.current) return;
     
     const value = results[0].rawValue;
     setCurrentData(value);
@@ -35,11 +36,17 @@ function BarCode() {
     if (product) {
       setProductInfo(product);
       toast.success(`Found: ${product.name}`);
+      if (onProductFound) {
+        onProductFound({ ...product, barcode: value });
+      }
+      if (autoStop && scannedRef) {
+        scannedRef.current = true;
+      }
     } else {
       setProductInfo(null);
       toast.error('Product not found');
     }
-  }, []);
+  }, [onProductFound, autoStop, scannedRef]);
 
   const handleError = useCallback((error: Error) => {
     console.error(error.message);

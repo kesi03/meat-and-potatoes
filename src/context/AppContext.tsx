@@ -46,6 +46,7 @@ export interface ShoppingItem {
   nutritionalInfo: string;
   weightSize: string;
   bestByDate: string | null;
+  image: string;
 }
 
 export interface InventoryItem extends ShoppingItem {
@@ -132,6 +133,7 @@ const DEFAULT_LISTS: ShoppingList[] = [
       nutritionalInfo: '',
       weightSize: '',
       bestByDate: null,
+      image: '',
     })),
   },
 ];
