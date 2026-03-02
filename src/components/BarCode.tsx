@@ -19,12 +19,13 @@ function BarCode() {
 
     // beepRef.current?.play().catch(() => {});
 
-    toast.success(`Product scanned: ${value}`);
+    console.log('Scanned:', value);
+
+    // toast.success(`Product scanned: ${value}`);
   }, []);
 
   const handleError = useCallback((error: Error) => {
-    console.error(error);
-    toast.error('Camera error occurred');
+    console.error(error.message);
   }, []);
 
   return (
@@ -39,7 +40,7 @@ function BarCode() {
           onError={(error) => handleError(error as Error)}
           constraints={{ facingMode: 'environment' }}
           styles={{
-            container: { width: 500, height: 500 },
+            container: { width: 200, height: 200 },
             video: { width: '100%', height: '100%' }
           }}
         />
