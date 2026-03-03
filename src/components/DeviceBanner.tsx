@@ -36,41 +36,18 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
     const [itemCost, setItemCost] = useState(0);
     const [bestByDate, setBestByDate] = useState('');
     const [capturedImage, setCapturedImage] = useState<string>('');
+    const [showCamera, setShowCamera] = useState(false);
+    const [showCropper, setShowCropper] = useState(false);
+    const [cropArea, setCropArea] = useState({ x: 0, y: 0, width: 100, height: 100 });
+    const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
     const scannedRef = useRef(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        if (!dialogOpen) {
-            setScannedProduct(null);
-            setItemName('');
-            setItemCategory('');
-            setItemQuantity(1);
-            setItemCost(0);
-            setBestByDate('');
-            setCapturedImage('');
-            scannedRef.current = false;
-        }
-    }, [dialogOpen]);
-
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [showCamera, setShowCamera] = useState(false);
+    const imageRef = useRef<HTMLImageElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
-
-    const startCamera = async () => {
-        try {
-            const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'environment' } 
-            });
-            setStream(mediaStream);
-            setShowCamera(true);
-            if (videoRef.current) {
-                videoRef.current.srcObject = mediaStream;
-            }
-        } catch (err) {
-            console.error('Error accessing camera:', err);
-            fileInputRef.current?.click();
-        }
-    };
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
     const stopCamera = () => {
         if (stream) {
@@ -78,6 +55,23 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
             setStream(null);
         }
         setShowCamera(false);
+    };
+
+    const startCamera = async () => {
+        console.log('Take photo button clicked');
+        try {
+            console.log('Requesting camera access...');
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            console.log('Camera stream obtained');
+            setStream(mediaStream);
+            setShowCamera(true);
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+            alert('Camera not available. Using file upload instead.');
+            fileInputRef.current?.click();
+        }
     };
 
     const capturePhoto = () => {
@@ -91,6 +85,7 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
                 const dataUrl = canvas.toDataURL('image/jpeg');
                 setCapturedImage(dataUrl);
                 stopCamera();
+                setShowCropper(true);
             }
         }
     };
@@ -101,10 +96,105 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
             const reader = new FileReader();
             reader.onloadend = () => {
                 setCapturedImage(reader.result as string);
+                setShowCropper(true);
             };
             reader.readAsDataURL(file);
         }
     };
+
+    const applyCrop = () => {
+        if (!imageRef.current || !containerRef.current) return;
+        
+        const img = imageRef.current;
+        const container = containerRef.current;
+        const scaleX = img.naturalWidth / container.clientWidth;
+        const scaleY = img.naturalHeight / container.clientHeight;
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = cropArea.width * scaleX;
+        canvas.height = cropArea.height * scaleY;
+        
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.drawImage(
+                img,
+                cropArea.x * scaleX,
+                cropArea.y * scaleY,
+                cropArea.width * scaleX,
+                cropArea.height * scaleY,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+            setCapturedImage(canvas.toDataURL('image/jpeg'));
+        }
+        setShowCropper(false);
+    };
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        const rect = containerRef.current?.getBoundingClientRect();
+        if (rect) {
+            setIsDragging(true);
+            setDragStart({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            });
+        }
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const newWidth = Math.max(50, Math.min(x - dragStart.x + cropArea.width, containerRef.current.clientWidth - cropArea.x));
+        const newHeight = Math.max(50, Math.min(y - dragStart.y + cropArea.height, containerRef.current.clientHeight - cropArea.y));
+        
+        setCropArea(prev => ({
+            ...prev,
+            width: newWidth,
+            height: newHeight
+        }));
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    useEffect(() => {
+        if (!dialogOpen) {
+            setScannedProduct(null);
+            setItemName('');
+            setItemCategory('');
+            setItemQuantity(1);
+            setItemCost(0);
+            setBestByDate('');
+            setCapturedImage('');
+            setShowCropper(false);
+            scannedRef.current = false;
+            stopCamera();
+        }
+    }, [dialogOpen]);
+
+    useEffect(() => {
+        if (showCamera && stream) {
+            setTimeout(() => {
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                }
+            }, 100);
+        }
+    }, [showCamera, stream]);
+
+    useEffect(() => {
+        return () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, [stream]);
 
     const handleProductFound = (product: ScannedProduct) => {
         setScannedProduct(product);
@@ -170,6 +260,103 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
                                 Enter Manually
                             </Button>
                         </>
+                    ) : showCamera ? (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <video 
+                                ref={videoRef} 
+                                autoPlay 
+                                playsInline
+                                style={{ width: '100%', borderRadius: 8 }}
+                            />
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Button 
+                                    variant="outlined" 
+                                    onClick={stopCamera}
+                                    fullWidth
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    variant="contained" 
+                                    onClick={capturePhoto}
+                                    fullWidth
+                                >
+                                    Capture
+                                </Button>
+                            </Box>
+                        </Box>
+                    ) : showCropper ? (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Typography variant="h6" textAlign="center">Crop Image</Typography>
+                            <Box 
+                                ref={containerRef}
+                                sx={{ 
+                                    position: 'relative', 
+                                    width: '100%', 
+                                    maxHeight: 300, 
+                                    overflow: 'hidden',
+                                    cursor: 'crosshair',
+                                    borderRadius: 1,
+                                    bgcolor: '#f0f0f0'
+                                }}
+                                onMouseDown={handleMouseDown}
+                                onMouseMove={handleMouseMove}
+                                onMouseUp={handleMouseUp}
+                                onMouseLeave={handleMouseUp}
+                            >
+                                <img
+                                    ref={imageRef}
+                                    src={capturedImage}
+                                    alt="Crop"
+                                    style={{ 
+                                        width: '100%', 
+                                        display: 'block',
+                                        userSelect: 'none'
+                                    }}
+                                    onLoad={(e) => {
+                                        const img = e.currentTarget;
+                                        setImageSize({ width: img.clientWidth, height: img.clientHeight });
+                                        setCropArea({ 
+                                            x: 0, 
+                                            y: 0, 
+                                            width: img.clientWidth, 
+                                            height: img.clientHeight 
+                                        });
+                                    }}
+                                />
+                                <Box
+                                    sx={{
+                                        position: 'absolute',
+                                        border: '2px dashed white',
+                                        bgcolor: 'rgba(0,0,0,0.3)',
+                                        left: cropArea.x,
+                                        top: cropArea.y,
+                                        width: cropArea.width,
+                                        height: cropArea.height,
+                                        pointerEvents: 'none'
+                                    }}
+                                />
+                            </Box>
+                            <Typography variant="caption" textAlign="center">
+                                Drag to select area
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 2 }}>
+                                <Button 
+                                    variant="outlined" 
+                                    onClick={() => setShowCropper(false)}
+                                    fullWidth
+                                >
+                                    Cancel
+                                </Button>
+                                <Button 
+                                    variant="contained" 
+                                    onClick={applyCrop}
+                                    fullWidth
+                                >
+                                    Apply Crop
+                                </Button>
+                            </Box>
+                        </Box>
                     ) : (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
@@ -190,11 +377,20 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
                             <Button
                                 variant="outlined"
                                 startIcon={<PhotoCameraIcon />}
-                                onClick={handleTakePhoto}
+                                onClick={startCamera}
                                 fullWidth
                             >
-                                {capturedImage ? 'Retake Photo' : 'Take Photo'}
+                                {capturedImage ? 'Change Photo' : 'Take Photo'}
                             </Button>
+                            {capturedImage && (
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => setShowCropper(true)}
+                                    fullWidth
+                                >
+                                    Crop Image
+                                </Button>
+                            )}
                             <Typography variant="h6" textAlign="center">{scannedProduct.name}</Typography>
                             {scannedProduct.brand && <Typography variant="body2" color="text.secondary" textAlign="center">{scannedProduct.brand}</Typography>}
                             {scannedProduct.quantity && <Typography variant="body2" color="text.secondary" textAlign="center">{scannedProduct.quantity}</Typography>}
@@ -251,7 +447,7 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
                     <Button onClick={() => setDialogOpen(false)} startIcon={<CloseIcon />}>
                         Close
                     </Button>
-                    {scannedProduct !== null && (
+                    {scannedProduct !== null && !showCamera && (
                         <Button onClick={handleSave} variant="contained" disabled={!itemName.trim()}>
                             Save
                         </Button>
@@ -263,4 +459,3 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
     }
     return <div></div>;
 }
-
