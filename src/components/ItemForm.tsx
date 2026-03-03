@@ -10,6 +10,8 @@ import {
   Select,
   MenuItem,
   InputAdornment,
+  Avatar,
+  Typography,
 } from '@mui/material';
 import { Delete, MoveToInbox } from '@mui/icons-material';
 import { LOCATIONS, CURRENCIES, CurrencyCode } from '../meat';
@@ -52,6 +54,7 @@ export default function ItemForm({
     bestByDate: item?.bestByDate || '',
     location: invItem?.location || 'Fridge',
     homeQuantity: invItem?.homeQuantity || 1,
+    image: item?.image || '',
   });
 
   const handleChange = (field: string) => (e: any) => {
@@ -76,6 +79,11 @@ export default function ItemForm({
     <>
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {formData.image && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+              <Avatar src={formData.image} sx={{ width: 100, height: 100 }} variant="rounded" />
+            </Box>
+          )}
           <TextField
             label="Item Name"
             value={formData.name}
@@ -163,6 +171,13 @@ export default function ItemForm({
             fullWidth
             multiline
             rows={2}
+          />
+          <TextField
+            label="Image URL"
+            value={formData.image}
+            onChange={handleChange('image')}
+            fullWidth
+            placeholder="https://example.com/image.jpg"
           />
         </Box>
       </DialogContent>

@@ -9,12 +9,15 @@ import {
   Chip,
   IconButton,
   Button,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import { Store, Warning, CheckCircle, Edit, Delete } from '@mui/icons-material';
 import { getExpirationStatus, formatCurrency, CurrencyCode, getDaysUntilExpiration } from '../meat';
 import type { InventoryItem, Category } from '../context/AppContext';
 import { getCategoryName } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 
 interface InventoryViewProps {
   inventory: InventoryItem[];
@@ -41,58 +44,94 @@ export default function InventoryView({
   onClearInventory,
   currency,
 }: InventoryViewProps) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [expirationFilter, setExpirationFilter] = useState<string>('all');
   
   const getTranslatedCategoryName = (catName: string) => {
     const cat = categories.find(c => c.name === catName);
     return cat ? getCategoryName(cat, i18n.language) : catName;
   };
+
+  const getFilteredItems = (items: InventoryItem[]) => {
+    if (expirationFilter === 'all') return items;
+    return items.filter(item => {
+      const status = getExpirationStatus(item.bestByDate);
+      return status === expirationFilter;
+    });
+  };
   
   return (
     <Box>
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h6" gutterBottom>Expiration Status</Typography>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <Chip icon={<Warning />} label={`Expired: ${expirationStats.expired.length}`} color="error" />
-            <Chip icon={<Warning />} label={`Expiring Soon: ${expirationStats.expiringSoon.length}`} color="warning" />
-            <Chip icon={<CheckCircle />} label={`Fresh: ${expirationStats.fresh.length}`} color="success" />
+          <Typography variant="h6" gutterBottom>{t('inventory')}</Typography>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Chip 
+              icon={<Warning />} 
+              label={`${t('expired')}: ${expirationStats.expired.length}`} 
+              color={expirationFilter === 'expired' ? 'error' : 'default'}
+              onClick={() => setExpirationFilter(expirationFilter === 'expired' ? 'all' : 'expired')}
+              sx={{ cursor: 'pointer' }}
+            />
+            <Chip 
+              icon={<Warning />} 
+              label={`${t('expiringSoon')}: ${expirationStats.expiringSoon.length}`} 
+              color={expirationFilter === 'expiring-soon' ? 'warning' : 'default'}
+              onClick={() => setExpirationFilter(expirationFilter === 'expiring-soon' ? 'all' : 'expiring-soon')}
+              sx={{ cursor: 'pointer' }}
+            />
+            <Chip 
+              icon={<CheckCircle />} 
+              label={`${t('fresh')}: ${expirationStats.fresh.length}`} 
+              color={expirationFilter === 'fresh' ? 'success' : 'default'}
+              onClick={() => setExpirationFilter(expirationFilter === 'fresh' ? 'all' : 'fresh')}
+              sx={{ cursor: 'pointer' }}
+            />
           </Box>
         </Box>
-        <Button
-          variant="outlined"
-          color="error"
-          startIcon={<Delete />}
-          onClick={onClearInventory}
-          disabled={inventory.length === 0}
-        >
-          Clear All
-        </Button>
+        
       </Box>
+      {inventory.length > 0 && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              startIcon={<Delete />}
+              onClick={onClearInventory}
+            >
+              {t('clearAllInventory')}
+            </Button>
+          </Box>
+        )}
 
       {inventory.length === 0 ? (
-        <Typography color="text.secondary">Your inventory is empty. Add items from your shopping lists.</Typography>
+        <Typography color="text.secondary">{t('inventory')} is empty. Add items from your shopping lists.</Typography>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {Object.entries(inventoryByCategory).map(([category, items]) => (
-            <Box key={category}>
-              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Store /> {getTranslatedCategoryName(category)}
-              </Typography>
-              <List>
-                {items.map(item => (
-                  <InventoryListItem
-                    key={item.id}
-                    item={item}
-                    currency={currency}
-                    onEdit={() => onEditItem(item)}
-                    onDelete={() => onDeleteItem(item.id)}
-                    getTranslatedCategoryName={getTranslatedCategoryName}
-                  />
-                ))}
-              </List>
-            </Box>
-          ))}
+          {Object.entries(inventoryByCategory).map(([category, items]) => {
+            const filteredItems = getFilteredItems(items);
+            if (filteredItems.length === 0) return null;
+            return (
+              <Box key={category}>
+                <Typography variant="subtitle1" sx={{ mt: 2, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Store /> {getTranslatedCategoryName(category)}
+                </Typography>
+                <List>
+                  {filteredItems.map(item => (
+                    <InventoryListItem
+                      key={item.id}
+                      item={item}
+                      currency={currency}
+                      onEdit={() => onEditItem(item)}
+                      onDelete={() => onDeleteItem(item.id)}
+                      getTranslatedCategoryName={getTranslatedCategoryName}
+                    />
+                  ))}
+                </List>
+              </Box>
+            );
+          })}
         </Box>
       )}
     </Box>
@@ -149,7 +188,11 @@ function InventoryListItem({ item, currency, onEdit, onDelete, getTranslatedCate
       }
     >
       <ListItemAvatar>
-        <Avatar sx={{ bgcolor: 'primary.light' }}>{item.name[0]}</Avatar>
+        {item.image ? (
+          <Avatar src={item.image} sx={{ bgcolor: 'primary.light' }}>{item.name[0]}</Avatar>
+        ) : (
+          <Avatar sx={{ bgcolor: 'primary.light' }}>{item.name[0]}</Avatar>
+        )}
       </ListItemAvatar>
       <ListItemText 
         primary={item.name} 

@@ -13,11 +13,12 @@ interface ProductInfo {
 
 interface BarCodeProps {
   onProductFound?: (product: ProductInfo & { barcode: string }) => void;
+  onProductNotFound?: (barcode: string) => void;
   autoStop?: boolean;
   scannedRef?: MutableRefObject<boolean>;
 }
 
-function BarCode({ onProductFound, autoStop = false, scannedRef }: BarCodeProps) {
+function BarCode({ onProductFound, onProductNotFound, autoStop = false, scannedRef }: BarCodeProps) {
   const [currentData, setCurrentData] = useState<string>('No result');
   const [scanHistory, setScanHistory] = useState<string[]>([]);
   const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
@@ -45,8 +46,14 @@ function BarCode({ onProductFound, autoStop = false, scannedRef }: BarCodeProps)
     } else {
       setProductInfo(null);
       toast.error('Product not found');
+      if (onProductNotFound) {
+        onProductNotFound(value);
+      }
+      if (autoStop && scannedRef) {
+        scannedRef.current = true;
+      }
     }
-  }, [onProductFound, autoStop, scannedRef]);
+  }, [onProductFound, onProductNotFound, autoStop, scannedRef]);
 
   const handleError = useCallback((error: Error) => {
     console.error(error.message);

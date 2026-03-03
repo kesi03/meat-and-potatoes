@@ -5,8 +5,10 @@ import InventoryView from '../components/InventoryView';
 import ItemForm from '../components/ItemForm';
 import { useApp } from '../context/AppContext';
 import type { InventoryItem } from '../context/AppContext';
+import { useTranslation } from 'react-i18next';
 
 export default function InventoryPage() {
+  const { t } = useTranslation();
   const { inventory, categories, currency, addInventoryItem, updateInventoryItem, deleteInventoryItem, clearInventory } = useApp();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
@@ -99,7 +101,7 @@ export default function InventoryPage() {
       </Fab>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{dialogMode === 'add' ? 'Add Item' : 'Edit Item'}</DialogTitle>
+        <DialogTitle>{dialogMode === 'add' ? t('addItem') : t('editItem')}</DialogTitle>
         <ItemForm
           item={selectedItem}
           categories={categories}

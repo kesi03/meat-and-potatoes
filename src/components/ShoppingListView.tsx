@@ -97,14 +97,14 @@ export default function ShoppingListView({
       <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
         {onBack && (
           <Button startIcon={<ArrowBack />} onClick={onBack} sx={{ mr: 1 }}>
-            Back
+            {t('back')}
           </Button>
         )}
        
 
         <ToggleButtonGroup value={pickingMode ? 'pick' : 'browse'} exclusive onChange={(e, v) => v && setPickingMode(v === 'pick')}>
-          <ToggleButton value="browse"><ListIcon sx={{ mr: 1 }} />Browse</ToggleButton>
-          <ToggleButton value="pick"><PlayArrow sx={{ mr: 1 }} />Pick</ToggleButton>
+          <ToggleButton value="browse"><ListIcon sx={{ mr: 1 }} />{t('browse')}</ToggleButton>
+          <ToggleButton value="pick"><PlayArrow sx={{ mr: 1 }} />{t('pick')}</ToggleButton>
         </ToggleButtonGroup>
         
         {!pickingMode && (

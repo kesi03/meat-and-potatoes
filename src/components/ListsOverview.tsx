@@ -1,5 +1,6 @@
 import { Box, Typography, Card, CardActions, Button, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { ShoppingCart, Add } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 
 interface ShoppingList {
   id: string;
@@ -16,12 +17,13 @@ interface ListsOverviewProps {
 }
 
 export default function ListsOverview({ lists, onSelectList, onDeleteList, onAddList }: ListsOverviewProps) {
+  const { t } = useTranslation();
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">My Lists</Typography>
+        <Typography variant="h5">{t('myLists')}</Typography>
         <Button variant="contained" startIcon={<Add />} onClick={onAddList}>
-          New List
+          {t('addList')}
         </Button>
       </Box>
 

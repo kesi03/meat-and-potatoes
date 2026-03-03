@@ -3,6 +3,7 @@ import { getDeviceInfo, lookupProduct, generateId, CurrencyCode, getCurrencyByCo
 import { Button, Dialog, DialogContent, DialogActions, Box, Typography, Avatar, TextField, FormControl, InputLabel, Select, MenuItem, InputAdornment, IconButton } from '@mui/material';
 import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 import CloseIcon from '@mui/icons-material/Close';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import BarCodeApp from './BarCode';
 import type { ShoppingItem, Category } from '../context/AppContext';
 
@@ -34,7 +35,9 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
     const [itemQuantity, setItemQuantity] = useState(1);
     const [itemCost, setItemCost] = useState(0);
     const [bestByDate, setBestByDate] = useState('');
+    const [capturedImage, setCapturedImage] = useState<string>('');
     const scannedRef = useRef(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (!dialogOpen) {
@@ -44,14 +47,78 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
             setItemQuantity(1);
             setItemCost(0);
             setBestByDate('');
+            setCapturedImage('');
             scannedRef.current = false;
         }
     }, [dialogOpen]);
+
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [showCamera, setShowCamera] = useState(false);
+    const [stream, setStream] = useState<MediaStream | null>(null);
+
+    const startCamera = async () => {
+        try {
+            const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            setStream(mediaStream);
+            setShowCamera(true);
+            if (videoRef.current) {
+                videoRef.current.srcObject = mediaStream;
+            }
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+            fileInputRef.current?.click();
+        }
+    };
+
+    const stopCamera = () => {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            setStream(null);
+        }
+        setShowCamera(false);
+    };
+
+    const capturePhoto = () => {
+        if (videoRef.current) {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(videoRef.current, 0, 0);
+                const dataUrl = canvas.toDataURL('image/jpeg');
+                setCapturedImage(dataUrl);
+                stopCamera();
+            }
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setCapturedImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleProductFound = (product: ScannedProduct) => {
         setScannedProduct(product);
         setItemName(product.name || '');
         setItemCategory(product.categories?.split(',')[0]?.trim() || '');
+        setItemQuantity(1);
+        setItemCost(0);
+        scannedRef.current = true;
+    };
+
+    const handleProductNotFound = (barcode: string) => {
+        setScannedProduct({ name: '', barcode });
+        setItemName('');
+        setItemCategory('');
         setItemQuantity(1);
         setItemCost(0);
         scannedRef.current = true;
@@ -70,7 +137,7 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
             nutritionalInfo: '',
             weightSize: scannedProduct?.quantity || '',
             bestByDate: bestByDate || null,
-            image: scannedProduct?.image || '',
+            image: capturedImage || scannedProduct?.image || '',
         };
 
         addItemToList(listId, newItem);
@@ -87,18 +154,47 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
                 <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
                 <DialogContent>
                     {!scannedProduct ? (
-                        <BarCodeApp 
-                            onProductFound={handleProductFound} 
-                            autoStop={true}
-                            scannedRef={scannedRef}
-                        />
+                        <>
+                            <BarCodeApp 
+                                onProductFound={handleProductFound} 
+                                onProductNotFound={handleProductNotFound}
+                                autoStop={true}
+                                scannedRef={scannedRef}
+                            />
+                            <Button 
+                                variant="outlined" 
+                                onClick={() => handleProductNotFound('')}
+                                fullWidth
+                                sx={{ mt: 2 }}
+                            >
+                                Enter Manually
+                            </Button>
+                        </>
                     ) : (
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
-                            {scannedProduct.image && (
-                                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+                                {capturedImage ? (
+                                    <Avatar src={capturedImage} sx={{ width: 100, height: 100 }} />
+                                ) : scannedProduct?.image ? (
                                     <Avatar src={scannedProduct.image} sx={{ width: 100, height: 100 }} />
-                                </Box>
-                            )}
+                                ) : null}
+                            </Box>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                capture="environment"
+                                ref={fileInputRef}
+                                style={{ display: 'none' }}
+                                onChange={handleFileChange}
+                            />
+                            <Button
+                                variant="outlined"
+                                startIcon={<PhotoCameraIcon />}
+                                onClick={handleTakePhoto}
+                                fullWidth
+                            >
+                                {capturedImage ? 'Retake Photo' : 'Take Photo'}
+                            </Button>
                             <Typography variant="h6" textAlign="center">{scannedProduct.name}</Typography>
                             {scannedProduct.brand && <Typography variant="body2" color="text.secondary" textAlign="center">{scannedProduct.brand}</Typography>}
                             {scannedProduct.quantity && <Typography variant="body2" color="text.secondary" textAlign="center">{scannedProduct.quantity}</Typography>}
@@ -155,8 +251,8 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
                     <Button onClick={() => setDialogOpen(false)} startIcon={<CloseIcon />}>
                         Close
                     </Button>
-                    {scannedProduct && (
-                        <Button onClick={handleSave} variant="contained">
+                    {scannedProduct !== null && (
+                        <Button onClick={handleSave} variant="contained" disabled={!itemName.trim()}>
                             Save
                         </Button>
                     )}

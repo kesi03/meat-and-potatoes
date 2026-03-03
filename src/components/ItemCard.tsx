@@ -60,7 +60,11 @@ export default function ItemCard({
       <CardContent sx={{ pb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
-            <Avatar sx={{ bgcolor: 'primary.light' }}>{item.name?.[0]}</Avatar>
+            {item.image ? (
+              <Avatar src={item.image} sx={{ width: 48, height: 48 }}>{item.name?.[0]}</Avatar>
+            ) : (
+              <Avatar sx={{ bgcolor: 'primary.light' }}>{item.name?.[0]}</Avatar>
+            )}
             <Box>
               <Typography variant="subtitle1" fontWeight={600}>{getTranslatedItemName(item.name, t)}</Typography>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -129,6 +133,14 @@ export default function ItemCard({
               <Box>
                 <Typography variant="caption" color="text.secondary">Best By</Typography>
                 <Typography variant="body2">{new Date(item.bestByDate).toLocaleDateString()}</Typography>
+              </Box>
+            )}
+            {item.image && (
+              <Box>
+                <Typography variant="caption" color="text.secondary">Image</Typography>
+                <Box sx={{ mt: 0.5 }}>
+                  <img src={item.image} alt={item.name} style={{ maxWidth: 100, maxHeight: 100, borderRadius: 8 }} />
+                </Box>
               </Box>
             )}
           </Box>
