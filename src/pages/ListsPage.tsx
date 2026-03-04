@@ -74,8 +74,9 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
   };
 
   const handleDeleteItemFromList = (itemId: string) => {
-    if (!itemDialog.listId) return;
-    deleteItemFromList(itemDialog.listId, itemId);
+    const listId = itemDialog.listId || selectedListId;
+    if (!listId) return;
+    deleteItemFromList(listId, itemId);
   };
 
   const selectedList = shoppingLists.find(l => l.id === selectedListId);

@@ -1,11 +1,22 @@
 import { useEffect, useState, useRef } from 'react';
 import { getDeviceInfo, lookupProduct, generateId, CurrencyCode, getCurrencyByCode } from '../meat';
-import { Button, Dialog, DialogContent, DialogActions, Box, Typography, Avatar, TextField, FormControl, InputLabel, Select, MenuItem, InputAdornment, IconButton } from '@mui/material';
+import { Button, Dialog, DialogContent, DialogActions, Box, Typography, Avatar, TextField, FormControl, InputLabel, Select, MenuItem, InputAdornment, IconButton, Chip } from '@mui/material';
 import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 import CloseIcon from '@mui/icons-material/Close';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import BarCodeApp from './BarCode';
 import type { ShoppingItem, Category } from '../context/AppContext';
+
+function getNutriscoreColor(grade: string): "success" | "warning" | "error" | "info" | "default" {
+    const colors: Record<string, "success" | "warning" | "error" | "info" | "default"> = {
+        'a': 'success',
+        'b': 'info',
+        'c': 'warning',
+        'd': 'warning',
+        'e': 'error',
+    };
+    return colors[grade.toLowerCase()] || 'default';
+}
 
 interface ScannedProduct {
     name: string;
@@ -14,6 +25,13 @@ interface ScannedProduct {
     quantity?: string;
     categories?: string;
     barcode: string;
+    nutritionalInfo?: string;
+    ingredients?: string;
+    allergens?: string;
+    labels?: string;
+    country?: string;
+    nutriscore?: string;
+    additives?: number;
 }
 
 interface DeviceBannerProps {
@@ -38,8 +56,7 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
     const [capturedImage, setCapturedImage] = useState<string>('');
     const [showCamera, setShowCamera] = useState(false);
     const [showCropper, setShowCropper] = useState(false);
-    const [cropArea, setCropArea] = useState({ x: 0, y: 0, width: 100, height: 100 });
-    const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+    const [cropArea, setCropArea] = useState({ x: 20, y: 20, width: 150, height: 150 });
     const scannedRef = useRef(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -135,28 +152,29 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
     const handleMouseDown = (e: React.MouseEvent) => {
         const rect = containerRef.current?.getBoundingClientRect();
         if (rect) {
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
             setIsDragging(true);
-            setDragStart({
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-            });
+            setDragStart({ x, y });
+            setCropArea({ x, y, width: 0, height: 0 });
         }
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!isDragging || !containerRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+        const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
         
-        const newWidth = Math.max(50, Math.min(x - dragStart.x + cropArea.width, containerRef.current.clientWidth - cropArea.x));
-        const newHeight = Math.max(50, Math.min(y - dragStart.y + cropArea.height, containerRef.current.clientHeight - cropArea.y));
+        const newX = Math.min(x, dragStart.x);
+        const newY = Math.min(y, dragStart.y);
         
-        setCropArea(prev => ({
-            ...prev,
-            width: newWidth,
-            height: newHeight
-        }));
+        setCropArea({
+            x: newX,
+            y: newY,
+            width: Math.abs(x - dragStart.x),
+            height: Math.abs(y - dragStart.y)
+        });
     };
 
     const handleMouseUp = () => {
@@ -224,10 +242,15 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
             cost: itemCost,
             description: scannedProduct?.brand || '',
             barcode: scannedProduct?.barcode || '',
-            nutritionalInfo: '',
+            nutritionalInfo: scannedProduct?.nutritionalInfo || '',
             weightSize: scannedProduct?.quantity || '',
             bestByDate: bestByDate || null,
             image: capturedImage || scannedProduct?.image || '',
+            ingredients: scannedProduct?.ingredients || '',
+            allergens: scannedProduct?.allergens || '',
+            labels: scannedProduct?.labels || '',
+            country: scannedProduct?.country || '',
+            nutriscore: scannedProduct?.nutriscore || '',
         };
 
         addItemToList(listId, newItem);
@@ -311,17 +334,8 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
                                     style={{ 
                                         width: '100%', 
                                         display: 'block',
-                                        userSelect: 'none'
-                                    }}
-                                    onLoad={(e) => {
-                                        const img = e.currentTarget;
-                                        setImageSize({ width: img.clientWidth, height: img.clientHeight });
-                                        setCropArea({ 
-                                            x: 0, 
-                                            y: 0, 
-                                            width: img.clientWidth, 
-                                            height: img.clientHeight 
-                                        });
+                                        userSelect: 'none',
+                                        pointerEvents: 'none'
                                     }}
                                 />
                                 <Box
@@ -394,6 +408,49 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
                             <Typography variant="h6" textAlign="center">{scannedProduct.name}</Typography>
                             {scannedProduct.brand && <Typography variant="body2" color="text.secondary" textAlign="center">{scannedProduct.brand}</Typography>}
                             {scannedProduct.quantity && <Typography variant="body2" color="text.secondary" textAlign="center">{scannedProduct.quantity}</Typography>}
+                            
+                            {scannedProduct.nutritionalInfo && (
+                                <Box sx={{ bgcolor: '#f5f5f5', p: 1.5, borderRadius: 1 }}>
+                                    <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                                        Nutritional Info (per 100g)
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ whiteSpace: 'pre-line', fontSize: '0.75rem' }}>
+                                        {scannedProduct.nutritionalInfo}
+                                    </Typography>
+                                </Box>
+                            )}
+                            
+                            {scannedProduct.country && (
+                                <Typography variant="body2" color="text.secondary">
+                                    <strong>Country:</strong> {scannedProduct.country}
+                                </Typography>
+                            )}
+                            
+                            {scannedProduct.nutriscore && (
+                                <Chip 
+                                    label={`Nutri-Score: ${scannedProduct.nutriscore.toUpperCase()}`} 
+                                    color={getNutriscoreColor(scannedProduct.nutriscore)} 
+                                    size="small"
+                                />
+                            )}
+                            
+                            {scannedProduct.labels && (
+                                <Typography variant="body2" color="text.secondary">
+                                    <strong>Labels:</strong> {scannedProduct.labels}
+                                </Typography>
+                            )}
+                            
+                            {scannedProduct.allergens && (
+                                <Typography variant="body2" color="error.main">
+                                    <strong>Allergens:</strong> {scannedProduct.allergens}
+                                </Typography>
+                            )}
+                            
+                            {scannedProduct.additives && scannedProduct.additives > 0 && (
+                                <Typography variant="body2" color="warning.main">
+                                    <strong>Additives:</strong> {scannedProduct.additives} additive(s)
+                                </Typography>
+                            )}
                             
                             <TextField
                                 label="Name"

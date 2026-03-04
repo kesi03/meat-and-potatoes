@@ -69,6 +69,7 @@ export default function ShoppingListView({
   onBack,
 }: ShoppingListViewProps) {
   const { t, i18n } = useTranslation();
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const totalCost = items.reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
   const pickedCost = items.filter(item => pickedItems.has(item.id)).reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
 
@@ -177,9 +178,10 @@ export default function ShoppingListView({
             <ItemCard
               key={item.id}
               item={item}
-              expanded={false}
-              onToggle={() => {}}
+              expanded={expandedItem === item.id}
+              onToggle={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
               onEdit={() => onEditItem(item)}
+              onDelete={() => onDeleteItem(item.id)}
               onMoveToInventory={() => onMoveToInventory(item)}
               categories={categories}
               currency={currency}

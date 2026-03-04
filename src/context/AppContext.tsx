@@ -47,6 +47,11 @@ export interface ShoppingItem {
   weightSize: string;
   bestByDate: string | null;
   image: string;
+  ingredients?: string;
+  allergens?: string;
+  labels?: string;
+  country?: string;
+  nutriscore?: string;
 }
 
 export interface InventoryItem extends ShoppingItem {

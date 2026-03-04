@@ -9,6 +9,7 @@ interface ProductInfo {
   image: string;
   quantity: string;
   categories: string;
+  nutritionalInfo?: string;
 }
 
 interface BarCodeProps {

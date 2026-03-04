@@ -183,6 +183,13 @@ export async function lookupProduct(barcode: string) {
         image: data.product.image_front_small_url,
         quantity: data.product.quantity,
         categories: data.product.categories,
+        nutritionalInfo: formatNutritionalInfo(data.product),
+        ingredients: data.product.ingredients_text,
+        allergens: data.product.allergens,
+        labels: data.product.labels,
+        country: data.product.countries,
+        nutriscore: data.product.nutriscore_grade,
+        additives: data.product.additives_tags ? data.product.additives_tags.length : 0,
       } : null
     },
     {
@@ -212,6 +219,41 @@ export async function lookupProduct(barcode: string) {
       } : null
     }
   ];
+
+  function formatNutritionalInfo(product: any): string {
+    const nutrients = product.nutriments || {};
+    const lines: string[] = [];
+    
+    if (nutrients['energy-kcal_100g'] !== undefined) {
+      lines.push(`Energy: ${nutrients['energy-kcal_100g']} kcal/100g`);
+    }
+    if (nutrients.fat_100g !== undefined) {
+      lines.push(`Fat: ${nutrients.fat_100g}g/100g`);
+    }
+    if (nutrients['saturated-fat_100g'] !== undefined) {
+      lines.push(`Saturated Fat: ${nutrients['saturated-fat_100g']}g/100g`);
+    }
+    if (nutrients.carbohydrates_100g !== undefined) {
+      lines.push(`Carbs: ${nutrients.carbohydrates_100g}g/100g`);
+    }
+    if (nutrients.sugars_100g !== undefined) {
+      lines.push(`Sugars: ${nutrients.sugars_100g}g/100g`);
+    }
+    if (nutrients.fiber_100g !== undefined) {
+      lines.push(`Fiber: ${nutrients.fiber_100g}g/100g`);
+    }
+    if (nutrients.proteins_100g !== undefined) {
+      lines.push(`Protein: ${nutrients.proteins_100g}g/100g`);
+    }
+    if (nutrients.sodium_100g !== undefined) {
+      lines.push(`Sodium: ${nutrients.sodium_100g}g/100g`);
+    }
+    if (nutrients.salt_100g !== undefined) {
+      lines.push(`Salt: ${nutrients.salt_100g}g/100g`);
+    }
+    
+    return lines.join('\n');
+  }
 
   for (const api of apis) {
     try {

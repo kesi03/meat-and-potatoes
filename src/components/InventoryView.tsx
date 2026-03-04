@@ -56,6 +56,9 @@ export default function InventoryView({
     if (expirationFilter === 'all') return items;
     return items.filter(item => {
       const status = getExpirationStatus(item.bestByDate);
+      if (expirationFilter === 'fresh') {
+        return status === 'fresh' || status === 'unknown';
+      }
       return status === expirationFilter;
     });
   };
@@ -146,6 +149,17 @@ interface InventoryListItemProps {
   getTranslatedCategoryName: (catName: string) => string;
 }
 
+function getNutriscoreColor(grade: string): "success" | "warning" | "error" | "info" | "default" {
+  const colors: Record<string, "success" | "warning" | "error" | "info" | "default"> = {
+    'a': 'success',
+    'b': 'info',
+    'c': 'warning',
+    'd': 'warning',
+    'e': 'error',
+  };
+  return colors[grade?.toLowerCase()] || 'default';
+}
+
 function InventoryListItem({ item, currency, onEdit, onDelete, getTranslatedCategoryName }: InventoryListItemProps) {
   const expirationStatus = getExpirationStatus(item.bestByDate);
   const daysLeft = getDaysUntilExpiration(item.bestByDate);
@@ -195,11 +209,20 @@ function InventoryListItem({ item, currency, onEdit, onDelete, getTranslatedCate
         )}
       </ListItemAvatar>
       <ListItemText 
-        primary={item.name} 
+        primary={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="subtitle1">{item.name}</Typography>
+            {item.nutriscore && (
+              <Chip label={item.nutriscore.toUpperCase()} size="small" color={getNutriscoreColor(item.nutriscore)} />
+            )}
+          </Box>
+        } 
         secondary={
           <Box component="span" sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
             <Chip label={getTranslatedCategoryName(item.category)} size="small" />
             {item.location && <Chip label={item.location} size="small" variant="outlined" />}
+            {item.allergens && <Chip label={item.allergens} size="small" color="error" />}
+            {item.labels && <Chip label={item.labels.split(',')[0]} size="small" variant="outlined" />}
             {item.cost && <Typography variant="caption">{formatCurrency(item.cost, currency)}</Typography>}
           </Box>
         }
