@@ -94,36 +94,35 @@ export default function ShoppingListView({
   }, {} as Record<string, typeof items>);
 
   return (
-    <Box>
-      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+    <Box data-testid="shopping-list-view">
+      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }} data-testid="list-controls">
         {onBack && (
-          <Button startIcon={<ArrowBack />} onClick={onBack} sx={{ mr: 1 }}>
+          <Button startIcon={<ArrowBack />} onClick={onBack} sx={{ mr: 1 }} data-testid="back-button">
             {t('back')}
           </Button>
         )}
-       
 
-        <ToggleButtonGroup value={pickingMode ? 'pick' : 'browse'} exclusive onChange={(e, v) => v && setPickingMode(v === 'pick')}>
-          <ToggleButton value="browse"><ListIcon sx={{ mr: 1 }} />{t('browse')}</ToggleButton>
-          <ToggleButton value="pick"><PlayArrow sx={{ mr: 1 }} />{t('pick')}</ToggleButton>
+        <ToggleButtonGroup value={pickingMode ? 'pick' : 'browse'} exclusive onChange={(e, v) => v && setPickingMode(v === 'pick')} data-testid="mode-toggle">
+          <ToggleButton value="browse" data-testid="browse-button"><ListIcon sx={{ mr: 1 }} />{t('browse')}</ToggleButton>
+          <ToggleButton value="pick" data-testid="pick-button"><PlayArrow sx={{ mr: 1 }} />{t('pick')}</ToggleButton>
         </ToggleButtonGroup>
         
         {!pickingMode && (
           <>
-            <Chip label="All" onClick={() => setCategoryFilter('')} color={!categoryFilter ? 'primary' : 'default'} />
+            <Chip label="All" onClick={() => setCategoryFilter('')} color={!categoryFilter ? 'primary' : 'default'} data-testid="filter-all" />
             {categories.map(cat => (
-              <Chip key={cat.id} label={getCategoryName(cat, i18n.language)} onClick={() => setCategoryFilter(cat.name)} color={categoryFilter === cat.name ? 'primary' : 'default'} />
+              <Chip key={cat.id} label={getCategoryName(cat, i18n.language)} onClick={() => setCategoryFilter(cat.name)} color={categoryFilter === cat.name ? 'primary' : 'default'} data-testid={`filter-${cat.name}`} />
             ))}
           </>
         )}
         
-        <Box sx={{ ml: 'auto', textAlign: 'right' }}>
+        <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
           {pickingMode ? (
-            <Typography variant="h6" color="primary">
+            <Typography variant="h6" color="primary" data-testid="picking-progress">
               {pickedItems.size} / {items.length} ({formatCurrency(pickedCost, currency)})
             </Typography>
           ) : (
-            <Typography variant="h6" color="primary">
+            <Typography variant="h6" color="primary" data-testid="total-cost">
               Total: {formatCurrency(totalCost, currency)}
             </Typography>
           )}
@@ -131,9 +130,9 @@ export default function ShoppingListView({
       </Box>
 
       {items.length === 0 ? (
-        <Alert severity="info">No items in this list. Click + to add items.</Alert>
+        <Alert severity="info" data-testid="no-items-message">No items in this list. Click + to add items.</Alert>
       ) : pickingMode ? (
-        <Box>
+        <Box data-testid="pick-mode-list">
           {Object.entries(groupedItems).map(([category, categoryItems]) => (
             <Box key={category} sx={{ mb: 3 }}>
               <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1, color: 'primary.main' }}>
@@ -143,6 +142,7 @@ export default function ShoppingListView({
                 {categoryItems.map(item => (
                   <ListItem
                     key={item.id}
+                    data-testid={`pick-item-${item.id}`}
                     sx={{ 
                       bgcolor: 'background.paper', 
                       mb: 1, 

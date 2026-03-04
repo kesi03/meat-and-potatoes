@@ -19,16 +19,16 @@ interface ListsOverviewProps {
 export default function ListsOverview({ lists, onSelectList, onDeleteList, onAddList }: ListsOverviewProps) {
   const { t } = useTranslation();
   return (
-    <Box>
+    <Box data-testid="lists-overview">
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h5">{t('myLists')}</Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={onAddList}>
+        <Button variant="contained" startIcon={<Add />} onClick={onAddList} data-testid="add-list-button">
           {t('addList')}
         </Button>
       </Box>
 
       {lists.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
+        <Box sx={{ textAlign: 'center', py: 4 }} data-testid="no-lists-message">
           <Typography variant="body1" color="text.secondary" gutterBottom>
             No shopping lists yet
           </Typography>
@@ -37,12 +37,13 @@ export default function ListsOverview({ lists, onSelectList, onDeleteList, onAdd
           </Button>
         </Box>
       ) : (
-        <List>
+        <List data-testid="lists-container">
           {lists.map(list => (
             <ListItem
               key={list.id}
               disablePadding
               sx={{ mb: 1 }}
+              data-testid={`list-item-${list.id}`}
             >
               <Card sx={{ width: '100%' }}>
                 <ListItemButton onClick={() => onSelectList(list.id)}>
@@ -55,13 +56,14 @@ export default function ListsOverview({ lists, onSelectList, onDeleteList, onAdd
                   />
                 </ListItemButton>
                 <CardActions>
-                  <Button size="small" onClick={() => onSelectList(list.id)}>
+                  <Button size="small" onClick={() => onSelectList(list.id)} data-testid={`open-list-${list.id}`}>
                     Open
                   </Button>
                   <Button 
                     size="small" 
                     color="error" 
                     onClick={(e) => { e.stopPropagation(); onDeleteList(list.id); }}
+                    data-testid={`delete-list-${list.id}`}
                   >
                     Delete
                   </Button>
