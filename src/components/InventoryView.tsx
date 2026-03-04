@@ -11,13 +11,19 @@ import {
   Button,
   ToggleButton,
   ToggleButtonGroup,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  ButtonGroup,
 } from '@mui/material';
-import { Store, Warning, CheckCircle, Edit, Delete } from '@mui/icons-material';
+import { Store, Warning, CheckCircle, Edit, Delete, Add } from '@mui/icons-material';
 import { getExpirationStatus, formatCurrency, CurrencyCode, getDaysUntilExpiration } from '../meat';
 import type { InventoryItem, Category } from '../context/AppContext';
 import { getCategoryName } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
+import { t } from 'i18next';
 
 interface InventoryViewProps {
   inventory: InventoryItem[];
@@ -28,6 +34,7 @@ interface InventoryViewProps {
     expiringSoon: InventoryItem[];
     fresh: InventoryItem[];
   };
+  handleAddItem: () => void;
   onEditItem: (item: InventoryItem) => void;
   onDeleteItem: (id: string) => void;
   onClearInventory: () => void;
@@ -39,6 +46,7 @@ export default function InventoryView({
   categories,
   inventoryByCategory,
   expirationStats,
+  handleAddItem,
   onEditItem,
   onDeleteItem,
   onClearInventory,
@@ -46,6 +54,7 @@ export default function InventoryView({
 }: InventoryViewProps) {
   const { t, i18n } = useTranslation();
   const [expirationFilter, setExpirationFilter] = useState<string>('all');
+ 
   
   const getTranslatedCategoryName = (catName: string) => {
     const cat = categories.find(c => c.name === catName);
@@ -96,8 +105,14 @@ export default function InventoryView({
       </Box>
       {inventory.length > 0 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
-            <Button
-              variant="outlined"
+            <ButtonGroup variant="outlined" color="error" size="small">
+              <Button
+                color="primary"
+                variant="contained"
+                startIcon={<Add />}
+                onClick={handleAddItem}>{t('add')}</Button>
+               <Button
+              variant="contained"
               color="error"
               size="small"
               startIcon={<Delete />}
@@ -105,6 +120,7 @@ export default function InventoryView({
             >
               {t('clearAllInventory')}
             </Button>
+            </ButtonGroup>
           </Box>
         )}
 
@@ -163,6 +179,10 @@ function getNutriscoreColor(grade: string): "success" | "warning" | "error" | "i
 function InventoryListItem({ item, currency, onEdit, onDelete, getTranslatedCategoryName }: InventoryListItemProps) {
   const expirationStatus = getExpirationStatus(item.bestByDate);
   const daysLeft = getDaysUntilExpiration(item.bestByDate);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const handleDelete = () => {
+    setDeleteConfirmOpen(true);
+  };
 
   const statusColors = {
     expired: 'error',
@@ -195,7 +215,7 @@ function InventoryListItem({ item, currency, onEdit, onDelete, getTranslatedCate
           <IconButton onClick={onEdit} size="small">
             <Edit fontSize="small" />
           </IconButton>
-          <IconButton onClick={onDelete} size="small" color="error">
+          <IconButton onClick={handleDelete} size="small" color="error">
             <Delete fontSize="small" />
           </IconButton>
         </Box>
@@ -227,6 +247,18 @@ function InventoryListItem({ item, currency, onEdit, onDelete, getTranslatedCate
           </Box>
         }
       />
-    </ListItem>
+     <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+        <DialogTitle>{t('confirmDelete') || 'Confirm Delete'}</DialogTitle>
+          <DialogContent>
+            <Typography>{t('confirmDeleteMessage', { defaultValue: 'Are you sure you want to delete "{{name}}"?', name: item.name })}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmOpen(false)}>{t('cancel')}</Button>
+          <Button onClick={() => { onDelete?.(); setDeleteConfirmOpen(false); }} color="error" variant="contained">
+            {t('delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+       </ListItem>
   );
 }

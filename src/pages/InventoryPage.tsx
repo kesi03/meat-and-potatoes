@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Fab, Dialog, DialogTitle } from '@mui/material';
+import { Box, Fab, Dialog, DialogTitle, Button, DialogActions, DialogContent, Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import InventoryView from '../components/InventoryView';
 import ItemForm from '../components/ItemForm';
@@ -12,6 +12,7 @@ export default function InventoryPage() {
   const { inventory, categories, currency, addInventoryItem, updateInventoryItem, deleteInventoryItem, clearInventory } = useApp();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
   const inventoryByCategory = categories.reduce((acc, cat) => {
@@ -72,14 +73,10 @@ export default function InventoryPage() {
     }
   };
 
-  const handleClearAll = () => {
-    if (inventory.length === 0) return;
-    if (window.confirm('Are you sure you want to remove all items from inventory?')) {
-      clearInventory();
-    }
-  };
+  
 
   return (
+    
     <Box sx={{ pb: 10 }}>
       <InventoryView
         inventory={inventory}
@@ -88,17 +85,12 @@ export default function InventoryPage() {
         expirationStats={getExpirationStats()}
         onEditItem={handleEditItem}
         onDeleteItem={deleteInventoryItem}
-        onClearInventory={handleClearAll}
+        onClearInventory={() => setDeleteConfirmOpen(true)}
+        handleAddItem={handleAddItem}
         currency={currency}
       />
 
-      <Fab
-        color="secondary"
-        sx={{ position: 'fixed', bottom: 80, right: 24 }}
-        onClick={handleAddItem}
-      >
-        <Add />
-      </Fab>
+
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{dialogMode === 'add' ? t('addItem') : t('editItem')}</DialogTitle>
@@ -111,6 +103,18 @@ export default function InventoryPage() {
           isEdit={dialogMode === 'edit'}
           showHomeQuantity
         />
+      </Dialog>
+      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+        <DialogTitle>{t('confirmInventoryClear') || 'Confirm Clear Inventory'}</DialogTitle>
+          <DialogContent>
+            <Typography>{t('confirmClearInventory')}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmOpen(false)}>{t('no')}</Button>
+          <Button onClick={() => {clearInventory();setDeleteConfirmOpen(false)}} color="error" variant="contained">
+            {t('yes')}
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

@@ -57,7 +57,7 @@ export default function ListsOverview({ lists, onSelectList, onDeleteList, onAdd
                 </ListItemButton>
                 <CardActions>
                   <Button size="small" onClick={() => onSelectList(list.id)} data-testid={`open-list-${list.id}`}>
-                    Open
+                    {t('open')}
                   </Button>
                   <Button 
                     size="small" 
@@ -65,7 +65,7 @@ export default function ListsOverview({ lists, onSelectList, onDeleteList, onAdd
                     onClick={(e) => { e.stopPropagation(); onDeleteList(list.id); }}
                     data-testid={`delete-list-${list.id}`}
                   >
-                    Delete
+                    {t('delete')}
                   </Button>
                 </CardActions>
               </Card>

@@ -5,6 +5,7 @@ const resources = {
   en: {
     translation: {
       appName: 'Shopping List',
+      open: 'Open',
       lists: 'Lists',
       browse: 'Browse',
       pick: 'Pick',
@@ -12,6 +13,10 @@ const resources = {
       back: 'Back',
       myLists: 'My Lists',
       inventory: 'Inventory',
+      confirmInventoryClear: 'Clear Inventory',
+      confirmClearInventory: 'Are you sure you want to clear the entire inventory? This action cannot be undone.',
+      yes: 'Yes',
+      no: 'No',
       admin: 'Admin',
       addItem: 'Add Item',
       editItem: 'Edit Item',
@@ -118,6 +123,7 @@ const resources = {
   ga: {
     translation: {
       appName: 'Liosta Siopadóireachta',
+      open: 'Oscail',
       lists: 'Liostaí',
       browse: 'Brabhsáil',
       pick: 'Roghaigh',
@@ -125,6 +131,9 @@ const resources = {
       back: 'Siar',
       myLists: 'Mo Liostaí',
       inventory: 'Stoc',
+      confirmInventoryClear: 'Glan Stoc',
+      confirmClearInventory: 'An bhfuil tú cinnte go bhfuil tú ag iarraidh an stoc iomlán a ghlanadh? Ní féidir an gníomh seo a chur ar ais.',
+      yes: 'Tá', no: 'Níl',
       admin: 'Riarachán',
       addItem: 'Cuir Earra Leis',
       editItem: 'Cuir Earra in Eagar',
@@ -231,6 +240,7 @@ const resources = {
   cy: {
     translation: {
       appName: 'Rhestr Siopa',
+      open: 'Agor',
       lists: 'Rhestrau',
       browse: 'Pori',
       pick: 'Dewis',
@@ -238,6 +248,9 @@ const resources = {
       back: 'Nôl',
       myLists: 'Fy Rhestrau',
       inventory: 'Anghenion',
+      confirmInventoryClear: 'Clirio\'r Anghenion',
+      confirmClearInventory: 'Ydych chi\'n siŵr eich bod chi am glirio\'r angenion cyfan? Ni ellir dadwneud y weithred hon.',
+      yes: 'Ydw', no: 'Nac ydw',
       admin: 'Gweinyddol',
       addItem: 'Ychwanegu Eitem',
       editItem: 'Golygu Eitem',
@@ -344,6 +357,7 @@ const resources = {
   gd: {
     translation: {
       appName: 'Liosta Lùda',
+      open: 'Fosgail',
       lists: 'Liostaichean',
       browse: 'Browse',
       pick: 'Pick',
@@ -351,6 +365,9 @@ const resources = {
       back: 'Air ais',
       myLists: 'Mo Liostaichean',
       inventory: 'Inbhearra',
+      confirmInventoryClear: 'Glan an Inbhearra',
+      confirmClearInventory: 'A bheil thu cinnteach gu bheil thu airson an inbhearra gu lèir a ghlanadh? Cha ghabh an gnìomh seo a chur air ais.',
+      yes: 'Tha', no: 'Chan eil',
       admin: 'Rianachd',
       addItem: 'Cuir rude ris',
       editItem: 'Deasaich rud',
@@ -457,6 +474,7 @@ const resources = {
   sv: {
     translation: {
       appName: 'Inköpslista',
+      open: 'Öppna',
       lists: 'Listor',
       browse: 'Bläddra',
       pick: 'Plocka',
@@ -464,6 +482,9 @@ const resources = {
       back: 'Tillbaka',
       myLists: 'Mina Listor',
       inventory: 'Förråd',
+      confirmInventoryClear: 'Rensa förråd',
+      confirmClearInventory: 'Är du säker på att du vill rensa hela förrådet? Denna åtgärd kan inte ångras.',
+      yes: 'Ja', no: 'Nej',
       admin: 'Admin',
       addItem: 'Lägg till artikel',
       editItem: 'Redigera artikel',
@@ -570,6 +591,7 @@ const resources = {
   fi: {
     translation: {
       appName: 'Ostoslista',
+      open: 'Avaa',
       lists: 'Listat',
       browse: 'Selaa',
       pick: 'Poimi',
@@ -577,6 +599,9 @@ const resources = {
       back: 'Takaisin',
       myLists: 'Omat Listat',
       inventory: 'Varasto',
+      confirmInventoryClear: 'Tyhjennä varasto',
+      confirmClearInventory: 'Oletko varma, että haluat tyhjentää koko varaston? Tätä toimintoa ei voi peruuttaa.',
+      yes: 'Kyllä', no: 'Ei',
       admin: 'Hallinto',
       addItem: 'Lisää tuote',
       editItem: 'Muokkaa tuotetta',
@@ -683,6 +708,7 @@ const resources = {
   da: {
     translation: {
       appName: 'Indkøbsliste',
+      open: 'Åbn',
       lists: 'Lister',
       browse: 'Gennemse',
       pick: 'Pluk',
@@ -690,6 +716,9 @@ const resources = {
       back: 'Tilbage',
       myLists: 'Mine Lister',
       inventory: 'Lager',
+      confirmInventoryClear: 'Ryd Lager',
+      confirmClearInventory: 'Er du sikker på, at du vil rydde hele lageret? Denne handling kan ikke fortrydes.',
+      yes: 'Ja', no: 'Nej',
       admin: 'Admin',
       addItem: 'Tilføj vare',
       editItem: 'Rediger vare',
@@ -796,6 +825,7 @@ const resources = {
   no: {
     translation: {
       appName: 'Handleliste',
+      open: 'Åpne',
       lists: 'Lister',
       browse: 'Bla',
       pick: 'Plukk',
@@ -803,6 +833,9 @@ const resources = {
       back: 'Tilbake',
       myLists: 'Mine Lister',
       inventory: 'Lager',
+      confirmInventoryClear: 'Tøm Lager',
+      confirmClearInventory: 'Er du sikker på at du vil tømme hele lageret? Denne handlingen kan ikke angres.',
+      yes: 'Ja', no: 'Nei',
       admin: 'Admin',
       addItem: 'Legg til vare',
       editItem: 'Rediger vare',
@@ -909,6 +942,7 @@ const resources = {
   fo: {
     translation: {
       appName: 'Innkeypslisti',
+      open: 'Opna',
       lists: 'Listar',
       browse: 'Browse',
       pick: 'Plukka',
@@ -916,6 +950,9 @@ const resources = {
       back: 'Aftur',
       myLists: 'Mínir Listar',
       inventory: 'Uttan',
+      confirmInventoryClear: 'Tøm Uttan',
+      confirmClearInventory: 'Ert tú vissur um at tú vilt tømma alt uttan? Hetta kann ikki afturberast.',
+      yes: 'Ja', no: 'Nei',
       admin: 'Stjórn',
       addItem: 'Legg til lut',
       editItem: 'Broyt lut',
@@ -1022,6 +1059,7 @@ const resources = {
   is: {
     translation: {
       appName: 'Innkaupalisti',
+      open: 'Opna',
       lists: 'Listar',
       browse: 'Flett',
       pick: 'Velja',
@@ -1029,6 +1067,9 @@ const resources = {
       back: 'Til baka',
       myLists: 'Mínir Listar',
       inventory: 'Birgðir',
+      confirmInventoryClear: 'Tæma Birgðir',
+      confirmClearInventory: 'Ertu viss um að þú viljir tæma allt birgðir? Þessi aðgerð er ekki hægt að afturkalla.',
+      yes: 'Já', no: 'Nei',
       admin: 'Stjórnun',
       addItem: 'Bæta við vöru',
       editItem: 'Breyta vöru',
@@ -1135,6 +1176,7 @@ const resources = {
   gv: {
     translation: {
       appName: 'Rolleyr Shopping',
+      open: 'Foshiaght',
       lists: 'Rollage',
       browse: 'Browse',
       pick: 'Pick',
@@ -1142,6 +1184,9 @@ const resources = {
       back: 'Art',
       myLists: 'My Rollage',
       inventory: 'Stock',
+      confirmInventoryClear: 'Glenn Stock',
+      confirmClearInventory: 'Vel ooilley er y chooish shen t oo cur rish stock? Cha nel dooinney cur rish shen er son y chooish shen.',
+      yes: 'Gura mie eu', no: 'Cha nel',
       admin: 'Rianys',
       addItem: 'Cur riagh dy chliwe',
       editItem: 'Caghlaa chliwe',
@@ -1248,6 +1293,7 @@ const resources = {
   kw: {
     translation: {
       appName: 'Rolla Byrji',
+      open: 'Eglusi',
       lists: 'Rollow',
       browse: 'Browse',
       pick: 'Pik',
@@ -1255,6 +1301,9 @@ const resources = {
       back: 'Back',
       myLists: 'My Rollow',
       inventory: 'Stok',
+      confirmInventoryClear: 'Glenn Stock',
+      confirmClearInventory: 'Yma ow tos yn sur dhywgh yllowgh oll stok? Nyns eus gansyowgh yllowgh shen yn son y chooish shen.',
+      yes: 'Gura mie eu', no: 'Cha nel',
       admin: 'Rian',
       addItem: 'Keworra chons',
       editItem: 'Kemma chons',
