@@ -20,6 +20,7 @@ import {
   TableContainer,
   TableRow,
   Paper,
+  Grid,
 } from '@mui/material';
 import {
   Edit,
@@ -137,21 +138,47 @@ export default function ItemCard({
       <Collapse in={expanded}>
         <Divider />
         <CardContent>
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
-            {item.description && (
+          <Grid container spacing={2}>
+            <Grid size={4}>
+{item.description && (
               <Box>
                 <Typography variant="caption" color="text.secondary">{t('description')}</Typography>
                 <Typography variant="body2">{item.description}</Typography>
               </Box>
             )}
-            
-            {item.weightSize && (
+            </Grid>
+            <Grid size={2}>
+{item.weightSize && (
               <Box>
                 <Typography variant="caption" color="text.secondary">{t('weightSize')}</Typography>
                 <Typography variant="body2">{item.weightSize}</Typography>
               </Box>
             )}
-            {item.nutritionalInfo && (
+            </Grid>
+            <Grid size={2}>
+              {item.country && (
+              <Box>
+                <Typography variant="caption" color="text.secondary">{t('country')}</Typography>
+                <Typography variant="body2">{item.country}</Typography>
+              </Box>
+            )}
+              </Grid>
+              <Grid size={2}>
+{item.nutriscore && (
+              <Box>
+                <Typography variant="caption" color="text.secondary">{t('nutriScore')}</Typography>
+                <Box>
+                  <Chip 
+                    label={item.nutriscore?.toUpperCase()} 
+                    color={getNutriscoreColor(item.nutriscore)}
+                    size="small"
+                  />
+                </Box>
+              </Box>
+            )}
+                </Grid>
+              <Grid size={8}>
+ {item.nutritionalInfo && (
               <Box sx={{ gridColumn: '1 / -1' }}>
                 <Typography variant="caption" color="text.secondary" display="block" gutterBottom>{t('nutritionalInfo')}</Typography>
                 <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: 300 }}>
@@ -179,7 +206,10 @@ export default function ItemCard({
                 </TableContainer>
               </Box>
             )}
-            {item.ingredients && (
+                </Grid>
+                <Grid size={8}>
+
+                  {item.ingredients && (
               <Box sx={{ gridColumn: '1 / -1' }}>
                 <Typography variant="caption" color="text.secondary">{t('ingredients')}</Typography>
                 <Typography variant="body2">{item.ingredients}</Typography>
@@ -205,24 +235,8 @@ export default function ItemCard({
                 </Box>
               </Box>
             )}
-            {item.country && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('country')}</Typography>
-                <Typography variant="body2">{item.country}</Typography>
-              </Box>
-            )}
-            {item.nutriscore && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('nutriScore')}</Typography>
-                <Box>
-                  <Chip 
-                    label={item.nutriscore?.toUpperCase()} 
-                    color={getNutriscoreColor(item.nutriscore)}
-                    size="small"
-                  />
-                </Box>
-              </Box>
-            )}
+            
+            
             {item.bestByDate && (
               <Box>
                 <Typography variant="caption" color="text.secondary">{t('bestByDate')}</Typography>
@@ -243,7 +257,11 @@ export default function ItemCard({
                 <ProductBarcode value={item.barcode} />
               </Box>
             )}
-          </Box>
+            </Grid>
+          </Grid>
+
+
+          
         </CardContent>
       </Collapse>
 
