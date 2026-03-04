@@ -16,6 +16,11 @@ import {
   DialogContent,
   DialogTitle,
   ButtonGroup,
+  Card,
+  CardActionArea,
+  CardContent,
+  CardMedia,
+  CardActions,
 } from '@mui/material';
 import { Store, Warning, CheckCircle, Edit, Delete, Add } from '@mui/icons-material';
 import { getExpirationStatus, formatCurrency, CurrencyCode, getDaysUntilExpiration } from '../meat';
@@ -200,26 +205,6 @@ function InventoryListItem({ item, currency, onEdit, onDelete, getTranslatedCate
         borderLeft: 4,
         borderColor: `${statusColors[expirationStatus]}.main`,
       }}
-      secondaryAction={
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ textAlign: 'right', mr: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              Home: {item.homeQuantity}
-            </Typography>
-            {item.bestByDate && (
-              <Typography variant="caption" color={`${statusColors[expirationStatus]}.main`}>
-                {daysLeft !== null && (daysLeft < 0 ? `Expired ${Math.abs(daysLeft)}d` : `${daysLeft}d left`)}
-              </Typography>
-            )}
-          </Box>
-          <IconButton onClick={onEdit} size="small">
-            <Edit fontSize="small" />
-          </IconButton>
-          <IconButton onClick={handleDelete} size="small" color="error">
-            <Delete fontSize="small" />
-          </IconButton>
-        </Box>
-      }
     >
       <ListItemAvatar>
         {item.image ? (
@@ -244,6 +229,12 @@ function InventoryListItem({ item, currency, onEdit, onDelete, getTranslatedCate
             {item.allergens && <Chip label={item.allergens} size="small" color="error" />}
             {item.labels && <Chip label={item.labels.split(',')[0]} size="small" variant="outlined" />}
             {item.cost && <Typography variant="caption">{formatCurrency(item.cost, currency)}</Typography>}
+          <><IconButton onClick={onEdit} size="small">
+            <Edit fontSize="small" />
+          </IconButton>
+          <IconButton onClick={handleDelete} size="small" color="error">
+            <Delete fontSize="small" />
+          </IconButton></>
           </Box>
         }
       />
