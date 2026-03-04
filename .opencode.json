@@ -1,0 +1,5 @@
+{
+  "plugins": [
+    "opencode-antigravity-multi-auth@latest"
+  ]
+}

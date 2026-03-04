@@ -25,6 +25,7 @@ import { getCategoryName } from '../context/AppContext';
 import type { CurrencyCode } from '../meat';
 import { formatCurrency, getTranslatedItemName } from '../meat';
 import { useTranslation } from 'react-i18next';
+import SwipeableListItem from './SwipeableListItem';
 
 interface ShoppingListViewProps {
   list?: {
@@ -106,7 +107,7 @@ export default function ShoppingListView({
           <ToggleButton value="browse" data-testid="browse-button"><ListIcon sx={{ mr: 1 }} />{t('browse')}</ToggleButton>
           <ToggleButton value="pick" data-testid="pick-button"><PlayArrow sx={{ mr: 1 }} />{t('pick')}</ToggleButton>
         </ToggleButtonGroup>
-        
+
         {!pickingMode && (
           <>
             <Chip label="All" onClick={() => setCategoryFilter('')} color={!categoryFilter ? 'primary' : 'default'} data-testid="filter-all" />
@@ -115,7 +116,7 @@ export default function ShoppingListView({
             ))}
           </>
         )}
-        
+
         <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
           {pickingMode ? (
             <Typography variant="h6" color="primary" data-testid="picking-progress">
@@ -140,33 +141,38 @@ export default function ShoppingListView({
               </Typography>
               <List>
                 {categoryItems.map(item => (
-                  <ListItem
-                    key={item.id}
-                    data-testid={`pick-item-${item.id}`}
-                    sx={{ 
-                      bgcolor: 'background.paper', 
-                      mb: 1, 
-                      borderRadius: 1,
-                      textDecoration: pickedItems.has(item.id) ? 'line-through' : 'none',
-                      opacity: pickedItems.has(item.id) ? 0.6 : 1,
-                    }}
-                    secondaryAction={
-                      <Checkbox
-                        checked={pickedItems.has(item.id)}
-                        onChange={() => handleTogglePick(item.id)}
+                  <SwipeableListItem key={item.id} item={item} onDelete={() => {
+                    console.log('Deleting item', item.id);
+                    onDeleteItem(item.id)
+                  }}>
+                    <ListItem
+                      key={item.id}
+                      data-testid={`pick-item-${item.id}`}
+                      sx={{
+                        mb: 1,
+                        borderRadius: 1,
+                        textDecoration: pickedItems.has(item.id) ? 'line-through' : 'none',
+                        opacity: pickedItems.has(item.id) ? 0.6 : 1,
+                      }}
+                      secondaryAction={
+                        <Checkbox
+                          checked={pickedItems.has(item.id)}
+                          onChange={() => handleTogglePick(item.id)}
+                        />
+                      }
+                    >
+                      <ListItemAvatar>
+                        <Avatar sx={{ bgcolor: pickedItems.has(item.id) ? 'success.main' : 'primary.light' }}>
+                          {item.name[0]}
+                        </Avatar>
+                      </ListItemAvatar>
+
+                      <ListItemText
+                        primary={getTranslatedItemName(item.name, t)}
+                        secondary={`Qty: ${item.quantity}`}
                       />
-                    }
-                  >
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: pickedItems.has(item.id) ? 'success.main' : 'primary.light' }}>
-                        {item.name[0]}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText 
-                      primary={getTranslatedItemName(item.name, t)} 
-                      secondary={`Qty: ${item.quantity}`} 
-                    />
-                  </ListItem>
+                    </ListItem>
+                  </SwipeableListItem>
                 ))}
               </List>
             </Box>
