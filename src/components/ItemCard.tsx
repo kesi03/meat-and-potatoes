@@ -9,10 +9,6 @@ import {
   Avatar,
   Collapse,
   Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   IconButton,
   Table,
   TableBody,
@@ -34,6 +30,10 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getExpirationStatus, getDaysUntilExpiration, formatCurrency, CurrencyCode, getTranslatedItemName } from '../meat';
+import type { ShoppingItem, Category } from '../context/AppContext';
+import { getCategoryName } from '../context/AppContext';
+import { ProductBarcode } from './ProductBarcode';
+import { ConfirmDeleteDialog } from './dialogs';
 
 function getNutriscoreColor(grade: string): "success" | "warning" | "error" | "info" | "default" {
     const colors: Record<string, "success" | "warning" | "error" | "info" | "default"> = {
@@ -45,9 +45,6 @@ function getNutriscoreColor(grade: string): "success" | "warning" | "error" | "i
     };
     return colors[grade?.toLowerCase()] || 'default';
 }
-import type { ShoppingItem, Category } from '../context/AppContext';
-import { getCategoryName } from '../context/AppContext';
-import { ProductBarcode } from './ProductBarcode';
 
 interface ItemCardProps {
   item: ShoppingItem;
@@ -126,9 +123,9 @@ export default function ItemCard({
         <Button size="small" startIcon={expanded ? <ExpandLess /> : <ExpandMore />} onClick={onToggle}>
           {expanded ? t('less') : t('more')}
         </Button>
-        <Button size="small" startIcon={<Edit />} onClick={onEdit}>{t('editItem')}</Button>
+        <Button size="small" startIcon={<Edit />} onClick={onEdit} data-testid="edit-item-button">{t('editItem')}</Button>
         {onDelete && (
-          <Button size="small" startIcon={<Delete />} onClick={() => setDeleteConfirmOpen(true)} color="error">
+          <Button size="small" startIcon={<Delete />} onClick={() => setDeleteConfirmOpen(true)} color="error" data-testid="delete-item-button">
             {t('delete')}
           </Button>
         )}
@@ -267,18 +264,12 @@ export default function ItemCard({
         </CardContent>
       </Collapse>
 
-      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
-        <DialogTitle>{t('confirmDelete') || 'Confirm Delete'}</DialogTitle>
-          <DialogContent>
-            <Typography>{t('confirmDeleteMessage', { defaultValue: 'Are you sure you want to delete "{{name}}"?', name: item.name })}</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>{t('cancel')}</Button>
-          <Button onClick={() => { onDelete?.(); setDeleteConfirmOpen(false); }} color="error" variant="contained">
-            {t('delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={deleteConfirmOpen}
+        itemName={item.name}
+        onConfirm={() => { onDelete?.(); setDeleteConfirmOpen(false); }}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
     </Card>
   );
 }

@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import {
-  Dialog,
   DialogContent,
   DialogActions,
-  DialogTitle,
   Button,
   TextField,
   Box,
@@ -20,6 +18,7 @@ import { LOCATIONS, CURRENCIES, CurrencyCode } from '../meat';
 import type { ShoppingItem, InventoryItem, Category } from '../context/AppContext';
 import { getCategoryName } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
+import { ConfirmDeleteDialog } from './dialogs';
 
 interface ItemFormProps {
   item?: ShoppingItem | InventoryItem | null;
@@ -374,6 +373,7 @@ export default function ItemForm({
 
           <TextField
             label="Item Name"
+            data-testid="item-name-input"
             value={formData.name}
             onChange={handleChange('name')}
             fullWidth
@@ -381,7 +381,7 @@ export default function ItemForm({
           />
           <FormControl fullWidth>
             <InputLabel>{t('category')}</InputLabel>
-            <Select value={formData.category || ''} onChange={handleChange('category')} label={t('category')}>
+            <Select value={formData.category || ''} onChange={handleChange('category')} label={t('category')} data-testid="category-select">
               {categories.map(cat => (
                 <MenuItem key={cat.id} value={cat.name}>{getCategoryName(cat, i18n.language)}</MenuItem>
               ))}
@@ -390,6 +390,7 @@ export default function ItemForm({
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
               label="Quantity"
+              data-testid="quantity-input"
               type="number"
               value={formData.quantity}
               onChange={handleChange('quantity')}
@@ -398,6 +399,7 @@ export default function ItemForm({
             />
             <TextField
               label="Cost"
+              data-testid="cost-input"
               type="number"
               value={formData.cost}
               onChange={handleChange('cost')}
@@ -426,6 +428,7 @@ export default function ItemForm({
           </FormControl>
           <TextField
             label="Best By Date"
+            data-testid="best-by-date-input"
             type="date"
             value={formData.bestByDate}
             onChange={handleChange('bestByDate')}
@@ -503,37 +506,27 @@ export default function ItemForm({
       </DialogContent>
       <DialogActions sx={{ p: 2, gap: 1 }}>
         {onDelete && (
-          <Button onClick={() => setDeleteConfirmOpen(true)} color="error" sx={{ mr: 'auto' }}>{t('delete')}</Button>
+          <Button onClick={() => setDeleteConfirmOpen(true)} color="error" sx={{ mr: 'auto' }} data-testid="delete-button">{t('delete')}</Button>
         )}
         {onMoveToInventory && (
           <Button onClick={onMoveToInventory} startIcon={<MoveToInbox />}>{t('toInventory')}</Button>
         )}
-        <Button onClick={onCancel}>{t('cancel')}</Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={!formData.name.trim()}>
+        <Button onClick={onCancel} data-testid="cancel-button">{t('cancel')}</Button>
+        <Button onClick={handleSubmit} variant="contained" disabled={!formData.name.trim()} data-testid="save-button">
           {t('save')}
         </Button>
       </DialogActions>
 
-      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
-        <DialogTitle>{t('confirmDelete') || 'Confirm Delete'}</DialogTitle>
-        <DialogContent>
-          <Typography>Are you sure you want to delete "{formData.name}"?</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>{t('cancel')}</Button>
-          <Button 
-            onClick={() => { 
-              onDelete?.(); 
-              setDeleteConfirmOpen(false); 
-              onCancel?.(); 
-            }} 
-            color="error" 
-            variant="contained"
-          >
-            {t('delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={deleteConfirmOpen}
+        itemName={formData.name}
+        onConfirm={() => { 
+          onDelete?.(); 
+          setDeleteConfirmOpen(false); 
+          onCancel?.(); 
+        }}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
     </>
   );
 }

@@ -1,6 +1,7 @@
-import { Box, Typography, Card, CardActions, Button, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { ShoppingCart, Add } from '@mui/icons-material';
+import { Box, Typography, Card, CardActions, Button, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Breadcrumbs, Link } from '@mui/material';
+import { ShoppingCart, Add, HomeMaxOutlined, Home } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 interface ShoppingList {
   id: string;
@@ -18,14 +19,17 @@ interface ListsOverviewProps {
 
 export default function ListsOverview({ lists, onSelectList, onDeleteList, onAddList }: ListsOverviewProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const handleSelectList = (id: string, name: string) => {
+    navigate(`/list/${name.toLowerCase().replace(/\s+/g, '-')}`);
+  };
   return (
     <Box data-testid="lists-overview">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5">{t('myLists')}</Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={onAddList} data-testid="add-list-button">
-          {t('addList')}
-        </Button>
-      </Box>
+      <Breadcrumbs aria-label="breadcrumb" separator="›" sx={{ mb: 2 }}>
+          <Typography sx={{ color: 'text.primary' }}><Home sx={{ mr: 0.5 }} fontSize="small" /></Typography>
+          <Typography sx={{ color: 'text.primary' }}>{t('myLists')}</Typography>
+      </Breadcrumbs>
 
       {lists.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }} data-testid="no-lists-message">
@@ -46,7 +50,7 @@ export default function ListsOverview({ lists, onSelectList, onDeleteList, onAdd
               data-testid={`list-item-${list.id}`}
             >
               <Card sx={{ width: '100%' }}>
-                <ListItemButton onClick={() => onSelectList(list.id)}>
+                <ListItemButton onClick={() => handleSelectList(list.id, list.name)}>
                   <ListItemIcon>
                     <ShoppingCart color="primary" />
                   </ListItemIcon>
@@ -56,7 +60,7 @@ export default function ListsOverview({ lists, onSelectList, onDeleteList, onAdd
                   />
                 </ListItemButton>
                 <CardActions>
-                  <Button size="small" onClick={() => onSelectList(list.id)} data-testid={`open-list-${list.id}`}>
+                  <Button size="small" onClick={() => handleSelectList(list.id, list.name)} data-testid={`open-list-${list.id}`}>
                     {t('open')}
                   </Button>
                   <Button 

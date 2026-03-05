@@ -1,10 +1,12 @@
 import './firebase';
-import { createBrowserRouter, RouterProvider, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, useLocation, useParams } from 'react-router-dom';
 import { ThemeProvider, CssBaseline, Paper, Box } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
+import { AppBarActionsProvider } from './context/AppBarActions';
 
 import { ShoppingCart, Inventory2, Settings } from '@mui/icons-material';
 import ListsPage from './pages/ListsPage';
+import ShoppingListView from './components/ShoppingListView';
 import InventoryPage from './pages/InventoryPage';
 import AdminPage from './pages/AdminPage';
 import theme from './theme';
@@ -20,8 +22,12 @@ const NAVIGATION = [
 ];
 
 function AppContent() {
-  const { moveItemToInventory } = useApp();
+  const { moveItemToInventory, shoppingLists, addItemToList, updateItemInList, deleteItemFromList, categories, currency, activeListId, setActiveListId } = useApp();
   const location = useLocation();
+  const params = useParams();
+  const listName = params['*']?.replace('list/', '');
+
+  const selectedList = listName ? shoppingLists.find(l => l.name.toLowerCase() === listName.toLowerCase()) : null;
 
   const handleMoveToInventory = (item: ShoppingItem) => {
     moveItemToInventory('', item.id, item.quantity);
@@ -34,6 +40,26 @@ function AppContent() {
       <Box sx={{ p: 2, mt: 8 }}>
       {location.pathname === '/' && <ListsPage onMoveToInventory={handleMoveToInventory} />}
       {location.pathname === '/lists' && <ListsPage onMoveToInventory={handleMoveToInventory} />}
+      {location.pathname.startsWith('/list/') && selectedList && (
+        <ShoppingListView
+          list={selectedList}
+          items={selectedList.items || []}
+          categories={categories}
+          categoryFilter=""
+          setCategoryFilter={() => {}}
+          onAddItem={() => {}}
+          onEditItem={() => {}}
+          onDeleteItem={() => {}}
+          onMoveToInventory={handleMoveToInventory}
+          addItemToList={addItemToList}
+          currency={currency}
+          pickingMode={false}
+          setPickingMode={() => {}}
+          pickedItems={new Set()}
+          setPickedItems={() => {}}
+          onBack={() => window.location.href = '/lists'}
+        />
+      )}
       {location.pathname === '/inventory' && <InventoryPage />}
       {location.pathname === '/admin' && <AdminPage />}
       </Box>
@@ -54,7 +80,9 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AppProvider>
-        <RouterProvider router={router} />
+        <AppBarActionsProvider>
+          <RouterProvider router={router} />
+        </AppBarActionsProvider>
       </AppProvider>
     </ThemeProvider>
   );

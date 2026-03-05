@@ -93,6 +93,7 @@ export default function AdminView({
         onChange={(e, v) => setAdminTab(v)}
         variant="scrollable"
         scrollButtons="auto"
+        data-testid="admin-tabs"
         sx={{ 
           mb: 3,
           '& .MuiTabs-scroller': {
@@ -102,10 +103,10 @@ export default function AdminView({
           },
         }}
       >
-        <Tab label={t('localeSettings')} />
-        <Tab label={t('category')} />
-        <Tab label={t('standardList')} />
-        <Tab label="Firebase" />
+        <Tab label={t('localeSettings')} data-testid="tab-locale" />
+        <Tab label={t('category')} data-testid="tab-category" />
+        <Tab label={t('standardList')} data-testid="tab-standard-list" />
+        <Tab label="Firebase" data-testid="tab-firebase" />
       </Tabs>
 
       {adminTab === 0 && (
@@ -119,6 +120,7 @@ export default function AdminView({
             <Select
               value={currency || 'GBP'}
               onChange={(e) => onCurrencyChange(e.target.value as CurrencyCode)}
+              data-testid="currency-select"
             >
               {CURRENCIES.map(c => (
                 <MenuItem key={c.code} value={c.code}>
@@ -132,6 +134,7 @@ export default function AdminView({
             <Select
               value={language || 'en'}
               onChange={(e) => onLanguageChange(e.target.value)}
+              data-testid="language-select"
             >
               {LANGUAGES.map(lang => (
                 <MenuItem key={lang.code} value={lang.code}>
@@ -154,7 +157,7 @@ export default function AdminView({
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
             <Typography variant="h6">{t('category')}</Typography>
-            <Button variant="contained" size="small" startIcon={<Add />} onClick={onAddCategory}>
+            <Button variant="contained" size="small" startIcon={<Add />} onClick={onAddCategory} data-testid="add-category-button">
               {t('addCategory')}
             </Button>
           </Box>
@@ -168,8 +171,8 @@ export default function AdminView({
                 sx={{ bgcolor: 'background.paper', mb: 1, borderRadius: 1 }}
                 secondaryAction={
                   <Box>
-                    <IconButton onClick={() => onEditCategory(cat)}><Edit /></IconButton>
-                    <IconButton onClick={() => onDeleteCategory(cat.id)}><Delete /></IconButton>
+                    <IconButton onClick={() => onEditCategory(cat)} data-testid="edit-category-button"><Edit /></IconButton>
+                    <IconButton onClick={() => onDeleteCategory(cat.id)} data-testid="delete-category-button"><Delete /></IconButton>
                   </Box>
                 }
               >
@@ -187,7 +190,7 @@ export default function AdminView({
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
             <Typography variant="h6">{t('standardList')}</Typography>
-            <Button variant="contained" size="small" startIcon={<Add />} onClick={onAddStandardItem}>
+            <Button variant="contained" size="small" startIcon={<Add />} onClick={onAddStandardItem} data-testid="add-standard-item-button">
               {t('addItem')}
             </Button>
           </Box>
@@ -201,7 +204,7 @@ export default function AdminView({
                   key={item.id}
                   sx={{ bgcolor: 'background.paper', mb: 1, borderRadius: 1 }}
                   secondaryAction={
-                    <IconButton onClick={() => onEditStandardItem(item)}><Edit /></IconButton>
+                    <IconButton onClick={() => onEditStandardItem(item)} data-testid="edit-standard-item-button"><Edit /></IconButton>
                   }
                 >
                   <ListItemAvatar>
@@ -227,6 +230,7 @@ export default function AdminView({
           <TextField
             fullWidth
             label="API Key"
+            data-testid="firebase-api-key"
             value={firebaseConfig?.apiKey || ''}
             onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, apiKey: e.target.value } as FirebaseConfig)}
             sx={{ mb: 2 }}
@@ -234,6 +238,7 @@ export default function AdminView({
           <TextField
             fullWidth
             label="Auth Domain"
+            data-testid="firebase-auth-domain"
             value={firebaseConfig?.authDomain || ''}
             onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, authDomain: e.target.value } as FirebaseConfig)}
             sx={{ mb: 2 }}
@@ -241,6 +246,7 @@ export default function AdminView({
           <TextField
             fullWidth
             label="Project ID"
+            data-testid="firebase-project-id"
             value={firebaseConfig?.projectId || ''}
             onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, projectId: e.target.value } as FirebaseConfig)}
             sx={{ mb: 2 }}

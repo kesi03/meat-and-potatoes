@@ -1,44 +1,42 @@
 import { useState, useEffect } from 'react';
-import { Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, FormControlLabel, Checkbox, Typography, Alert } from '@mui/material';
-import { CheckCircle } from '@mui/icons-material';
+import { Box } from '@mui/material';
 import ListsOverview from '../components/ListsOverview';
 import ShoppingListView from '../components/ShoppingListView';
-import ItemForm from '../components/ItemForm';
 import { useApp } from '../context/AppContext';
+import { useAppBarActions } from '../context/AppBarActions';
 import type { ShoppingItem } from '../context/AppContext';
 import { generateId } from '../meat';
-import { useTranslation } from 'react-i18next';
+import { ListDialog, ItemDialog, SaveToInventoryDialog } from '../components/dialogs';
 
 interface ListsPageProps {
   onMoveToInventory: (item: ShoppingItem) => void;
 }
 
+export enum ToggleMode{
+  PICK = 'pick',
+  BROWSE = 'browse',
+}
+
 export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
-  const { t } = useTranslation();
-  const { shoppingLists, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId } = useApp();
+  const { shoppingLists, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId } = useApp();
+  const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
-  const [pickingMode, setPickingMode] = useState(false);
+  const [pickingMode, setPickingMode] = useState<ToggleMode>(ToggleMode.BROWSE);
   const [pickedItems, setPickedItems] = useState<Set<string>>(new Set());
   const [listDialog, setListDialog] = useState({ open: false, name: '', copyFromStandard: true });
-  const [itemDialog, setItemDialog] = useState({ open: false, mode: 'add', item: null as ShoppingItem | null, listId: null as string | null });
+  const [itemDialog, setItemDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; item: ShoppingItem | null; listId: string | null }>({ open: false, mode: 'add', item: null, listId: null });
   const [saveToInventoryDialog, setSaveToInventoryDialog] = useState({ open: false });
+  console.log("ListsPage pickingMode:", pickingMode);
 
   useEffect(() => {
-    const checkHash = () => {
+    appBarActions.current.openAddList = () => setListDialog({ open: true, name: '', copyFromStandard: true });
+    appBarActions.current.openAddItem = () => {
       const listId = selectedListId || activeListId;
-      if (window.location.hash === '#add-item' && listId) {
-        setItemDialog({ open: true, mode: 'add', item: null, listId });
-        if (!selectedListId && activeListId) {
-          setSelectedListId(activeListId);
-        }
-        window.location.hash = '';
-      }
+      console.log('Opening add item dialog for listId:', listId);
+      if (listId) setItemDialog({ open: true, mode: 'add', item: null, listId });
     };
-    checkHash();
-    window.addEventListener('hashchange', checkHash);
-    return () => window.removeEventListener('hashchange', checkHash);
-  }, [activeListId, selectedListId]);
+  }, [appBarActions, selectedListId, activeListId]);
 
   const handleAddList = () => {
     if (listDialog.name.trim()) {
@@ -82,10 +80,8 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
   const selectedList = shoppingLists.find(l => l.id === selectedListId);
   const listItems = selectedList?.items?.filter(item => !categoryFilter || item.category === categoryFilter) || [];
 
-  // Check if all items are picked
   useEffect(() => {
     if (pickingMode && selectedList && listItems.length > 0 && pickedItems.size === listItems.length) {
-      // Show dialog after a brief delay to ensure UI has updated
       setTimeout(() => {
         setSaveToInventoryDialog({ open: true });
       }, 300);
@@ -95,16 +91,14 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
   const handleSavePickedItemsToInventory = () => {
     if (!selectedListId) return;
     
-    // Move all picked items to inventory
     listItems.forEach(item => {
       if (pickedItems.has(item.id)) {
         moveItemToInventory(selectedListId, item.id, item.quantity);
       }
     });
 
-    // Reset picking mode and clear picked items
     setSaveToInventoryDialog({ open: false });
-    setPickingMode(false);
+    setPickingMode(ToggleMode.BROWSE);
     setPickedItems(new Set());
   };
 
@@ -118,7 +112,6 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
           onAddList={() => setListDialog({ open: true, name: '', copyFromStandard: true })}
         />
       )}
-
       {selectedListId && selectedList && (
         <ShoppingListView
           list={selectedList}
@@ -140,66 +133,32 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
         />
       )}
 
-      <Dialog open={listDialog.open} onClose={() => setListDialog({ open: false, name: '', copyFromStandard: true })}>
-        <DialogTitle>{t('newShoppingList')}</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            fullWidth
-            label="List Name"
-            value={listDialog.name}
-            onChange={(e) => setListDialog({ ...listDialog, name: e.target.value })}
-            onKeyPress={(e) => e.key === 'Enter' && handleAddList()}
-            sx={{ mb: 2 }}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={listDialog.copyFromStandard}
-                onChange={(e) => setListDialog({ ...listDialog, copyFromStandard: e.target.checked })}
-              />
-            }
-            label={t('copyFromStandard')}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setListDialog({ open: false, name: '', copyFromStandard: true })}>{t('cancel')}</Button>
-          <Button onClick={handleAddList} variant="contained">{t('create')}</Button>
-        </DialogActions>
-      </Dialog>
+      <ListDialog
+        open={listDialog.open}
+        name={listDialog.name}
+        copyFromStandard={listDialog.copyFromStandard}
+        onNameChange={(name) => setListDialog({ ...listDialog, name })}
+        onCopyFromStandardChange={(copyFromStandard) => setListDialog({ ...listDialog, copyFromStandard })}
+        onSave={handleAddList}
+        onCancel={() => setListDialog({ open: false, name: '', copyFromStandard: true })}
+      />
 
-      <Dialog open={itemDialog.open} onClose={() => setItemDialog({ open: false, mode: 'add', item: null, listId: null })} maxWidth="sm" fullWidth>
-        <DialogTitle>{itemDialog.mode === 'add' ? t('addItem') : t('editItem')}</DialogTitle>
-        <ItemForm
-          item={itemDialog.item}
-          categories={categories}
-          onSave={handleSaveItem}
-          onCancel={() => setItemDialog({ open: false, mode: 'add', item: null, listId: null })}
-          onDelete={itemDialog.mode === 'edit' ? () => handleDeleteItemFromList(itemDialog.item!.id) : undefined}
-          isEdit={itemDialog.mode === 'edit'}
-        />
-      </Dialog>
+      <ItemDialog
+        open={itemDialog.open}
+        mode={itemDialog.mode}
+        item={itemDialog.item}
+        categories={categories}
+        onSave={handleSaveItem}
+        onCancel={() => setItemDialog({ open: false, mode: 'add', item: null, listId: null })}
+        onDelete={itemDialog.mode === 'edit' ? () => handleDeleteItemFromList(itemDialog.item!.id) : undefined}
+      />
 
-      <Dialog open={saveToInventoryDialog.open} onClose={() => setSaveToInventoryDialog({ open: false })} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CheckCircle color="success" />
-          All Items Picked!
-        </DialogTitle>
-        <DialogContent>
-          <Alert severity="success" sx={{ mb: 2 }}>
-            All {listItems.length} items in this list have been picked!
-          </Alert>
-          <Typography>
-            Would you like to save these items to your inventory?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSaveToInventoryDialog({ open: false })}>Continue Shopping</Button>
-          <Button onClick={handleSavePickedItemsToInventory} variant="contained" color="success">
-            Save to Inventory
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <SaveToInventoryDialog
+        open={saveToInventoryDialog.open}
+        itemCount={listItems.length}
+        onSave={handleSavePickedItemsToInventory}
+        onCancel={() => setSaveToInventoryDialog({ open: false })}
+      />
     </Box>
   );
 }

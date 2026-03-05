@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import { t } from 'i18next';
+import { ConfirmDeleteDialog } from './dialogs';
 
 interface Props {
   children: React.ReactNode;
@@ -65,18 +65,12 @@ export default function SwipeableListItem({ children, onDelete, height = 72, ite
       >
         {children}
       </Box>
-      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
-        <DialogTitle>{t('confirmDelete') || 'Confirm Delete'}</DialogTitle>
-          <DialogContent>
-            <Typography>{t('confirmDeleteMessage', { defaultValue: 'Are you sure you want to delete "{{name}}"?', name: item?.name })}</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setDeleteConfirmOpen(false); setOpen(false); }}>{t('cancel')}</Button>
-          <Button onClick={() => { onDelete?.(); setDeleteConfirmOpen(false); }} color="error" variant="contained">
-            {t('delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDeleteDialog
+        open={deleteConfirmOpen}
+        itemName={item?.name}
+        onConfirm={() => { onDelete?.(); setDeleteConfirmOpen(false); }}
+        onCancel={() => { setDeleteConfirmOpen(false); setOpen(false); }}
+      />
     </Box>
   );
 }

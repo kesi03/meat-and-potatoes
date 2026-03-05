@@ -17,19 +17,23 @@ import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 import AddIcon from '@mui/icons-material/Add';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useAppBarActions } from '../context/AppBarActions';
 import { DeviceBanner } from './DeviceBanner';
 
 function ResponsiveAppBar() {
   const { t } = useTranslation();
+  const location = useLocation();
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const { activeListId, addItemToList, categories, currency, getActiveList } = useApp();
+  const appBarActions = useAppBarActions();
 
   const pages = [
-    { name: t('lists'), path: '/lists' },
-    { name: t('inventory'), path: '/inventory' },
-    { name: t('admin'), path: '/admin' },
+    { name: t('lists'), path: '/lists', segment: 'lists' },
+    { name: t('inventory'), path: '/inventory', segment: 'inventory' },
+    { name: t('admin'), path: '/admin', segment: 'admin' },
   ];
 
   const settings = [t('profile'), t('account'), t('dashboard'), t('logout')];
@@ -136,18 +140,20 @@ function ResponsiveAppBar() {
                 key={page.name}
                 href={page.path}
                 onClick={handleCloseNavMenu}
+                data-testid={`nav-${page.segment}`}
                 sx={{ my: 2, color: '#e6dbc9', display: 'block', mr: 5 }}
               >
                 {page.name}
               </Button>
             ))}
           </Box>
-          {activeList && (
+          {activeList && location.pathname.startsWith('/list/') && (
             <ButtonGroup variant="contained" color="primary">
               <Button 
-                onClick={() => window.location.href = '/lists#add-item'}
+                onClick={() => appBarActions.current.openAddItem?.()}
                 startIcon={<AddIcon />}
                 sx={{ color: 'white' }}
+                data-testid="add-item-button"
               >
                 Add
               </Button>
@@ -159,6 +165,30 @@ function ResponsiveAppBar() {
                 forceShow={true}
               />
             </ButtonGroup>
+          )}
+          {location.pathname === '/inventory' && (
+            <Button 
+              variant="contained" 
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => appBarActions.current.openAddInventory?.()}
+              sx={{ color: 'white' }}
+              data-testid="add-inventory-button"
+            >
+              {t('add')}
+            </Button>
+          )}
+          {(location.pathname === '/lists' || location.pathname === '/') && (
+            <Button 
+              variant="contained" 
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => appBarActions.current.openAddList?.()}
+              sx={{ color: 'white' }}
+              data-testid="add-list-button"
+            >
+              {t('addList')}
+            </Button>
           )}
         </Toolbar>
       </Container>
