@@ -5,7 +5,6 @@ import {
   Chip,
   ToggleButton,
   ToggleButtonGroup,
-  Button,
   List,
   ListItem,
   ListItemAvatar,
@@ -13,11 +12,13 @@ import {
   Avatar,
   Checkbox,
   Alert,
+  Breadcrumbs,
+  Link,
 } from '@mui/material';
 import {
   List as ListIcon,
   PlayArrow,
-  ArrowBack,
+  Home,
 } from '@mui/icons-material';
 import ItemCard from './ItemCard';
 import type { ShoppingItem, Category } from '../context/AppContext';
@@ -26,6 +27,8 @@ import type { CurrencyCode } from '../meat';
 import { formatCurrency, getTranslatedItemName } from '../meat';
 import { useTranslation } from 'react-i18next';
 import SwipeableListItem from './SwipeableListItem';
+import { ToggleMode } from '../pages/ListsPage';
+import { Case, Switch } from './Switch';
 
 interface ShoppingListViewProps {
   list?: {
@@ -44,8 +47,8 @@ interface ShoppingListViewProps {
   onMoveToInventory: (item: ShoppingItem) => void;
   addItemToList: (listId: string, item: Omit<ShoppingItem, 'id'>) => void;
   currency: CurrencyCode;
-  pickingMode: boolean;
-  setPickingMode: (mode: boolean) => void;
+  pickingMode: ToggleMode
+  setPickingMode: (pickMode: ToggleMode) => void;
   pickedItems: Set<string>;
   setPickedItems: React.Dispatch<React.SetStateAction<Set<string>>>;
   onBack?: () => void;
@@ -71,8 +74,15 @@ export default function ShoppingListView({
 }: ShoppingListViewProps) {
   const { t, i18n } = useTranslation();
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
-  const totalCost = items.reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
-  const pickedCost = items.filter(item => pickedItems.has(item.id)).reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
+
+  const totalCost = items.reduce(
+    (sum, item) => sum + (item.cost || 0) * item.quantity,
+    0
+  );
+
+  const pickedCost = items
+    .filter(item => pickedItems.has(item.id))
+    .reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
 
   const handleTogglePick = (itemId: string) => {
     setPickedItems(prev => {
@@ -96,106 +106,162 @@ export default function ShoppingListView({
 
   return (
     <Box data-testid="shopping-list-view">
-      <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }} data-testid="list-controls">
-        {onBack && (
-          <Button startIcon={<ArrowBack />} onClick={onBack} sx={{ mr: 1 }} data-testid="back-button">
-            {t('back')}
-          </Button>
-        )}
+      <Breadcrumbs aria-label="breadcrumb" separator="›" sx={{ mb: 2 }}>
+        <Typography sx={{ color: 'text.primary' }}>
+          <Home sx={{ mr: 0.5 }} fontSize="small" />
+        </Typography>
+        <Link sx={{ color: 'text.primary' }} href="/lists">
+          {t('myLists')}
+        </Link>
+        <Typography sx={{ color: 'text.primary' }}>{list?.name}</Typography>
+      </Breadcrumbs>
 
-        <ToggleButtonGroup value={pickingMode ? 'pick' : 'browse'} exclusive onChange={(e, v) => v && setPickingMode(v === 'pick')} data-testid="mode-toggle">
-          <ToggleButton value="browse" data-testid="browse-button"><ListIcon sx={{ mr: 1 }} />{t('browse')}</ToggleButton>
-          <ToggleButton value="pick" data-testid="pick-button"><PlayArrow sx={{ mr: 1 }} />{t('pick')}</ToggleButton>
+      <Box
+        sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}
+        data-testid="list-controls"
+      >
+        <ToggleButtonGroup
+          value={pickingMode}
+          exclusive
+          onChange={(_, newMode) => {
+            if (newMode !== null) {
+              setPickingMode(newMode);
+            }
+          }}
+          data-testid="mode-toggle"
+        >
+          <ToggleButton value={ToggleMode.BROWSE} data-testid="browse-button">
+            <ListIcon sx={{ mr: 1 }} />
+            {t('browse')}
+          </ToggleButton>
+
+          <ToggleButton value={ToggleMode.PICK} data-testid="pick-button">
+            <PlayArrow sx={{ mr: 1 }} />
+            {t('pick')}
+          </ToggleButton>
         </ToggleButtonGroup>
+        <Switch mode={pickingMode}>
+          <Case value={ToggleMode.PICK}>
+            <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
+              <Typography variant="h6" color="primary" data-testid="picking-progress">
+                {pickedItems.size} / {items.length} ({formatCurrency(pickedCost, currency)})
+              </Typography>
+            </Box>
+          </Case>
+          <Case value={ToggleMode.BROWSE}>
+            <>
+              <Chip
+                label="All"
+                onClick={() => setCategoryFilter('')}
+                color={!categoryFilter ? 'primary' : 'default'}
+                data-testid="filter-all"
+              />
+              {categories.map(cat => (
+                <Chip
+                  key={cat.id}
+                  label={getCategoryName(cat, i18n.language)}
+                  onClick={() => setCategoryFilter(cat.name)}
+                  color={categoryFilter === cat.name ? 'primary' : 'default'}
+                  data-testid={`filter-${cat.name}`}
+                />
+              ))}
+            </>
+            <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
 
-        {!pickingMode && (
-          <>
-            <Chip label="All" onClick={() => setCategoryFilter('')} color={!categoryFilter ? 'primary' : 'default'} data-testid="filter-all" />
-            {categories.map(cat => (
-              <Chip key={cat.id} label={getCategoryName(cat, i18n.language)} onClick={() => setCategoryFilter(cat.name)} color={categoryFilter === cat.name ? 'primary' : 'default'} data-testid={`filter-${cat.name}`} />
-            ))}
-          </>
-        )}
-
-        <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
-          {pickingMode ? (
-            <Typography variant="h6" color="primary" data-testid="picking-progress">
-              {pickedItems.size} / {items.length} ({formatCurrency(pickedCost, currency)})
-            </Typography>
-          ) : (
-            <Typography variant="h6" color="primary" data-testid="total-cost">
-              Total: {formatCurrency(totalCost, currency)}
-            </Typography>
-          )}
-        </Box>
+              <Typography variant="h6" color="primary" data-testid="total-cost">
+                Total: {formatCurrency(totalCost, currency)}
+              </Typography>
+            </Box>
+          </Case>
+        </Switch>
       </Box>
 
-      {items.length === 0 ? (
-        <Alert severity="info" data-testid="no-items-message">No items in this list. Click + to add items.</Alert>
-      ) : pickingMode ? (
-        <Box data-testid="pick-mode-list">
-          {Object.entries(groupedItems).map(([category, categoryItems]) => (
-            <Box key={category} sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1, color: 'primary.main' }}>
-                {category}
-              </Typography>
-              <List>
-                {categoryItems.map(item => (
-                  <SwipeableListItem key={item.id} item={item} onDelete={() => {
-                    console.log('Deleting item', item.id);
-                    onDeleteItem(item.id)
-                  }}>
-                    <ListItem
-                      key={item.id}
-                      data-testid={`pick-item-${item.id}`}
-                      sx={{
-                        mb: 1,
-                        borderRadius: 1,
-                        textDecoration: pickedItems.has(item.id) ? 'line-through' : 'none',
-                        opacity: pickedItems.has(item.id) ? 0.6 : 1,
-                      }}
-                      secondaryAction={
-                        <Checkbox
-                          checked={pickedItems.has(item.id)}
-                          onChange={() => handleTogglePick(item.id)}
-                        />
-                      }
-                    >
-                      <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: pickedItems.has(item.id) ? 'success.main' : 'primary.light' }}>
-                          {item.name[0]}
-                        </Avatar>
-                      </ListItemAvatar>
+      <Switch mode={pickingMode}>
+        <Case value={ToggleMode.PICK}>
+          <Box data-testid="pick-mode-list">
+            {Object.entries(groupedItems).map(([category, categoryItems]) => (
+              <Box key={category} sx={{ mb: 3 }}>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={600}
+                  sx={{ mb: 1, color: 'primary.main' }}
+                >
+                  {category}
+                </Typography>
 
-                      <ListItemText
-                        primary={getTranslatedItemName(item.name, t)}
-                        secondary={`Qty: ${item.quantity}`}
-                      />
-                    </ListItem>
-                  </SwipeableListItem>
-                ))}
-              </List>
-            </Box>
-          ))}
-        </Box>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {items.map(item => (
-            <ItemCard
-              key={item.id}
-              item={item}
-              expanded={expandedItem === item.id}
-              onToggle={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
-              onEdit={() => onEditItem(item)}
-              onDelete={() => onDeleteItem(item.id)}
-              onMoveToInventory={() => onMoveToInventory(item)}
-              categories={categories}
-              currency={currency}
-              showMoveToInventory={!list?.isStandard}
-            />
-          ))}
-        </Box>
-      )}
+                <List>
+                  {categoryItems.map(item => (
+                    <SwipeableListItem
+                      key={item.id}
+                      item={item}
+                      onDelete={() => {
+                        console.log('Deleting item', item.id);
+                        onDeleteItem(item.id);
+                      }}
+                    >
+                      <ListItem
+                        key={item.id}
+                        data-testid={`pick-item-${item.id}`}
+                        sx={{
+                          mb: 1,
+                          borderRadius: 1,
+                          textDecoration: pickedItems.has(item.id) ? 'line-through' : 'none',
+                          opacity: pickedItems.has(item.id) ? 0.6 : 1,
+                        }}
+                        secondaryAction={
+                          <Checkbox
+                            checked={pickedItems.has(item.id)}
+                            onChange={() => handleTogglePick(item.id)}
+                          />
+                        }
+                      >
+                        <ListItemAvatar>
+                          <Avatar
+                            sx={{
+                              bgcolor: pickedItems.has(item.id)
+                                ? 'success.main'
+                                : 'primary.light',
+                            }}
+                          >
+                            {item.name[0]}
+                          </Avatar>
+                        </ListItemAvatar>
+
+                        <ListItemText
+                          primary={getTranslatedItemName(item.name, t)}
+                          secondary={`Qty: ${item.quantity}`}
+                        />
+                      </ListItem>
+                    </SwipeableListItem>
+                  ))}
+                </List>
+              </Box>
+            ))}
+          </Box>
+        </Case>
+
+        <Case value={ToggleMode.BROWSE}>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {items.map(item => (
+              <ItemCard
+                key={item.id}
+                item={item}
+                expanded={expandedItem === item.id}
+                onToggle={() =>
+                  setExpandedItem(expandedItem === item.id ? null : item.id)
+                }
+                onEdit={() => onEditItem(item)}
+                onDelete={() => onDeleteItem(item.id)}
+                onMoveToInventory={() => onMoveToInventory(item)}
+                categories={categories}
+                currency={currency}
+                showMoveToInventory={!list?.isStandard}
+              />
+            ))}
+          </Box>
+        </Case>
+      </Switch>
     </Box>
   );
 }

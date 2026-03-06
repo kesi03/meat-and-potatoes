@@ -1,19 +1,27 @@
-import { useState } from 'react';
-import { Box, Fab, Dialog, DialogTitle, Button, DialogActions, DialogContent, Typography } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Box } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import InventoryView from '../components/InventoryView';
-import ItemForm from '../components/ItemForm';
 import { useApp } from '../context/AppContext';
+import { useAppBarActions } from '../context/AppBarActions';
 import type { InventoryItem } from '../context/AppContext';
-import { useTranslation } from 'react-i18next';
+import { ItemDialog, ConfirmDialog } from '../components/dialogs';
 
 export default function InventoryPage() {
-  const { t } = useTranslation();
   const { inventory, categories, currency, addInventoryItem, updateInventoryItem, deleteInventoryItem, clearInventory } = useApp();
+  const appBarActions = useAppBarActions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+
+  useEffect(() => {
+    appBarActions.current.openAddInventory = () => {
+      setSelectedItem(null);
+      setDialogMode('add');
+      setDialogOpen(true);
+    };
+  }, [appBarActions]);
 
   const inventoryByCategory = categories.reduce((acc, cat) => {
     const items = inventory.filter(item => item.category === cat.name);
@@ -73,10 +81,7 @@ export default function InventoryPage() {
     }
   };
 
-  
-
   return (
-    
     <Box sx={{ pb: 10 }}>
       <InventoryView
         inventory={inventory}
@@ -90,32 +95,27 @@ export default function InventoryPage() {
         currency={currency}
       />
 
+      <ItemDialog
+        open={dialogOpen}
+        mode={dialogMode}
+        item={selectedItem}
+        categories={categories}
+        onSave={handleSaveItem}
+        onCancel={() => setDialogOpen(false)}
+        onDelete={dialogMode === 'edit' ? handleDeleteItem : undefined}
+        showHomeQuantity
+      />
 
-
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{dialogMode === 'add' ? t('addItem') : t('editItem')}</DialogTitle>
-        <ItemForm
-          item={selectedItem}
-          categories={categories}
-          onSave={handleSaveItem}
-          onCancel={() => setDialogOpen(false)}
-          onDelete={dialogMode === 'edit' ? handleDeleteItem : undefined}
-          isEdit={dialogMode === 'edit'}
-          showHomeQuantity
-        />
-      </Dialog>
-      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
-        <DialogTitle>{t('confirmInventoryClear') || 'Confirm Clear Inventory'}</DialogTitle>
-          <DialogContent>
-            <Typography>{t('confirmClearInventory')}</Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>{t('no')}</Button>
-          <Button onClick={() => {clearInventory();setDeleteConfirmOpen(false)}} color="error" variant="contained">
-            {t('yes')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        title="Confirm Clear Inventory"
+        message="Are you sure you want to clear all inventory items? This action cannot be undone."
+        confirmLabel="Yes"
+        cancelLabel="No"
+        onConfirm={() => { clearInventory(); setDeleteConfirmOpen(false); }}
+        onCancel={() => setDeleteConfirmOpen(false)}
+        confirmColor="error"
+      />
     </Box>
   );
 }

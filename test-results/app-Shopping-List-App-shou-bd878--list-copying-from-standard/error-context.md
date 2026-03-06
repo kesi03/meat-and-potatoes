@@ -1,47 +1,588 @@
 # Page snapshot
 
 ```yaml
-- generic [ref=e1]:
-  - generic [ref=e3]:
-    - banner [ref=e4]:
-      - generic [ref=e6]: Shop & Stock
-    - main [ref=e7]:
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link "Logo" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - img "Logo" [ref=e7]
       - generic [ref=e8]:
-        - generic [ref=e9]:
-          - heading [level=5] [ref=e10]: My Lists
-          - button [ref=e11] [cursor=pointer]:
-            - img [ref=e13]
-            - text: New List
-        - generic [ref=e15]:
-          - paragraph [ref=e16]: No shopping lists yet
-          - button [ref=e17] [cursor=pointer]:
-            - img [ref=e19]
-            - text: Create Your First List
-    - tablist [ref=e24]:
-      - tab [selected] [ref=e25] [cursor=pointer]:
+        - link "Lists" [ref=e9] [cursor=pointer]:
+          - /url: /lists
+        - link "Inventory" [ref=e10] [cursor=pointer]:
+          - /url: /inventory
+        - link "Admin" [ref=e11] [cursor=pointer]:
+          - /url: /admin
+      - group [ref=e12]:
+        - button "Add" [ref=e13] [cursor=pointer]:
+          - img [ref=e15]
+          - text: Add
+        - button [ref=e17] [cursor=pointer]:
+          - img [ref=e18]
+  - generic [ref=e22]:
+    - generic [ref=e23]:
+      - button "Back" [ref=e24] [cursor=pointer]:
         - img [ref=e26]
-        - text: Lists
-      - tab [ref=e28] [cursor=pointer]:
-        - img [ref=e29]
-        - text: Inventory
-      - tab [ref=e31] [cursor=pointer]:
-        - img [ref=e32]
-        - text: Admin
-  - dialog "New Shopping List" [ref=e37]:
-    - heading "New Shopping List" [level=2] [ref=e38]
-    - generic [ref=e39]:
-      - generic [ref=e40]:
-        - generic [ref=e41]: List Name
-        - generic [ref=e42]:
-          - textbox "List Name" [active] [ref=e43]: Weekly Shop
-          - group:
-            - generic: List Name
-      - generic [ref=e44] [cursor=pointer]:
-        - generic [ref=e45]:
-          - checkbox "Copy items from Standard List" [ref=e46]
-          - img [ref=e47]
-        - generic [ref=e49]: Copy items from Standard List
-    - generic [ref=e50]:
-      - button "Cancel" [ref=e51] [cursor=pointer]
-      - button "Create" [ref=e52] [cursor=pointer]
+        - text: Back
+      - group [ref=e28]:
+        - button "Browse" [pressed] [ref=e29] [cursor=pointer]:
+          - img [ref=e30]
+          - text: Browse
+        - button "Pick" [ref=e32] [cursor=pointer]:
+          - img [ref=e33]
+          - text: Pick
+      - button "All" [ref=e35] [cursor=pointer]:
+        - generic [ref=e36]: All
+      - button "Produce" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: Produce
+      - button "Dairy" [ref=e39] [cursor=pointer]:
+        - generic [ref=e40]: Dairy
+      - button "Meat & Deli" [ref=e41] [cursor=pointer]:
+        - generic [ref=e42]: Meat & Deli
+      - button "Bakery" [ref=e43] [cursor=pointer]:
+        - generic [ref=e44]: Bakery
+      - button "Frozen Foods" [ref=e45] [cursor=pointer]:
+        - generic [ref=e46]: Frozen Foods
+      - button "Pantry" [ref=e47] [cursor=pointer]:
+        - generic [ref=e48]: Pantry
+      - button "Beverages" [ref=e49] [cursor=pointer]:
+        - generic [ref=e50]: Beverages
+      - button "Snacks" [ref=e51] [cursor=pointer]:
+        - generic [ref=e52]: Snacks
+      - button "Household" [ref=e53] [cursor=pointer]:
+        - generic [ref=e54]: Household
+      - button "Personal Care" [ref=e55] [cursor=pointer]:
+        - generic [ref=e56]: Personal Care
+      - 'heading "Total: £137.16" [level=6] [ref=e58]'
+    - generic [ref=e59]:
+      - generic [ref=e60]:
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic [ref=e64]: M
+            - generic [ref=e65]:
+              - heading "Milk" [level=6] [ref=e66]
+              - generic [ref=e69]: Dairy
+          - generic [ref=e70]:
+            - heading "£3.99" [level=6] [ref=e71]
+            - paragraph [ref=e72]: "Qty: 1"
+        - generic [ref=e73]:
+          - button "More" [ref=e74] [cursor=pointer]:
+            - img [ref=e76]
+            - text: More
+          - button "Edit Item" [ref=e78] [cursor=pointer]:
+            - img [ref=e80]
+            - text: Edit Item
+          - button "Delete" [ref=e82] [cursor=pointer]:
+            - img [ref=e84]
+            - text: Delete
+          - button "To Inventory" [ref=e86] [cursor=pointer]:
+            - img [ref=e88]
+            - text: To Inventory
+      - generic [ref=e90]:
+        - generic [ref=e92]:
+          - generic [ref=e93]:
+            - generic [ref=e94]: B
+            - generic [ref=e95]:
+              - heading "Bread" [level=6] [ref=e96]
+              - generic [ref=e99]: Bakery
+          - generic [ref=e100]:
+            - heading "£2.99" [level=6] [ref=e101]
+            - paragraph [ref=e102]: "Qty: 1"
+        - generic [ref=e103]:
+          - button "More" [ref=e104] [cursor=pointer]:
+            - img [ref=e106]
+            - text: More
+          - button "Edit Item" [ref=e108] [cursor=pointer]:
+            - img [ref=e110]
+            - text: Edit Item
+          - button "Delete" [ref=e112] [cursor=pointer]:
+            - img [ref=e114]
+            - text: Delete
+          - button "To Inventory" [ref=e116] [cursor=pointer]:
+            - img [ref=e118]
+            - text: To Inventory
+      - generic [ref=e120]:
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - generic [ref=e124]: B
+            - generic [ref=e125]:
+              - heading "Butter" [level=6] [ref=e126]
+              - generic [ref=e129]: Dairy
+          - generic [ref=e130]:
+            - heading "£4.49" [level=6] [ref=e131]
+            - paragraph [ref=e132]: "Qty: 1"
+        - generic [ref=e133]:
+          - button "More" [ref=e134] [cursor=pointer]:
+            - img [ref=e136]
+            - text: More
+          - button "Edit Item" [ref=e138] [cursor=pointer]:
+            - img [ref=e140]
+            - text: Edit Item
+          - button "Delete" [ref=e142] [cursor=pointer]:
+            - img [ref=e144]
+            - text: Delete
+          - button "To Inventory" [ref=e146] [cursor=pointer]:
+            - img [ref=e148]
+            - text: To Inventory
+      - generic [ref=e150]:
+        - generic [ref=e152]:
+          - generic [ref=e153]:
+            - generic [ref=e154]: E
+            - generic [ref=e155]:
+              - heading "Eggs" [level=6] [ref=e156]
+              - generic [ref=e159]: Dairy
+          - generic [ref=e160]:
+            - heading "£3.49" [level=6] [ref=e161]
+            - paragraph [ref=e162]: "Qty: 1"
+        - generic [ref=e163]:
+          - button "More" [ref=e164] [cursor=pointer]:
+            - img [ref=e166]
+            - text: More
+          - button "Edit Item" [ref=e168] [cursor=pointer]:
+            - img [ref=e170]
+            - text: Edit Item
+          - button "Delete" [ref=e172] [cursor=pointer]:
+            - img [ref=e174]
+            - text: Delete
+          - button "To Inventory" [ref=e176] [cursor=pointer]:
+            - img [ref=e178]
+            - text: To Inventory
+      - generic [ref=e180]:
+        - generic [ref=e182]:
+          - generic [ref=e183]:
+            - generic [ref=e184]: C
+            - generic [ref=e185]:
+              - heading "Cheese" [level=6] [ref=e186]
+              - generic [ref=e189]: Dairy
+          - generic [ref=e190]:
+            - heading "£5.99" [level=6] [ref=e191]
+            - paragraph [ref=e192]: "Qty: 1"
+        - generic [ref=e193]:
+          - button "More" [ref=e194] [cursor=pointer]:
+            - img [ref=e196]
+            - text: More
+          - button "Edit Item" [ref=e198] [cursor=pointer]:
+            - img [ref=e200]
+            - text: Edit Item
+          - button "Delete" [ref=e202] [cursor=pointer]:
+            - img [ref=e204]
+            - text: Delete
+          - button "To Inventory" [ref=e206] [cursor=pointer]:
+            - img [ref=e208]
+            - text: To Inventory
+      - generic [ref=e210]:
+        - generic [ref=e212]:
+          - generic [ref=e213]:
+            - generic [ref=e214]: C
+            - generic [ref=e215]:
+              - heading "Chicken Breast" [level=6] [ref=e216]
+              - generic [ref=e219]: Meat & Deli
+          - generic [ref=e220]:
+            - heading "£8.99" [level=6] [ref=e221]
+            - paragraph [ref=e222]: "Qty: 1"
+        - generic [ref=e223]:
+          - button "More" [ref=e224] [cursor=pointer]:
+            - img [ref=e226]
+            - text: More
+          - button "Edit Item" [ref=e228] [cursor=pointer]:
+            - img [ref=e230]
+            - text: Edit Item
+          - button "Delete" [ref=e232] [cursor=pointer]:
+            - img [ref=e234]
+            - text: Delete
+          - button "To Inventory" [ref=e236] [cursor=pointer]:
+            - img [ref=e238]
+            - text: To Inventory
+      - generic [ref=e240]:
+        - generic [ref=e242]:
+          - generic [ref=e243]:
+            - generic [ref=e244]: R
+            - generic [ref=e245]:
+              - heading "Rice" [level=6] [ref=e246]
+              - generic [ref=e249]: Pantry
+          - generic [ref=e250]:
+            - heading "£2.49" [level=6] [ref=e251]
+            - paragraph [ref=e252]: "Qty: 1"
+        - generic [ref=e253]:
+          - button "More" [ref=e254] [cursor=pointer]:
+            - img [ref=e256]
+            - text: More
+          - button "Edit Item" [ref=e258] [cursor=pointer]:
+            - img [ref=e260]
+            - text: Edit Item
+          - button "Delete" [ref=e262] [cursor=pointer]:
+            - img [ref=e264]
+            - text: Delete
+          - button "To Inventory" [ref=e266] [cursor=pointer]:
+            - img [ref=e268]
+            - text: To Inventory
+      - generic [ref=e270]:
+        - generic [ref=e272]:
+          - generic [ref=e273]:
+            - generic [ref=e274]: P
+            - generic [ref=e275]:
+              - heading "Pasta" [level=6] [ref=e276]
+              - generic [ref=e279]: Pantry
+          - generic [ref=e280]:
+            - heading "£1.99" [level=6] [ref=e281]
+            - paragraph [ref=e282]: "Qty: 1"
+        - generic [ref=e283]:
+          - button "More" [ref=e284] [cursor=pointer]:
+            - img [ref=e286]
+            - text: More
+          - button "Edit Item" [ref=e288] [cursor=pointer]:
+            - img [ref=e290]
+            - text: Edit Item
+          - button "Delete" [ref=e292] [cursor=pointer]:
+            - img [ref=e294]
+            - text: Delete
+          - button "To Inventory" [ref=e296] [cursor=pointer]:
+            - img [ref=e298]
+            - text: To Inventory
+      - generic [ref=e300]:
+        - generic [ref=e302]:
+          - generic [ref=e303]:
+            - generic [ref=e304]: C
+            - generic [ref=e305]:
+              - heading "Cereal" [level=6] [ref=e306]
+              - generic [ref=e309]: Pantry
+          - generic [ref=e310]:
+            - heading "£4.99" [level=6] [ref=e311]
+            - paragraph [ref=e312]: "Qty: 1"
+        - generic [ref=e313]:
+          - button "More" [ref=e314] [cursor=pointer]:
+            - img [ref=e316]
+            - text: More
+          - button "Edit Item" [ref=e318] [cursor=pointer]:
+            - img [ref=e320]
+            - text: Edit Item
+          - button "Delete" [ref=e322] [cursor=pointer]:
+            - img [ref=e324]
+            - text: Delete
+          - button "To Inventory" [ref=e326] [cursor=pointer]:
+            - img [ref=e328]
+            - text: To Inventory
+      - generic [ref=e330]:
+        - generic [ref=e332]:
+          - generic [ref=e333]:
+            - generic [ref=e334]: O
+            - generic [ref=e335]:
+              - heading "Orange Juice" [level=6] [ref=e336]
+              - generic [ref=e339]: Beverages
+          - generic [ref=e340]:
+            - heading "£3.99" [level=6] [ref=e341]
+            - paragraph [ref=e342]: "Qty: 1"
+        - generic [ref=e343]:
+          - button "More" [ref=e344] [cursor=pointer]:
+            - img [ref=e346]
+            - text: More
+          - button "Edit Item" [ref=e348] [cursor=pointer]:
+            - img [ref=e350]
+            - text: Edit Item
+          - button "Delete" [ref=e352] [cursor=pointer]:
+            - img [ref=e354]
+            - text: Delete
+          - button "To Inventory" [ref=e356] [cursor=pointer]:
+            - img [ref=e358]
+            - text: To Inventory
+      - generic [ref=e360]:
+        - generic [ref=e362]:
+          - generic [ref=e363]:
+            - generic [ref=e364]: A
+            - generic [ref=e365]:
+              - heading "Apples" [level=6] [ref=e366]
+              - generic [ref=e369]: Produce
+          - generic [ref=e370]:
+            - heading "£2.99" [level=6] [ref=e371]
+            - paragraph [ref=e372]: "Qty: 4"
+        - generic [ref=e373]:
+          - button "More" [ref=e374] [cursor=pointer]:
+            - img [ref=e376]
+            - text: More
+          - button "Edit Item" [ref=e378] [cursor=pointer]:
+            - img [ref=e380]
+            - text: Edit Item
+          - button "Delete" [ref=e382] [cursor=pointer]:
+            - img [ref=e384]
+            - text: Delete
+          - button "To Inventory" [ref=e386] [cursor=pointer]:
+            - img [ref=e388]
+            - text: To Inventory
+      - generic [ref=e390]:
+        - generic [ref=e392]:
+          - generic [ref=e393]:
+            - generic [ref=e394]: B
+            - generic [ref=e395]:
+              - heading "Bananas" [level=6] [ref=e396]
+              - generic [ref=e399]: Produce
+          - generic [ref=e400]:
+            - heading "£1.49" [level=6] [ref=e401]
+            - paragraph [ref=e402]: "Qty: 6"
+        - generic [ref=e403]:
+          - button "More" [ref=e404] [cursor=pointer]:
+            - img [ref=e406]
+            - text: More
+          - button "Edit Item" [ref=e408] [cursor=pointer]:
+            - img [ref=e410]
+            - text: Edit Item
+          - button "Delete" [ref=e412] [cursor=pointer]:
+            - img [ref=e414]
+            - text: Delete
+          - button "To Inventory" [ref=e416] [cursor=pointer]:
+            - img [ref=e418]
+            - text: To Inventory
+      - generic [ref=e420]:
+        - generic [ref=e422]:
+          - generic [ref=e423]:
+            - generic [ref=e424]: L
+            - generic [ref=e425]:
+              - heading "Lettuce" [level=6] [ref=e426]
+              - generic [ref=e429]: Produce
+          - generic [ref=e430]:
+            - heading "£2.49" [level=6] [ref=e431]
+            - paragraph [ref=e432]: "Qty: 1"
+        - generic [ref=e433]:
+          - button "More" [ref=e434] [cursor=pointer]:
+            - img [ref=e436]
+            - text: More
+          - button "Edit Item" [ref=e438] [cursor=pointer]:
+            - img [ref=e440]
+            - text: Edit Item
+          - button "Delete" [ref=e442] [cursor=pointer]:
+            - img [ref=e444]
+            - text: Delete
+          - button "To Inventory" [ref=e446] [cursor=pointer]:
+            - img [ref=e448]
+            - text: To Inventory
+      - generic [ref=e450]:
+        - generic [ref=e452]:
+          - generic [ref=e453]:
+            - generic [ref=e454]: T
+            - generic [ref=e455]:
+              - heading "Tomatoes" [level=6] [ref=e456]
+              - generic [ref=e459]: Produce
+          - generic [ref=e460]:
+            - heading "£2.99" [level=6] [ref=e461]
+            - paragraph [ref=e462]: "Qty: 4"
+        - generic [ref=e463]:
+          - button "More" [ref=e464] [cursor=pointer]:
+            - img [ref=e466]
+            - text: More
+          - button "Edit Item" [ref=e468] [cursor=pointer]:
+            - img [ref=e470]
+            - text: Edit Item
+          - button "Delete" [ref=e472] [cursor=pointer]:
+            - img [ref=e474]
+            - text: Delete
+          - button "To Inventory" [ref=e476] [cursor=pointer]:
+            - img [ref=e478]
+            - text: To Inventory
+      - generic [ref=e480]:
+        - generic [ref=e482]:
+          - generic [ref=e483]:
+            - generic [ref=e484]: G
+            - generic [ref=e485]:
+              - heading "Ground Beef" [level=6] [ref=e486]
+              - generic [ref=e489]: Meat & Deli
+          - generic [ref=e490]:
+            - heading "£7.99" [level=6] [ref=e491]
+            - paragraph [ref=e492]: "Qty: 1"
+        - generic [ref=e493]:
+          - button "More" [ref=e494] [cursor=pointer]:
+            - img [ref=e496]
+            - text: More
+          - button "Edit Item" [ref=e498] [cursor=pointer]:
+            - img [ref=e500]
+            - text: Edit Item
+          - button "Delete" [ref=e502] [cursor=pointer]:
+            - img [ref=e504]
+            - text: Delete
+          - button "To Inventory" [ref=e506] [cursor=pointer]:
+            - img [ref=e508]
+            - text: To Inventory
+      - generic [ref=e510]:
+        - generic [ref=e512]:
+          - generic [ref=e513]:
+            - generic [ref=e514]: B
+            - generic [ref=e515]:
+              - heading "Bacon" [level=6] [ref=e516]
+              - generic [ref=e519]: Meat & Deli
+          - generic [ref=e520]:
+            - heading "£6.99" [level=6] [ref=e521]
+            - paragraph [ref=e522]: "Qty: 1"
+        - generic [ref=e523]:
+          - button "More" [ref=e524] [cursor=pointer]:
+            - img [ref=e526]
+            - text: More
+          - button "Edit Item" [ref=e528] [cursor=pointer]:
+            - img [ref=e530]
+            - text: Edit Item
+          - button "Delete" [ref=e532] [cursor=pointer]:
+            - img [ref=e534]
+            - text: Delete
+          - button "To Inventory" [ref=e536] [cursor=pointer]:
+            - img [ref=e538]
+            - text: To Inventory
+      - generic [ref=e540]:
+        - generic [ref=e542]:
+          - generic [ref=e543]:
+            - generic [ref=e544]: "Y"
+            - generic [ref=e545]:
+              - heading "Yogurt" [level=6] [ref=e546]
+              - generic [ref=e549]: Dairy
+          - generic [ref=e550]:
+            - heading "£4.49" [level=6] [ref=e551]
+            - paragraph [ref=e552]: "Qty: 1"
+        - generic [ref=e553]:
+          - button "More" [ref=e554] [cursor=pointer]:
+            - img [ref=e556]
+            - text: More
+          - button "Edit Item" [ref=e558] [cursor=pointer]:
+            - img [ref=e560]
+            - text: Edit Item
+          - button "Delete" [ref=e562] [cursor=pointer]:
+            - img [ref=e564]
+            - text: Delete
+          - button "To Inventory" [ref=e566] [cursor=pointer]:
+            - img [ref=e568]
+            - text: To Inventory
+      - generic [ref=e570]:
+        - generic [ref=e572]:
+          - generic [ref=e573]:
+            - generic [ref=e574]: I
+            - generic [ref=e575]:
+              - heading "Ice Cream" [level=6] [ref=e576]
+              - generic [ref=e579]: Frozen Foods
+          - generic [ref=e580]:
+            - heading "£5.99" [level=6] [ref=e581]
+            - paragraph [ref=e582]: "Qty: 1"
+        - generic [ref=e583]:
+          - button "More" [ref=e584] [cursor=pointer]:
+            - img [ref=e586]
+            - text: More
+          - button "Edit Item" [ref=e588] [cursor=pointer]:
+            - img [ref=e590]
+            - text: Edit Item
+          - button "Delete" [ref=e592] [cursor=pointer]:
+            - img [ref=e594]
+            - text: Delete
+          - button "To Inventory" [ref=e596] [cursor=pointer]:
+            - img [ref=e598]
+            - text: To Inventory
+      - generic [ref=e600]:
+        - generic [ref=e602]:
+          - generic [ref=e603]:
+            - generic [ref=e604]: F
+            - generic [ref=e605]:
+              - heading "Frozen Pizza" [level=6] [ref=e606]
+              - generic [ref=e609]: Frozen Foods
+          - generic [ref=e610]:
+            - heading "£7.99" [level=6] [ref=e611]
+            - paragraph [ref=e612]: "Qty: 1"
+        - generic [ref=e613]:
+          - button "More" [ref=e614] [cursor=pointer]:
+            - img [ref=e616]
+            - text: More
+          - button "Edit Item" [ref=e618] [cursor=pointer]:
+            - img [ref=e620]
+            - text: Edit Item
+          - button "Delete" [ref=e622] [cursor=pointer]:
+            - img [ref=e624]
+            - text: Delete
+          - button "To Inventory" [ref=e626] [cursor=pointer]:
+            - img [ref=e628]
+            - text: To Inventory
+      - generic [ref=e630]:
+        - generic [ref=e632]:
+          - generic [ref=e633]:
+            - generic [ref=e634]: P
+            - generic [ref=e635]:
+              - heading "Paper Towels" [level=6] [ref=e636]
+              - generic [ref=e639]: Household
+          - generic [ref=e640]:
+            - heading "£8.99" [level=6] [ref=e641]
+            - paragraph [ref=e642]: "Qty: 1"
+        - generic [ref=e643]:
+          - button "More" [ref=e644] [cursor=pointer]:
+            - img [ref=e646]
+            - text: More
+          - button "Edit Item" [ref=e648] [cursor=pointer]:
+            - img [ref=e650]
+            - text: Edit Item
+          - button "Delete" [ref=e652] [cursor=pointer]:
+            - img [ref=e654]
+            - text: Delete
+          - button "To Inventory" [ref=e656] [cursor=pointer]:
+            - img [ref=e658]
+            - text: To Inventory
+      - generic [ref=e660]:
+        - generic [ref=e662]:
+          - generic [ref=e663]:
+            - generic [ref=e664]: D
+            - generic [ref=e665]:
+              - heading "Dish Soap" [level=6] [ref=e666]
+              - generic [ref=e669]: Household
+          - generic [ref=e670]:
+            - heading "£3.99" [level=6] [ref=e671]
+            - paragraph [ref=e672]: "Qty: 1"
+        - generic [ref=e673]:
+          - button "More" [ref=e674] [cursor=pointer]:
+            - img [ref=e676]
+            - text: More
+          - button "Edit Item" [ref=e678] [cursor=pointer]:
+            - img [ref=e680]
+            - text: Edit Item
+          - button "Delete" [ref=e682] [cursor=pointer]:
+            - img [ref=e684]
+            - text: Delete
+          - button "To Inventory" [ref=e686] [cursor=pointer]:
+            - img [ref=e688]
+            - text: To Inventory
+      - generic [ref=e690]:
+        - generic [ref=e692]:
+          - generic [ref=e693]:
+            - generic [ref=e694]: T
+            - generic [ref=e695]:
+              - heading "Toothpaste" [level=6] [ref=e696]
+              - generic [ref=e699]: Personal Care
+          - generic [ref=e700]:
+            - heading "£4.99" [level=6] [ref=e701]
+            - paragraph [ref=e702]: "Qty: 1"
+        - generic [ref=e703]:
+          - button "More" [ref=e704] [cursor=pointer]:
+            - img [ref=e706]
+            - text: More
+          - button "Edit Item" [ref=e708] [cursor=pointer]:
+            - img [ref=e710]
+            - text: Edit Item
+          - button "Delete" [ref=e712] [cursor=pointer]:
+            - img [ref=e714]
+            - text: Delete
+          - button "To Inventory" [ref=e716] [cursor=pointer]:
+            - img [ref=e718]
+            - text: To Inventory
+      - generic [ref=e720]:
+        - generic [ref=e722]:
+          - generic [ref=e723]:
+            - generic [ref=e724]: S
+            - generic [ref=e725]:
+              - heading "Shampoo" [level=6] [ref=e726]
+              - generic [ref=e729]: Personal Care
+          - generic [ref=e730]:
+            - heading "£6.99" [level=6] [ref=e731]
+            - paragraph [ref=e732]: "Qty: 1"
+        - generic [ref=e733]:
+          - button "More" [ref=e734] [cursor=pointer]:
+            - img [ref=e736]
+            - text: More
+          - button "Edit Item" [ref=e738] [cursor=pointer]:
+            - img [ref=e740]
+            - text: Edit Item
+          - button "Delete" [ref=e742] [cursor=pointer]:
+            - img [ref=e744]
+            - text: Delete
+          - button "To Inventory" [ref=e746] [cursor=pointer]:
+            - img [ref=e748]
+            - text: To Inventory
 ```
