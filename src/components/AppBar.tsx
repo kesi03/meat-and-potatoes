@@ -75,7 +75,7 @@ function ResponsiveAppBar() {
               textDecoration: 'none',
             }}
           >
-            <img src="green-logo.png" alt="Logo" style={{ height: 75, width: 75 }} />
+            <img src="/green-logo.png" alt="Logo" style={{ height: 75, width: 75 }} />
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -131,7 +131,7 @@ function ResponsiveAppBar() {
               textDecoration: 'none',
             }}
           >
-            <img src="green-logo.png" alt="Logo" style={{ height: 60, width: 60 }} />
+            <img src="/green-logo.png" alt="Logo" style={{ height: 60, width: 60 }} />
           </Typography>
            
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
 import ListsOverview from '../components/ListsOverview';
 import ShoppingListView from '../components/ShoppingListView';
@@ -7,6 +7,21 @@ import { useAppBarActions } from '../context/AppBarActions';
 import type { ShoppingItem } from '../context/AppContext';
 import { generateId } from '../meat';
 import { ListDialog, ItemDialog, SaveToInventoryDialog } from '../components/dialogs';
+
+const STORAGE_KEY = 'shopping-list-picked-items';
+
+const loadPickedItems = (listId: string): Set<string> => {
+  try {
+    const stored = localStorage.getItem(`${STORAGE_KEY}-${listId}`);
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  } catch {
+    return new Set();
+  }
+};
+
+const savePickedItems = (listId: string, items: Set<string>) => {
+  localStorage.setItem(`${STORAGE_KEY}-${listId}`, JSON.stringify([...items]));
+};
 
 interface ListsPageProps {
   onMoveToInventory: (item: ShoppingItem) => void;
@@ -23,7 +38,7 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
   const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
-  const [pickingMode, setPickingMode] = useState<ToggleMode>(ToggleMode.BROWSE);
+  const [pickingMode, setPickingMode] = useState<ToggleMode>(ToggleMode.PICK);
   const [pickedItems, setPickedItems] = useState<Set<string>>(new Set());
   const [listDialog, setListDialog] = useState({ open: false, name: '', copyFromStandard: true });
   const [itemDialog, setItemDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; item: ShoppingItem | null; listId: string | null }>({ open: false, mode: 'add', item: null, listId: null });
@@ -35,6 +50,22 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
       setSelectedListId(initialListId);
     }
   }, [initialListId]);
+
+  useEffect(() => {
+    if (selectedListId) {
+      setPickedItems(loadPickedItems(selectedListId));
+    }
+  }, [selectedListId]);
+
+  const handleSetPickedItems = useCallback((items: Set<string> | ((prev: Set<string>) => Set<string>)) => {
+    setPickedItems(prev => {
+      const newItems = typeof items === 'function' ? items(prev) : items;
+      if (selectedListId) {
+        savePickedItems(selectedListId, newItems);
+      }
+      return newItems;
+    });
+  }, [selectedListId]);
 
   useEffect(() => {
     appBarActions.current.openAddList = () => setListDialog({ open: true, name: '', copyFromStandard: true });
@@ -135,7 +166,7 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
           pickingMode={pickingMode}
           setPickingMode={setPickingMode}
           pickedItems={pickedItems}
-          setPickedItems={setPickedItems}
+          setPickedItems={handleSetPickedItems}
           onBack={() => setSelectedListId(null)}
         />
       )}

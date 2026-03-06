@@ -130,14 +130,14 @@ export default function ShoppingListView({
           }}
           data-testid="mode-toggle"
         >
-          <ToggleButton value={ToggleMode.BROWSE} data-testid="browse-button">
-            <ListIcon sx={{ mr: 1 }} />
-            {t('browse')}
-          </ToggleButton>
-
           <ToggleButton value={ToggleMode.PICK} data-testid="pick-button">
             <PlayArrow sx={{ mr: 1 }} />
             {t('pick')}
+          </ToggleButton>
+
+          <ToggleButton value={ToggleMode.BROWSE} data-testid="browse-button">
+            <ListIcon sx={{ mr: 1 }} />
+            {t('browse')}
           </ToggleButton>
         </ToggleButtonGroup>
         <Switch mode={pickingMode}>
