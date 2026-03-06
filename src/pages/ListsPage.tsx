@@ -10,6 +10,7 @@ import { ListDialog, ItemDialog, SaveToInventoryDialog } from '../components/dia
 
 interface ListsPageProps {
   onMoveToInventory: (item: ShoppingItem) => void;
+  initialListId?: string;
 }
 
 export enum ToggleMode{
@@ -17,7 +18,7 @@ export enum ToggleMode{
   BROWSE = 'browse',
 }
 
-export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
+export default function ListsPage({ onMoveToInventory, initialListId }: ListsPageProps) {
   const { shoppingLists, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId } = useApp();
   const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
@@ -28,6 +29,12 @@ export default function ListsPage({ onMoveToInventory }: ListsPageProps) {
   const [itemDialog, setItemDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; item: ShoppingItem | null; listId: string | null }>({ open: false, mode: 'add', item: null, listId: null });
   const [saveToInventoryDialog, setSaveToInventoryDialog] = useState({ open: false });
   console.log("ListsPage pickingMode:", pickingMode);
+
+  useEffect(() => {
+    if (initialListId) {
+      setSelectedListId(initialListId);
+    }
+  }, [initialListId]);
 
   useEffect(() => {
     appBarActions.current.openAddList = () => setListDialog({ open: true, name: '', copyFromStandard: true });

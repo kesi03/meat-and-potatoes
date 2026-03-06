@@ -74,10 +74,6 @@ export default function ShoppingListView({
 }: ShoppingListViewProps) {
   const { t, i18n } = useTranslation();
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
-  const [toggleMode, setToggleMode] = useState<ToggleMode>(ToggleMode.BROWSE);
-
-
-  console.log('ShoppingListView pickingMode prop:', pickingMode, 'effective:', pickingMode);
 
   const totalCost = items.reduce(
     (sum, item) => sum + (item.cost || 0) * item.quantity,
@@ -125,12 +121,11 @@ export default function ShoppingListView({
         data-testid="list-controls"
       >
         <ToggleButtonGroup
-          value={toggleMode}
+          value={pickingMode}
           exclusive
           onChange={(_, newMode) => {
             if (newMode !== null) {
-              console.log('Toggling picking mode to:', newMode);
-              setToggleMode(newMode === ToggleMode.PICK ? ToggleMode.PICK : ToggleMode.BROWSE);
+              setPickingMode(newMode);
             }
           }}
           data-testid="mode-toggle"
@@ -145,7 +140,7 @@ export default function ShoppingListView({
             {t('pick')}
           </ToggleButton>
         </ToggleButtonGroup>
-        <Switch mode={toggleMode}>
+        <Switch mode={pickingMode}>
           <Case value={ToggleMode.PICK}>
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
               <Typography variant="h6" color="primary" data-testid="picking-progress">
@@ -181,7 +176,7 @@ export default function ShoppingListView({
         </Switch>
       </Box>
 
-      <Switch mode={toggleMode}>
+      <Switch mode={pickingMode}>
         <Case value={ToggleMode.PICK}>
           <Box data-testid="pick-mode-list">
             {Object.entries(groupedItems).map(([category, categoryItems]) => (

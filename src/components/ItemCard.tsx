@@ -258,9 +258,6 @@ export default function ItemCard({
             )}
             </Grid>
           </Grid>
-
-
-          
         </CardContent>
       </Collapse>
 

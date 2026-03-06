@@ -40,24 +40,10 @@ function AppContent() {
       <Box sx={{ p: 2, mt: 8 }}>
       {location.pathname === '/' && <ListsPage onMoveToInventory={handleMoveToInventory} />}
       {location.pathname === '/lists' && <ListsPage onMoveToInventory={handleMoveToInventory} />}
-      {location.pathname.startsWith('/list/') && selectedList && (
-        <ShoppingListView
-          list={selectedList}
-          items={selectedList.items || []}
-          categories={categories}
-          categoryFilter=""
-          setCategoryFilter={() => {}}
-          onAddItem={() => {}}
-          onEditItem={() => {}}
-          onDeleteItem={() => {}}
+      {location.pathname.startsWith('/list/') && (
+        <ListsPage 
           onMoveToInventory={handleMoveToInventory}
-          addItemToList={addItemToList}
-          currency={currency}
-          pickingMode={false}
-          setPickingMode={() => {}}
-          pickedItems={new Set()}
-          setPickedItems={() => {}}
-          onBack={() => window.location.href = '/lists'}
+          initialListId={selectedList?.id}
         />
       )}
       {location.pathname === '/inventory' && <InventoryPage />}
