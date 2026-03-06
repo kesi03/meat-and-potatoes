@@ -156,7 +156,7 @@ export default function ShoppingListView({
 
           </ToggleButton>
         </ToggleButtonGroup>
-        <>
+        
           <FormControl size="small" sx={{ minWidth: 120, fontSize: '0.8rem'  }}>
             <InputLabel>Category</InputLabel>
             <Select
@@ -169,15 +169,14 @@ export default function ShoppingListView({
               displayEmpty
               renderValue={(value) => value === '' ? t('all') : value}
             >
-              <MenuItem value="">{t('all')}</MenuItem>
+              <MenuItem value="" sx={{ fontSize: '0.8rem'  }}>{t('all')}</MenuItem>
               {categories.map(cat => (
-                <MenuItem key={cat.id} value={cat.name}>
+                <MenuItem key={cat.id} value={cat.name} sx={{ fontSize: '0.8rem'  }}>
                   {getCategoryName(cat, i18n.language)}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-        </>
         <Switch mode={pickingMode}>
           <Case value={ToggleMode.PICK}>
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
