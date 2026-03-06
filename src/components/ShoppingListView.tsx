@@ -14,6 +14,10 @@ import {
   Alert,
   Breadcrumbs,
   Link,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   List as ListIcon,
@@ -140,6 +144,24 @@ export default function ShoppingListView({
             {t('browse')}
           </ToggleButton>
         </ToggleButtonGroup>
+        <>
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={categoryFilter}
+                  label="Category"
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  data-testid="category-filter"
+                >
+                  <MenuItem value="">All</MenuItem>
+                  {categories.map(cat => (
+                    <MenuItem key={cat.id} value={cat.name}>
+                      {getCategoryName(cat, i18n.language)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </>
         <Switch mode={pickingMode}>
           <Case value={ToggleMode.PICK}>
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
@@ -149,23 +171,7 @@ export default function ShoppingListView({
             </Box>
           </Case>
           <Case value={ToggleMode.BROWSE}>
-            <>
-              <Chip
-                label="All"
-                onClick={() => setCategoryFilter('')}
-                color={!categoryFilter ? 'primary' : 'default'}
-                data-testid="filter-all"
-              />
-              {categories.map(cat => (
-                <Chip
-                  key={cat.id}
-                  label={getCategoryName(cat, i18n.language)}
-                  onClick={() => setCategoryFilter(cat.name)}
-                  color={categoryFilter === cat.name ? 'primary' : 'default'}
-                  data-testid={`filter-${cat.name}`}
-                />
-              ))}
-            </>
+            
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
 
               <Typography variant="h6" color="primary" data-testid="total-cost">

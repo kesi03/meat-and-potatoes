@@ -1,5 +1,6 @@
 import './firebase';
 import { createBrowserRouter, RouterProvider, useLocation, useParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import { ThemeProvider, CssBaseline, Paper, Box } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
 import { AppBarActionsProvider } from './context/AppBarActions';
@@ -28,6 +29,12 @@ function AppContent() {
   const listName = params['*']?.replace('list/', '');
 
   const selectedList = listName ? shoppingLists.find(l => l.name.toLowerCase() === listName.toLowerCase()) : null;
+
+  useEffect(() => {
+    if (selectedList && selectedList.id !== activeListId) {
+      setActiveListId(selectedList.id);
+    }
+  }, [selectedList, activeListId, setActiveListId]);
 
   const handleMoveToInventory = (item: ShoppingItem) => {
     moveItemToInventory('', item.id, item.quantity);

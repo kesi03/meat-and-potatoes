@@ -224,16 +224,29 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
     };
 
     const handleProductNotFound = (barcode: string) => {
-        setScannedProduct({ name: '', barcode });
+        console.log('handleProductNotFound called', barcode);
+        const product: ScannedProduct = { 
+            name: '', 
+            barcode,
+            brand: '',
+            quantity: '',
+        };
+        setScannedProduct(product);
         setItemName('');
         setItemCategory('');
         setItemQuantity(1);
         setItemCost(0);
         scannedRef.current = true;
+        console.log('scannedProduct set to', product);
     };
 
     const handleSave = () => {
-        if (!itemName.trim()) return;
+        console.log('handleSave called', { itemName, itemCategory, listId, scannedProduct });
+        
+        if (!itemName.trim()) {
+            console.log('itemName is empty, not saving');
+            return;
+        }
 
         const newItem: Omit<ShoppingItem, 'id'> = {
             name: itemName,
@@ -253,7 +266,9 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
             nutriscore: scannedProduct?.nutriscore || '',
         };
 
+        console.log('Calling addItemToList', { listId, newItem });
         addItemToList(listId, newItem);
+        console.log('Item saved, closing dialog');
         setDialogOpen(false);
     };
 
@@ -504,8 +519,11 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
                     <Button onClick={() => setDialogOpen(false)} startIcon={<CloseIcon />}>
                         Close
                     </Button>
-                    {scannedProduct !== null && !showCamera && (
-                        <Button onClick={handleSave} variant="contained" disabled={!itemName.trim()}>
+                    {scannedProduct !== null && !showCamera && !showCropper && (
+                        <Button 
+                            onClick={handleSave} 
+                            variant="contained"
+                        >
                             Save
                         </Button>
                     )}
