@@ -100,8 +100,12 @@ export default function ShoppingListView({
     });
   };
 
+  const filteredItems = categoryFilter
+    ? items.filter(item => item.category === categoryFilter)
+    : items;
+
   const groupedItems = categories.reduce((acc, cat) => {
-    const catItems = items.filter(item => item.category === cat.name);
+    const catItems = filteredItems.filter(item => item.category === cat.name);
     if (catItems.length > 0) {
       acc[cat.name] = catItems;
     }
@@ -126,6 +130,7 @@ export default function ShoppingListView({
       >
         <ToggleButtonGroup
           value={pickingMode}
+          size="small"
           exclusive
           onChange={(_, newMode) => {
             if (newMode !== null) {
@@ -134,34 +139,45 @@ export default function ShoppingListView({
           }}
           data-testid="mode-toggle"
         >
-          <ToggleButton value={ToggleMode.PICK} data-testid="pick-button">
-            <PlayArrow sx={{ mr: 1 }} />
-            {t('pick')}
+          <ToggleButton value={ToggleMode.PICK} size="small" data-testid="pick-button">
+            <PlayArrow sx={{ mr: 1 }} fontSize="small" />
+            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+              {t('pick')}
+            </Typography>
+
           </ToggleButton>
 
-          <ToggleButton value={ToggleMode.BROWSE} data-testid="browse-button">
-            <ListIcon sx={{ mr: 1 }} />
-            {t('browse')}
+          <ToggleButton value={ToggleMode.BROWSE} size="small" data-testid="browse-button">
+            <ListIcon sx={{ mr: 1 }} fontSize="small" />
+
+            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+              {t('browse')}
+            </Typography>
+
           </ToggleButton>
         </ToggleButtonGroup>
         <>
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={categoryFilter}
-                  label="Category"
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  data-testid="category-filter"
-                >
-                  <MenuItem value="">All</MenuItem>
-                  {categories.map(cat => (
-                    <MenuItem key={cat.id} value={cat.name}>
-                      {getCategoryName(cat, i18n.language)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </>
+          <FormControl size="small" sx={{ minWidth: 120, fontSize: '0.8rem'  }}>
+            <InputLabel>Category</InputLabel>
+            <Select
+              size='small'
+              sx={{ fontSize: '0.8rem'  }}
+              value={categoryFilter}
+              label="Category"
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              data-testid="category-filter"
+              displayEmpty
+              renderValue={(value) => value === '' ? t('all') : value}
+            >
+              <MenuItem value="">{t('all')}</MenuItem>
+              {categories.map(cat => (
+                <MenuItem key={cat.id} value={cat.name}>
+                  {getCategoryName(cat, i18n.language)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </>
         <Switch mode={pickingMode}>
           <Case value={ToggleMode.PICK}>
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
@@ -171,7 +187,7 @@ export default function ShoppingListView({
             </Box>
           </Case>
           <Case value={ToggleMode.BROWSE}>
-            
+
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
 
               <Typography variant="h6" color="primary" data-testid="total-cost">
@@ -249,7 +265,7 @@ export default function ShoppingListView({
         <Case value={ToggleMode.BROWSE}>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {items.map(item => (
+            {filteredItems.map(item => (
               <ItemCard
                 key={item.id}
                 item={item}
