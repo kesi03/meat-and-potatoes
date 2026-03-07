@@ -113,6 +113,11 @@ export default function ShoppingListView({
     return acc;
   }, {} as Record<string, typeof items>);
 
+  const getTranslatedCategoryName = (categoryName: string): string => {
+    const category = categories.find(cat => cat.name === categoryName);
+    return category ? getCategoryName(category, i18n.language) : categoryName;
+  }
+
   return (
     <Box data-testid="shopping-list-view">
       <Breadcrumbs aria-label="breadcrumb" separator="›" sx={{ mb: 2 }}>
@@ -196,7 +201,7 @@ export default function ShoppingListView({
                   fontWeight={600}
                   sx={{ mb: 1, color: 'primary.main' }}
                 >
-                  {category}
+                  {getTranslatedCategoryName(category)}
                 </Typography>
 
                 <List>
