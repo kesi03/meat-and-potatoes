@@ -22,9 +22,9 @@ export default function SimpleBottomNavigation() {
           setValue(newValue);
         }}
       >
-        <BottomNavigationAction href="/lists" label="Lists" icon={<List />} />
-        <BottomNavigationAction href="/inventory" label="Inventory" icon={<Inventory />} />
-        <BottomNavigationAction href="/admin" label="Admin" icon={<AdminPanelSettings />} />
+        <BottomNavigationAction href="/lists" label="Lists" icon={<List />} data-testid="nav-lists" />
+        <BottomNavigationAction href="/inventory" label="Inventory" icon={<Inventory />} data-testid="nav-inventory" />
+        <BottomNavigationAction href="/admin" label="Admin" icon={<AdminPanelSettings />} data-testid="nav-admin" />
       </BottomNavigation>
     </Paper>
   );
