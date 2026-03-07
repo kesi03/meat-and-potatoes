@@ -33,6 +33,7 @@ import { useTranslation } from 'react-i18next';
 import SwipeableListItem from './SwipeableListItem';
 import { ToggleMode } from '../pages/ListsPage';
 import { Case, Switch } from './Switch';
+import { CategoryMenu } from './CategoryMenu';
 
 interface ShoppingListViewProps {
   list?: {
@@ -156,27 +157,15 @@ export default function ShoppingListView({
 
           </ToggleButton>
         </ToggleButtonGroup>
-        
-          <FormControl size="small" sx={{ minWidth: 120, fontSize: '0.8rem'  }}>
-            <InputLabel>Category</InputLabel>
-            <Select
-              size='small'
-              sx={{ fontSize: '0.8rem'  }}
-              value={categoryFilter}
-              label="Category"
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              data-testid="category-filter"
-              displayEmpty
-              renderValue={(value) => value === '' ? t('all') : value}
-            >
-              <MenuItem value="" sx={{ fontSize: '0.8rem'  }}>{t('all')}</MenuItem>
-              {categories.map(cat => (
-                <MenuItem key={cat.id} value={cat.name} sx={{ fontSize: '0.8rem'  }}>
-                  {getCategoryName(cat, i18n.language)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+           <CategoryMenu
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
+          categories={categories}
+          t={t}
+          i18n={i18n}
+          getCategoryName={getCategoryName}
+        />
+
         <Switch mode={pickingMode}>
           <Case value={ToggleMode.PICK}>
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">

@@ -14,6 +14,7 @@ import theme from './theme';
 import type { ShoppingItem } from './context/AppContext';
 import AppBar from './components/AppBar';
 import SyncSnackbar from './components/SyncSnackbar';
+import SimpleBottomNavigation from './components/BottomNavigation';
 
 const NAVIGATION = [
   { kind: 'header' as const, title: 'Main' },
@@ -56,6 +57,7 @@ function AppContent() {
       {location.pathname === '/inventory' && <InventoryPage />}
       {location.pathname === '/admin' && <AdminPage />}
       </Box>
+      <SimpleBottomNavigation />
       <SyncSnackbar />
     </>
   );

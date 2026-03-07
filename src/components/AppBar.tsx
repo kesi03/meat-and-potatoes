@@ -2,19 +2,10 @@ import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
-import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
-import BarcodeReaderIcon from '@mui/icons-material/BarcodeReader';
 import AddIcon from '@mui/icons-material/Add';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -25,33 +16,8 @@ import { DeviceBanner } from './DeviceBanner';
 function ResponsiveAppBar() {
   const { t } = useTranslation();
   const location = useLocation();
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const { activeListId, addItemToList, categories, currency, getActiveList } = useApp();
   const appBarActions = useAppBarActions();
-
-  const pages = [
-    { name: t('lists'), path: '/lists', segment: 'lists' },
-    { name: t('inventory'), path: '/inventory', segment: 'inventory' },
-    { name: t('admin'), path: '/admin', segment: 'admin' },
-  ];
-
-  const settings = [t('profile'), t('account'), t('dashboard'), t('logout')];
-
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
 
   const activeList = getActiveList();
 
@@ -59,7 +25,8 @@ function ResponsiveAppBar() {
     <AppBar position="fixed">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          
+
+          {/* Desktop Logo */}
           <Typography
             variant="h6"
             noWrap
@@ -78,43 +45,7 @@ function ResponsiveAppBar() {
             <img src="/green-logo.png" alt="Logo" style={{ height: 75, width: 75 }} />
           </Typography>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              color="inherit"
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{ display: { xs: 'block', md: 'none' } }}
-            >
-              {pages.map((page) => (
-                <MenuItem key={page.name} onClick={() => { handleCloseNavMenu();
-                    document.location.href = page.path;
-                 }}>
-                  <Typography sx={{ textAlign: 'center',  }}>{page.name}</Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
-          
+          {/* Mobile Logo */}
           <Typography
             variant="h5"
             noWrap
@@ -123,7 +54,7 @@ function ResponsiveAppBar() {
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
+              flexGrow: 0,
               fontFamily: 'monospace',
               fontWeight: 700,
               letterSpacing: '.3rem',
@@ -133,23 +64,16 @@ function ResponsiveAppBar() {
           >
             <img src="/green-logo.png" alt="Logo" style={{ height: 60, width: 60 }} />
           </Typography>
-           
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
-              <Button
-                key={page.name}
-                href={page.path}
-                onClick={handleCloseNavMenu}
-                data-testid={`nav-${page.segment}`}
-                sx={{ my: 2, color: '#e6dbc9', display: 'block', mr: 5 }}
-              >
-                {page.name}
-              </Button>
-            ))}
-          </Box>
+
+          {/* Spacer pushes buttons to the right */}
+          <Box sx={{ flexGrow: 1 }} />
+
+          {/* Right-aligned button bar */}
+
+
           {activeList && location.pathname.startsWith('/list/') && (
             <ButtonGroup variant="contained" color="primary">
-              <Button 
+              <Button
                 onClick={() => appBarActions.current.openAddItem?.()}
                 startIcon={<AddIcon />}
                 sx={{ color: 'white' }}
@@ -157,18 +81,20 @@ function ResponsiveAppBar() {
               >
                 Add
               </Button>
-              <DeviceBanner 
-                listId={activeList.id} 
-                addItemToList={addItemToList} 
-                categories={categories} 
+
+              <DeviceBanner
+                listId={activeList.id}
+                addItemToList={addItemToList}
+                categories={categories}
                 currency={currency}
                 forceShow={true}
               />
             </ButtonGroup>
           )}
+
           {location.pathname === '/inventory' && (
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               color="primary"
               startIcon={<AddIcon />}
               onClick={() => appBarActions.current.openAddInventory?.()}
@@ -178,9 +104,10 @@ function ResponsiveAppBar() {
               {t('add')}
             </Button>
           )}
+
           {(location.pathname === '/lists' || location.pathname === '/') && (
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               color="primary"
               startIcon={<AddIcon />}
               onClick={() => appBarActions.current.openAddList?.()}
@@ -190,9 +117,13 @@ function ResponsiveAppBar() {
               {t('addList')}
             </Button>
           )}
+
+
+
         </Toolbar>
       </Container>
     </AppBar>
   );
 }
+
 export default ResponsiveAppBar;
