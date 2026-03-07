@@ -15,6 +15,7 @@ export interface CategoryMenuProps {
   t: (key: string) => string;
   i18n: { language: string };
   getCategoryName: (cat: Category, lang: string) => string;
+  sxOverride?: object;
 }
 
 export function CategoryMenu({
@@ -24,6 +25,7 @@ export function CategoryMenu({
   t,
   i18n,
   getCategoryName,
+  sxOverride,
 }: CategoryMenuProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -91,6 +93,7 @@ export function CategoryMenu({
         '&:active': {
           backgroundColor: alpha('#ffffff', 0.25),
         },
+        ...sxOverride,
       },
     },
   }));

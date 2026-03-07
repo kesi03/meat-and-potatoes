@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   Box,
   Typography,
-  Chip,
   ToggleButton,
   ToggleButtonGroup,
   List,
@@ -11,18 +10,14 @@ import {
   ListItemText,
   Avatar,
   Checkbox,
-  Alert,
   Breadcrumbs,
   Link,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Tooltip,
 } from '@mui/material';
 import {
   List as ListIcon,
-  PlayArrow,
   Home,
+  LibraryBooks,
 } from '@mui/icons-material';
 import ItemCard from './ItemCard';
 import type { ShoppingItem, Category } from '../context/AppContext';
@@ -134,6 +129,8 @@ export default function ShoppingListView({
         sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}
         data-testid="list-controls"
       >
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+
         <ToggleButtonGroup
           value={pickingMode}
           size="small"
@@ -144,25 +141,30 @@ export default function ShoppingListView({
             }
           }}
           data-testid="mode-toggle"
+          sx={{
+      '& .MuiToggleButton-root': {
+        borderRadius: 0, // remove all rounding
+      },
+      borderTopLeftRadius: 4,
+      borderBottomLeftRadius: 4,
+      borderTopRightRadius: 0,     // remove right rounding
+      borderBottomRightRadius: 0,  // remove right rounding
+    }}
+
         >
-          <ToggleButton value={ToggleMode.PICK} size="small" data-testid="pick-button">
-            <PlayArrow sx={{ mr: 1 }} fontSize="small" />
-            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-              {t('pick')}
-            </Typography>
+          <Tooltip title={t('pick')}>
+            <ToggleButton value={ToggleMode.PICK} size="small" data-testid="pick-button">
+              <ListIcon sx={{ mr: 1 }} fontSize="small" />
+            </ToggleButton>
+          </Tooltip>
+          <Tooltip title={t('browse')}>
+            <ToggleButton value={ToggleMode.BROWSE} size="small" data-testid="browse-button">
+              <LibraryBooks sx={{ mr: 1 }} fontSize="small" />
+            </ToggleButton>
+          </Tooltip>
 
-          </ToggleButton>
-
-          <ToggleButton value={ToggleMode.BROWSE} size="small" data-testid="browse-button">
-            <ListIcon sx={{ mr: 1 }} fontSize="small" />
-
-            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-              {t('browse')}
-            </Typography>
-
-          </ToggleButton>
         </ToggleButtonGroup>
-           <CategoryMenu
+        <CategoryMenu
           categoryFilter={categoryFilter}
           setCategoryFilter={setCategoryFilter}
           categories={categories}
@@ -170,7 +172,7 @@ export default function ShoppingListView({
           i18n={i18n}
           getCategoryName={getCategoryName}
         />
-
+        </Box>
         <Switch mode={pickingMode}>
           <Case value={ToggleMode.PICK}>
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
