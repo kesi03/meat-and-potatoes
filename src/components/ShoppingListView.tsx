@@ -177,7 +177,7 @@ export default function ShoppingListView({
           <Box data-testid="pick-mode-list">
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
 
-            <Typography variant="h6" color="primary" data-testid="picking-progress">
+            <Typography variant="subtitle1" color="primary" fontWeight={500} data-testid="picking-progress">
                 {pickedItems.size} / {items.length} ({formatCurrency(pickedCost, currency)})
               </Typography>
             </Box>
