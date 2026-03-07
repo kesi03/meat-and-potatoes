@@ -113,24 +113,30 @@ export default function ShoppingListView({
     return category ? getCategoryName(category, i18n.language) : categoryName;
   }
 
-  return (
-    <Box data-testid="shopping-list-view">
-      <Breadcrumbs aria-label="breadcrumb" separator="›" sx={{ mb: 2 }}>
-        <Typography sx={{ color: 'text.primary' }}>
-          <Home sx={{ mr: 0.5 }} fontSize="small" />
-        </Typography>
+  const pageBreadcrumbs = (
+    <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+       <Typography sx={{ color: 'text.primary' }}><Home sx={{ mr: 0.5 }} fontSize="small" /></Typography>
+                
+      {onBack && (
         <Link sx={{ color: 'text.primary' }} href="/lists">
           {t('myLists')}
         </Link>
-        <Typography sx={{ color: 'text.primary' }}>{list?.name}</Typography>
-      </Breadcrumbs>
+      )}
+      <Typography sx={{ color: 'text.primary' }}>{list?.name}</Typography>
+    </Breadcrumbs>
+  );
+
+  return (
+    <Box data-testid="shopping-list-view">
+    
 
       <Box
         sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}
         data-testid="list-controls"
       >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-
+         {pageBreadcrumbs}
+        <Box sx={{ display: 'flex',ml: 'auto', textAlign: 'right' }}>
+         
         <ToggleButtonGroup
           value={pickingMode}
           size="small"
@@ -155,7 +161,7 @@ export default function ShoppingListView({
           </Tooltip>
 
         </ToggleButtonGroup>
-        <CategoryMenu
+         <CategoryMenu
           categoryFilter={categoryFilter}
           setCategoryFilter={setCategoryFilter}
           categories={categories}
@@ -164,29 +170,17 @@ export default function ShoppingListView({
           getCategoryName={getCategoryName}
         />
         </Box>
-        <Switch mode={pickingMode}>
-          <Case value={ToggleMode.PICK}>
-            <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
-              <Typography variant="h6" color="primary" data-testid="picking-progress">
-                {pickedItems.size} / {items.length} ({formatCurrency(pickedCost, currency)})
-              </Typography>
-            </Box>
-          </Case>
-          <Case value={ToggleMode.BROWSE}>
-
-            <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
-
-              <Typography variant="h6" color="primary" data-testid="total-cost">
-                Total: {formatCurrency(totalCost, currency)}
-              </Typography>
-            </Box>
-          </Case>
-        </Switch>
       </Box>
 
       <Switch mode={pickingMode}>
         <Case value={ToggleMode.PICK}>
           <Box data-testid="pick-mode-list">
+            <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
+
+            <Typography variant="h6" color="primary" data-testid="picking-progress">
+                {pickedItems.size} / {items.length} ({formatCurrency(pickedCost, currency)})
+              </Typography>
+            </Box>
             {Object.entries(groupedItems).map(([category, categoryItems]) => (
               <Box key={category} sx={{ mb: 3 }}>
                 <Typography
@@ -251,6 +245,12 @@ export default function ShoppingListView({
         <Case value={ToggleMode.BROWSE}>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
+
+             <Typography variant="h6" color="primary" data-testid="total-cost">
+                Total: {formatCurrency(totalCost, currency)}
+              </Typography>
+            </Box>
             {filteredItems.map(item => (
               <ItemCard
                 key={item.id}
