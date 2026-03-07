@@ -128,14 +128,14 @@ export default function ShoppingListView({
 
   return (
     <Box data-testid="shopping-list-view">
-    
+    {pageBreadcrumbs}
 
       <Box
         sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}
         data-testid="list-controls"
       >
-         {pageBreadcrumbs}
-        <Box sx={{ display: 'flex',ml: 'auto', textAlign: 'right' }}>
+         
+        <Box sx={{ display: 'flex' }}>
          
         <ToggleButtonGroup
           value={pickingMode}
