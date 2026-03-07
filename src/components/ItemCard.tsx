@@ -123,7 +123,10 @@ export default function ItemCard({
         <Button size="small" startIcon={expanded ? <ExpandLess /> : <ExpandMore />} onClick={onToggle}>
           {expanded ? t('less') : t('more')}
         </Button>
-        <Button size="small" startIcon={<Edit />} onClick={onEdit} data-testid="edit-item-button">{t('editItem')}</Button>
+        <Tooltip title={t('editItem')}>
+          <Button size="small" startIcon={<Edit />} onClick={onEdit} data-testid="edit-item-button">
+          </Button>
+        </Tooltip>
         {onDelete && (
           <Tooltip title={t('delete')}>
             <Button size="small" startIcon={<Delete />} onClick={() => setDeleteConfirmOpen(true)} color="error" data-testid="delete-item-button">
