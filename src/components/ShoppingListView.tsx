@@ -134,6 +134,7 @@ export default function ShoppingListView({
         <ToggleButtonGroup
           value={pickingMode}
           size="small"
+          color='success'
           exclusive
           onChange={(_, newMode) => {
             if (newMode !== null) {
@@ -141,16 +142,6 @@ export default function ShoppingListView({
             }
           }}
           data-testid="mode-toggle"
-          sx={{
-      '& .MuiToggleButton-root': {
-        borderRadius: 0, // remove all rounding
-      },
-      borderTopLeftRadius: 4,
-      borderBottomLeftRadius: 4,
-      borderTopRightRadius: 0,     // remove right rounding
-      borderBottomRightRadius: 0,  // remove right rounding
-    }}
-
         >
           <Tooltip title={t('pick')}>
             <ToggleButton value={ToggleMode.PICK} size="small" data-testid="pick-button">
