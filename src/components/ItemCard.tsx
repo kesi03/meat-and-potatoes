@@ -9,7 +9,6 @@ import {
   Avatar,
   Collapse,
   Divider,
-  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -21,7 +20,6 @@ import {
 } from '@mui/material';
 import {
   Edit,
-  MoveToInbox,
   ExpandMore,
   ExpandLess,
   Warning,
@@ -38,14 +36,14 @@ import { ProductBarcode } from './ProductBarcode';
 import { ConfirmDeleteDialog } from './dialogs';
 
 function getNutriscoreColor(grade: string): "success" | "warning" | "error" | "info" | "default" {
-    const colors: Record<string, "success" | "warning" | "error" | "info" | "default"> = {
-        'a': 'success',
-        'b': 'info',
-        'c': 'warning',
-        'd': 'warning',
-        'e': 'error',
-    };
-    return colors[grade?.toLowerCase()] || 'default';
+  const colors: Record<string, "success" | "warning" | "error" | "info" | "default"> = {
+    'a': 'success',
+    'b': 'info',
+    'c': 'warning',
+    'd': 'warning',
+    'e': 'error',
+  };
+  return colors[grade?.toLowerCase()] || 'default';
 }
 
 interface ItemCardProps {
@@ -60,13 +58,13 @@ interface ItemCardProps {
   showMoveToInventory?: boolean;
 }
 
-export default function ItemCard({ 
-  item, 
-  expanded, 
-  onToggle, 
-  onEdit, 
+export default function ItemCard({
+  item,
+  expanded,
+  onToggle,
+  onEdit,
   onDelete,
-  onMoveToInventory, 
+  onMoveToInventory,
   categories,
   currency,
   showMoveToInventory = true,
@@ -83,7 +81,7 @@ export default function ItemCard({
     unknown: 'default',
   };
 
-  
+
 
   return (
     <Card sx={{ borderLeft: 4, borderColor: `${statusColors[expirationStatus]}.main` }}>
@@ -128,14 +126,14 @@ export default function ItemCard({
         <Button size="small" startIcon={<Edit />} onClick={onEdit} data-testid="edit-item-button">{t('editItem')}</Button>
         {onDelete && (
           <Tooltip title={t('delete')}>
-          <Button size="small" startIcon={<Delete />} onClick={() => setDeleteConfirmOpen(true)} color="error" data-testid="delete-item-button">   
-          </Button>
+            <Button size="small" startIcon={<Delete />} onClick={() => setDeleteConfirmOpen(true)} color="error" data-testid="delete-item-button">
+            </Button>
           </Tooltip>
         )}
         {onMoveToInventory && showMoveToInventory && (
           <Tooltip title={t('moveToInventory')}>
-             <Button size="small" startIcon={<Inventory2 />}  onClick={onMoveToInventory} color="primary" data-testid="move-to-inventory-button">              
-             </Button>
+            <Button size="small" startIcon={<Inventory2 />} onClick={onMoveToInventory} color="primary" data-testid="move-to-inventory-button">
+            </Button>
           </Tooltip>
         )}
       </CardActions>
@@ -145,123 +143,123 @@ export default function ItemCard({
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={4}>
-{item.description && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('description')}</Typography>
-                <Typography variant="body2">{item.description}</Typography>
-              </Box>
-            )}
+              {item.description && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">{t('description')}</Typography>
+                  <Typography variant="body2">{item.description}</Typography>
+                </Box>
+              )}
             </Grid>
             <Grid size={2}>
-{item.weightSize && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('weightSize')}</Typography>
-                <Typography variant="body2">{item.weightSize}</Typography>
-              </Box>
-            )}
+              {item.weightSize && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">{t('weightSize')}</Typography>
+                  <Typography variant="body2">{item.weightSize}</Typography>
+                </Box>
+              )}
             </Grid>
             <Grid size={2}>
               {item.country && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('country')}</Typography>
-                <Typography variant="body2">{item.country}</Typography>
-              </Box>
-            )}
-              </Grid>
-              <Grid size={2}>
-{item.nutriscore && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('nutriScore')}</Typography>
                 <Box>
-                  <Chip 
-                    label={item.nutriscore?.toUpperCase()} 
-                    color={getNutriscoreColor(item.nutriscore)}
-                    size="small"
-                  />
+                  <Typography variant="caption" color="text.secondary">{t('country')}</Typography>
+                  <Typography variant="body2">{item.country}</Typography>
                 </Box>
-              </Box>
-            )}
-                </Grid>
-              <Grid size={8}>
- {item.nutritionalInfo && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Typography variant="caption" color="text.secondary" display="block" gutterBottom>{t('nutritionalInfo')}</Typography>
-                <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: 300 }}>
-                  <Table size="small" sx={{
-      '& .MuiTableRow-root:nth-of-type(odd)': {
-        backgroundColor: (theme) => theme.palette.action.hover,
-      },
-    }}
->
-                    <TableBody>
-                      {item.nutritionalInfo.split('\n').map((line, index) => {
-                        const colonIndex = line.indexOf(':');
-                        if (colonIndex === -1) return null;
-                        const key = line.substring(0, colonIndex).trim();
-                        const value = line.substring(colonIndex + 1).trim();
-                        return (
-                          <TableRow key={index}>
-                            <TableCell sx={{ py: 0.5, pl: 1, pr: 0, fontWeight: 'bolder', fontSize: '0.75rem' }}>{key}</TableCell>
-                            <TableCell sx={{ py: 0.5, pl: 0, pr: 1, fontSize: '0.75rem' }}>{value}</TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Box>
-            )}
-                </Grid>
-                <Grid size={8}>
+              )}
+            </Grid>
+            <Grid size={2}>
+              {item.nutriscore && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">{t('nutriScore')}</Typography>
+                  <Box>
+                    <Chip
+                      label={item.nutriscore?.toUpperCase()}
+                      color={getNutriscoreColor(item.nutriscore)}
+                      size="small"
+                    />
+                  </Box>
+                </Box>
+              )}
+            </Grid>
+            <Grid size={8}>
+              {item.nutritionalInfo && (
+                <Box sx={{ gridColumn: '1 / -1' }}>
+                  <Typography variant="caption" color="text.secondary" display="block" gutterBottom>{t('nutritionalInfo')}</Typography>
+                  <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: 300 }}>
+                    <Table size="small" sx={{
+                      '& .MuiTableRow-root:nth-of-type(odd)': {
+                        backgroundColor: (theme) => theme.palette.action.hover,
+                      },
+                    }}
+                    >
+                      <TableBody>
+                        {item.nutritionalInfo.split('\n').map((line, index) => {
+                          const colonIndex = line.indexOf(':');
+                          if (colonIndex === -1) return null;
+                          const key = line.substring(0, colonIndex).trim();
+                          const value = line.substring(colonIndex + 1).trim();
+                          return (
+                            <TableRow key={index}>
+                              <TableCell sx={{ py: 0.5, pl: 1, pr: 0, fontWeight: 'bolder', fontSize: '0.75rem' }}>{key}</TableCell>
+                              <TableCell sx={{ py: 0.5, pl: 0, pr: 1, fontSize: '0.75rem' }}>{value}</TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              )}
+            </Grid>
+            <Grid size={8}>
 
-                  {item.ingredients && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Typography variant="caption" color="text.secondary">{t('ingredients')}</Typography>
-                <Typography variant="body2">{item.ingredients}</Typography>
-              </Box>
-            )}
-            {item.allergens && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('allergens')}</Typography>
-                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
-                  {item.allergens.split(',').map((allergen, i) => (
-                    <Chip key={i} label={allergen.trim()} color="error" size="small" />
-                  ))}
+              {item.ingredients && (
+                <Box sx={{ gridColumn: '1 / -1' }}>
+                  <Typography variant="caption" color="text.secondary">{t('ingredients')}</Typography>
+                  <Typography variant="body2">{item.ingredients}</Typography>
                 </Box>
-              </Box>
-            )}
-            {item.labels && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('labels')}</Typography>
-                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
-                  {item.labels.split(',').map((label, i) => (
-                    <Chip key={i} label={label.trim()} variant="outlined" size="small" />
-                  ))}
+              )}
+              {item.allergens && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">{t('allergens')}</Typography>
+                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
+                    {item.allergens.split(',').map((allergen, i) => (
+                      <Chip key={i} label={allergen.trim()} color="error" size="small" />
+                    ))}
+                  </Box>
                 </Box>
-              </Box>
-            )}
-            
-            
-            {item.bestByDate && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('bestByDate')}</Typography>
-                <Typography variant="body2">{new Date(item.bestByDate).toLocaleDateString()}</Typography>
-              </Box>
-            )}
-            {item.image && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('image')}</Typography>
-                <Box sx={{ mt: 0.5 }}>
-                  <img src={item.image} alt={item.name} style={{ maxWidth: 100, maxHeight: 100, borderRadius: 8 }} />
+              )}
+              {item.labels && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">{t('labels')}</Typography>
+                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
+                    {item.labels.split(',').map((label, i) => (
+                      <Chip key={i} label={label.trim()} variant="outlined" size="small" />
+                    ))}
+                  </Box>
                 </Box>
-              </Box>
-            )}
-            {item.barcode && (
-              <Box>
-                <Typography variant="caption" color="text.secondary">{t('barcode')}</Typography>
-                <ProductBarcode value={item.barcode} />
-              </Box>
-            )}
+              )}
+
+
+              {item.bestByDate && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">{t('bestByDate')}</Typography>
+                  <Typography variant="body2">{new Date(item.bestByDate).toLocaleDateString()}</Typography>
+                </Box>
+              )}
+              {item.image && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">{t('image')}</Typography>
+                  <Box sx={{ mt: 0.5 }}>
+                    <img src={item.image} alt={item.name} style={{ maxWidth: 100, maxHeight: 100, borderRadius: 8 }} />
+                  </Box>
+                </Box>
+              )}
+              {item.barcode && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">{t('barcode')}</Typography>
+                  <ProductBarcode value={item.barcode} />
+                </Box>
+              )}
             </Grid>
           </Grid>
         </CardContent>
