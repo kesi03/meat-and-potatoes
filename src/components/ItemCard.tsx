@@ -17,6 +17,7 @@ import {
   TableRow,
   Paper,
   Grid,
+  Tooltip,
 } from '@mui/material';
 import {
   Edit,
@@ -26,6 +27,7 @@ import {
   Warning,
   CheckCircle,
   Delete,
+  Inventory2,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -125,12 +127,16 @@ export default function ItemCard({
         </Button>
         <Button size="small" startIcon={<Edit />} onClick={onEdit} data-testid="edit-item-button">{t('editItem')}</Button>
         {onDelete && (
-          <Button size="small" startIcon={<Delete />} onClick={() => setDeleteConfirmOpen(true)} color="error" data-testid="delete-item-button">
-            {t('delete')}
+          <Tooltip title={t('delete')}>
+          <Button size="small" startIcon={<Delete />} onClick={() => setDeleteConfirmOpen(true)} color="error" data-testid="delete-item-button">   
           </Button>
+          </Tooltip>
         )}
         {onMoveToInventory && showMoveToInventory && (
-          <Button size="small" startIcon={<MoveToInbox />} onClick={onMoveToInventory}>{t('toInventory')}</Button>
+          <Tooltip title={t('moveToInventory')}>
+             <Button size="small" startIcon={<Inventory2 />}  onClick={onMoveToInventory} color="primary" data-testid="move-to-inventory-button">              
+             </Button>
+          </Tooltip>
         )}
       </CardActions>
 
