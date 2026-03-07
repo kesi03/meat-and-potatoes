@@ -5,6 +5,7 @@ import Menu, { MenuProps } from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Category } from '../context/AppContext';
+import { set } from 'firebase/database';
 
 
 export interface CategoryMenuProps {
@@ -26,6 +27,7 @@ export function CategoryMenu({
 }: CategoryMenuProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const [currentLabel,setLabel] = React.useState<string>(t('all'));
 
   const handleClick = (event: React.MouseEvent<HTMLElement>): void => {
     setAnchorEl(event.currentTarget);
@@ -35,13 +37,25 @@ export function CategoryMenu({
     setAnchorEl(null);
   };
 
-  const handleSelect = (value: string): void => {
-    setCategoryFilter(value);
+  const getCategory= (categoryName: string): Category | null => {
+    const category = categories.find(cat => cat.name === categoryName);
+    return category || null;
+  }
+
+  const handleSelect = (name: string): void => {
+    const category= getCategory(name);
+    if(!category){
+      setLabel(t('all'));
+      setCategoryFilter('');
+      handleClose();
+      return;
+    }
+    setLabel(category ? getCategoryName(category, i18n.language) : t('all'));
+    setCategoryFilter(category.name);
     handleClose();
   };
 
-  const currentLabel =
-    categoryFilter === '' ? t('all') : categoryFilter;
+  
 
   //
   // Styled Menu with white text + dark green background
