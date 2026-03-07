@@ -247,7 +247,7 @@ export default function ShoppingListView({
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
 
-             <Typography variant="h6" color="primary" data-testid="total-cost">
+             <Typography variant="subtitle1" color="primary" fontWeight={500} data-testid="total-cost">
                 Total: {formatCurrency(totalCost, currency)}
               </Typography>
             </Box>
