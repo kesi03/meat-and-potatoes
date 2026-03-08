@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160">
+  <!-- Blue field -->
+  <rect width="240" height="160" fill="#003778" />
+  <!-- Red vertical band -->
+  <rect x="80" width="40" height="160" fill="#D21034" />
+  <!-- Green vertical band -->
+  <rect x="120" width="40" height="160" fill="#00833E" />
+  <!-- Yellow vertical band -->
+  <rect x="160" width="40" height="160" fill="#FECB00" />
+  <!-- Blue circle -->
+  <circle cx="100" cy="80" r="48" fill="none" stroke="#003778" stroke-width="16" />
+  <!-- Red circle -->
+  <circle cx="100" cy="80" r="32" fill="none" stroke="#D21034" stroke-width="16" />
+</svg>

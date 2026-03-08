@@ -18,6 +18,7 @@ const LANGUAGES = [
   { code: 'is', name: 'Icelandic' },
   { code: 'gv', name: 'Manx' },
   { code: 'kw', name: 'Cornish' },
+  { code: 'se', name: 'Sami' },
 ];
 
 export default function AdminPage() {

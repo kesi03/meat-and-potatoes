@@ -1,11 +1,7 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
 import BottomNavigation from '@mui/material/BottomNavigation';
 import BottomNavigationAction from '@mui/material/BottomNavigationAction';
-import RestoreIcon from '@mui/icons-material/Restore';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { AdminPanelSettings, Home, Inventory, List } from '@mui/icons-material';
+import { AdminPanelSettings, Inventory, List } from '@mui/icons-material';
 import { Paper } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
@@ -15,8 +11,6 @@ export default function SimpleBottomNavigation() {
 
   return (
     <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
-      
-    
       <BottomNavigation
         showLabels
         value={value}

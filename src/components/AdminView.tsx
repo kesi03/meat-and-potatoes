@@ -36,6 +36,10 @@ import IS from 'country-flag-icons/react/3x2/IS';
 import IM from 'country-flag-icons/react/3x2/IM';
 import CornishFlag from '../flags/CornishFlag.svg';
 import ManxFlag from '../flags/ManxFlag.svg';
+import SamiFlag  from '../flags/SamiFlag.svg';
+import { saveCategories } from '../integration';
+import { getAuth } from 'firebase/auth';
+import { app } from '../firebase';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', Flag: GB },
@@ -50,6 +54,7 @@ const LANGUAGES = [
   { code: 'is', name: 'Icelandic', Flag: IS },
   { code: 'gv', name: 'Manx', Flag: ManxFlag },
   { code: 'kw', name: 'Cornish', Flag: CornishFlag },
+  { code: 'se', name: 'Sami', Flag: SamiFlag },
 ];
 
 interface AdminViewProps {
@@ -107,6 +112,7 @@ export default function AdminView({
         <Tab label={t('category')} data-testid="tab-category" />
         <Tab label={t('standardList')} data-testid="tab-standard-list" />
         <Tab label="Firebase" data-testid="tab-firebase" />
+        <Tab label="Integration" data-testid="tab-integration" />
       </Tabs>
 
       {adminTab === 0 && (
@@ -298,6 +304,23 @@ export default function AdminView({
           >
             Save & Reload
           </Button>
+        </Box>
+      )}
+      {adminTab === 4 && (
+<Box>      <Typography variant="h6" gutterBottom>Integration</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          This section is for testing integration features. You can trigger category extraction and saving here.
+        </Typography>
+        <Button variant="contained" onClick={() => {
+          // const userId = getAuth(app).currentUser?.uid;
+          // if (!userId) {
+          //   console.warn("No authenticated user. Categories will not be saved to Firebase.");
+          //   return;
+          // }
+          saveCategories();
+        }}>
+          Extract & Save Categories
+        </Button>
         </Box>
       )}
     </Box>

@@ -43,7 +43,6 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
   const [listDialog, setListDialog] = useState({ open: false, name: '', copyFromStandard: true });
   const [itemDialog, setItemDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; item: ShoppingItem | null; listId: string | null }>({ open: false, mode: 'add', item: null, listId: null });
   const [saveToInventoryDialog, setSaveToInventoryDialog] = useState({ open: false });
-  console.log("ListsPage pickingMode:", pickingMode);
 
   useEffect(() => {
     if (initialListId) {

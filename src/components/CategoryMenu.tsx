@@ -5,7 +5,6 @@ import Menu, { MenuProps } from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Category } from '../context/AppContext';
-import { set } from 'firebase/database';
 
 
 export interface CategoryMenuProps {
