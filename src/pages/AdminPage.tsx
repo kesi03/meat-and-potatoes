@@ -22,6 +22,7 @@ const LANGUAGES = [
   { code: 'kl', name: 'Greenland (Kalaallisut)' },
   { code: 'nl', name: 'Dutch' },
   { code: 'vl', name: 'Flemish' },
+  { code: 'br', name: 'Breton' }
 ];
 
 export default function AdminPage() {

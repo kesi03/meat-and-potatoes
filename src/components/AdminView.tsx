@@ -35,10 +35,12 @@ import FO from 'country-flag-icons/react/3x2/FO';
 import IS from 'country-flag-icons/react/3x2/IS';
 import NL from 'country-flag-icons/react/3x2/NL';
 import BE from 'country-flag-icons/react/3x2/BE';
+import GL from 'country-flag-icons/react/3x2/GL';
+import BR from 'country-flag-icons/react/3x2/BR';
 import CornishFlag from '../flags/CornishFlag.svg';
 import ManxFlag from '../flags/ManxFlag.svg';
 import SamiFlag  from '../flags/SamiFlag.svg';
-import GreenlandFlag from '../flags/GreenlandFlag.svg';
+import BretonFlag from '../flags/BretonFlag.svg';
 import { saveCategories } from '../integration';
 
 const LANGUAGES = [
@@ -55,9 +57,10 @@ const LANGUAGES = [
   { code: 'gv', name: 'Manx', Flag: ManxFlag },
   { code: 'kw', name: 'Cornish', Flag: CornishFlag },
   { code: 'se', name: 'Sami', Flag: SamiFlag },
-  { code: 'kl', name: 'Greenland (Kalaallisut)', Flag: GreenlandFlag },
+  { code: 'kl', name: 'Greenland (Kalaallisut)', Flag: GL },
   { code: 'nl', name: 'Dutch', Flag: NL },
   { code: 'vl', name: 'Flemish', Flag: BE },  
+  { code: 'br', name: 'Breton', Flag: BretonFlag },
 ];
 
 interface AdminViewProps {

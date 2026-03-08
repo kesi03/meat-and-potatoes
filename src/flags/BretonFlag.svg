@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600">
+  <!-- Background -->
+  <rect width="900" height="600" fill="#ffffff"/>
+
+  <!-- Black stripes -->
+  <rect y="0"    width="900" height="60" fill="#000000"/>
+  <rect y="120"  width="900" height="60" fill="#000000"/>
+  <rect y="240"  width="900" height="60" fill="#000000"/>
+  <rect y="360"  width="900" height="60" fill="#000000"/>
+
+  <!-- Ermine canton background -->
+  <rect x="0" y="0" width="360" height="300" fill="#ffffff"/>
+
+  <!-- Ermine spots (3 rows x 4 columns) -->
+  <!-- Spot definition as a group -->
+  <g id="ermine-spot" transform="scale(1)">
+    <!-- Central stem -->
+    <path d="M0 -22 L4 0 L-4 0 Z" fill="#000000"/>
+    <!-- Left side -->
+    <path d="M0 -10 C-10 -5 -10 5 -4 10 C-2 6 -2 2 0 0 Z" fill="#000000"/>
+    <!-- Right side -->
+    <path d="M0 -10 C10 -5 10 5 4 10 C2 6 2 2 0 0 Z" fill="#000000"/>
+    <!-- Three dots -->
+    <circle cx="-6" cy="14" r="2.5" fill="#000000"/>
+    <circle cx="0"  cy="16" r="2.5" fill="#000000"/>
+    <circle cx="6"  cy="14" r="2.5" fill="#000000"/>
+  </g>
+
+  <!-- Place ermine spots in a 4x3 grid inside the canton -->
+  <!-- Row 1 -->
+  <use href="#ermine-spot" x="60"  y="70"/>
+  <use href="#ermine-spot" x="150" y="70"/>
+  <use href="#ermine-spot" x="240" y="70"/>
+  <use href="#ermine-spot" x="330" y="70"/>
+
+  <!-- Row 2 -->
+  <use href="#ermine-spot" x="60"  y="150"/>
+  <use href="#ermine-spot" x="150" y="150"/>
+  <use href="#ermine-spot" x="240" y="150"/>
+  <use href="#ermine-spot" x="330" y="150"/>
+
+  <!-- Row 3 -->
+  <use href="#ermine-spot" x="60"  y="230"/>
+  <use href="#ermine-spot" x="150" y="230"/>
+  <use href="#ermine-spot" x="240" y="230"/>
+  <use href="#ermine-spot" x="330" y="230"/>
+</svg>
