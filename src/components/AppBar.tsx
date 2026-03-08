@@ -79,7 +79,7 @@ function ResponsiveAppBar() {
                 sx={{ color: 'white' }}
                 data-testid="add-item-button"
               >
-                Add
+                {t('add')}
               </Button>
 
               <DeviceBanner
