@@ -33,14 +33,13 @@ import DK from 'country-flag-icons/react/3x2/DK';
 import NO from 'country-flag-icons/react/3x2/NO';
 import FO from 'country-flag-icons/react/3x2/FO';
 import IS from 'country-flag-icons/react/3x2/IS';
-import IM from 'country-flag-icons/react/3x2/IM';
+import NL from 'country-flag-icons/react/3x2/NL';
+import BE from 'country-flag-icons/react/3x2/BE';
 import CornishFlag from '../flags/CornishFlag.svg';
 import ManxFlag from '../flags/ManxFlag.svg';
 import SamiFlag  from '../flags/SamiFlag.svg';
 import GreenlandFlag from '../flags/GreenlandFlag.svg';
 import { saveCategories } from '../integration';
-import { getAuth } from 'firebase/auth';
-import { app } from '../firebase';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', Flag: GB },
@@ -56,7 +55,9 @@ const LANGUAGES = [
   { code: 'gv', name: 'Manx', Flag: ManxFlag },
   { code: 'kw', name: 'Cornish', Flag: CornishFlag },
   { code: 'se', name: 'Sami', Flag: SamiFlag },
-  { code: 'kl', name: 'Greenland (Kalaallisut)', Flag: GreenlandFlag }
+  { code: 'kl', name: 'Greenland (Kalaallisut)', Flag: GreenlandFlag },
+  { code: 'nl', name: 'Dutch', Flag: NL },
+  { code: 'vl', name: 'Flemish', Flag: BE },  
 ];
 
 interface AdminViewProps {

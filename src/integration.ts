@@ -1,5 +1,5 @@
-import {resources} from "./i18n"
-import { db ,app} from "./firebase";
+import { resources } from "./i18n"
+import { db, app } from "./firebase";
 import { ref, set, update } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
@@ -33,19 +33,19 @@ export function buildCategoryList(resources: Resources): CategoryEntry[] {
 
   // 1. Extract all categoryXXX keys
   const categoryKeys = Object.keys(base)
-  .filter(k => k.startsWith("category"))
-  .filter(k => {
-    const suffix = k.replace("category", "");
+    .filter(k => k.startsWith("category"))
+    .filter(k => {
+      const suffix = k.replace("category", "");
 
-    // 1. Must have a suffix
-    if (!suffix) return false;
+      // 1. Must have a suffix
+      if (!suffix) return false;
 
-    // 2. Suffix must start with uppercase (Produce, Dairy, MeatDeli)
-    if (!/^[A-Z]/.test(suffix)) return false;
+      // 2. Suffix must start with uppercase (Produce, Dairy, MeatDeli)
+      if (!/^[A-Z]/.test(suffix)) return false;
 
-    // 3. Must have matching desc key
-    return base[`desc${suffix}`];
-  });
+      // 3. Must have matching desc key
+      return base[`desc${suffix}`];
+    });
 
 
   // 2. Build entries
@@ -93,11 +93,22 @@ export async function saveCategories(): Promise<void> {
   console.log("Saving categories:", JSON.stringify(categories, null, 2));
   // save to localSessionStorage("categories", categories);
   localStorage.setItem("shopping-inventory-app-categories", JSON.stringify(categories));
-   
+
+  const shoppingLists = localStorage.getItem("shopping-inventory-app-lists");
+
+  const inventory = localStorage.getItem("shopping-inventory-app-inventory");
+
+  const activeListId = localStorage.getItem("shopping-inventory-app-activeListId");
+
+
   await set(ref(db, 'userData'), {
-              categories,
-              lastUpdated: new Date().toISOString(),
-            });
+    categories,
+    activeListId: activeListId || '',
+    shoppingLists: shoppingLists ? JSON.parse(shoppingLists) : [],
+    inventory: inventory ? JSON.parse(inventory) : [],
+    currency:"GBP",
+    lastUpdated: new Date().toISOString(),
+  });
 
 }
 

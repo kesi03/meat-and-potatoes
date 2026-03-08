@@ -19,7 +19,9 @@ const LANGUAGES = [
   { code: 'gv', name: 'Manx' },
   { code: 'kw', name: 'Cornish' },
   { code: 'se', name: 'Sami' },
-  { code: 'kl', name: 'Greenland (Kalaallisut)' }
+  { code: 'kl', name: 'Greenland (Kalaallisut)' },
+  { code: 'nl', name: 'Dutch' },
+  { code: 'vl', name: 'Flemish' },
 ];
 
 export default function AdminPage() {
