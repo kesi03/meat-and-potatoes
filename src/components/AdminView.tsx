@@ -37,6 +37,7 @@ import IM from 'country-flag-icons/react/3x2/IM';
 import CornishFlag from '../flags/CornishFlag.svg';
 import ManxFlag from '../flags/ManxFlag.svg';
 import SamiFlag  from '../flags/SamiFlag.svg';
+import GreenlandFlag from '../flags/GreenlandFlag.svg';
 import { saveCategories } from '../integration';
 import { getAuth } from 'firebase/auth';
 import { app } from '../firebase';
@@ -55,6 +56,7 @@ const LANGUAGES = [
   { code: 'gv', name: 'Manx', Flag: ManxFlag },
   { code: 'kw', name: 'Cornish', Flag: CornishFlag },
   { code: 'se', name: 'Sami', Flag: SamiFlag },
+  { code: 'kl', name: 'Greenland (Kalaallisut)', Flag: GreenlandFlag }
 ];
 
 interface AdminViewProps {

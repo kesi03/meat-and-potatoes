@@ -48,6 +48,7 @@ const LANGUAGES = [
   { code: 'gv', name: 'Manx' },
   { code: 'kw', name: 'Cornish' },
   { code: 'se', name: 'Sami' },
+  { code: 'kl', name: 'Greenland (Kalaallisut)' }
 ];
 
 export interface CategoryDialogState {

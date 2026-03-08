@@ -1535,7 +1535,40 @@ export const resources = {
       itemToothpaste: 'Bassi njálbmiid',
       itemShampoo: 'Šampu'
     },
+  },
+  kl: {
+  translation: {
+    categoryProduce: "Naatsiiat & grøntsagit",
+    descProduce: "Naatsiiat nutaat aamma grøntsagit nutaat",
+
+    categoryDairy: "Immiaaqqat",
+    descDairy: "Immuk, puulukit, qiporngit, yogurt",
+
+    categoryMeatDeli: "Neqi & deli",
+    descMeatDeli: "Neqi nutaaq aamma deli-niutit",
+
+    categoryBakery: "Kaagit & bageri",
+    descBakery: "Kaagit, qajuusat, bageri-niutit",
+
+    categoryFrozenFoods: "Qerititat",
+    descFrozenFoods: "Nerisassat qerititat aamma grøntsagit qerititat",
+
+    categoryPantry: "Nerisassanik toqqorsivik",
+    descPantry: "Nerisassat puussianiittut, pasta, qiporaat, cereal-it",
+
+    categoryBeverages: "Imigassat",
+    descBeverages: "Imigassat, juice-t, imeq",
+
+    categorySnacks: "Nerisassat sukkasuut",
+    descSnacks: "Chips, crackers, mamakujuit",
+
+    categoryHousehold: "Illup iluani atorneqartartut",
+    descHousehold: "Erruiffissat, papir-it",
+
+    categoryPersonalCare: "Inuunermi nammineq isumassuineq",
+    descPersonalCare: "Toqoraatit, eqqiluitsuutitsineq"
   }
+},
 };
 
 i18n
