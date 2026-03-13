@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode,
 import { generateId, STANDARD_ITEMS, CurrencyCode, DEFAULT_CURRENCY } from '../meat';
 import { db } from '../firebase';
 import { ref, set, get } from 'firebase/database';
+import { User } from 'firebase/auth';
+import { loginWithEmail, registerWithEmail, loginWithGithub as loginWithGithubAuth, logout as firebaseLogout, observeAuth } from '../integration';
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -74,6 +76,8 @@ export interface SyncStatus {
 }
 
 interface AppContextType {
+  user: User | null;
+  authLoading: boolean;
   categories: Category[];
   shoppingLists: ShoppingList[];
   inventory: InventoryItem[];
@@ -86,6 +90,10 @@ interface AppContextType {
   setCurrency: (currency: CurrencyCode) => void;
   setLanguage: (language: string) => void;
   setFirebaseConfig: (config: FirebaseConfig | null) => void;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
+  loginWithGithub: () => Promise<void>;
+  logout: () => Promise<void>;
   addCategory: (category: { name: string; description?: string }) => Category;
   updateCategory: (id: string, updates: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
@@ -189,6 +197,34 @@ export function AppProvider({ children }: AppProviderProps) {
     return stored ? JSON.parse(stored) : null;
   });
 
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const login = useCallback(async (email: string, password: string) => {
+    await loginWithEmail(email, password);
+  }, []);
+
+  const register = useCallback(async (email: string, password: string) => {
+    await registerWithEmail(email, password);
+  }, []);
+
+  const loginWithGithub = useCallback(async () => {
+    await loginWithGithubAuth();
+  }, []);
+
+  const logout = useCallback(async () => {
+    await firebaseLogout();
+    setUser(null);
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = observeAuth((u) => {
+      setUser(u);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  });
+
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
     lastSynced: null,
     isSyncing: false,
@@ -234,11 +270,15 @@ export function AppProvider({ children }: AppProviderProps) {
       return;
     }
 
+    if (!user?.uid) {
+      return;
+    }
+
     // Set a debounce timeout to avoid excessive writes
     const timeout = setTimeout(async () => {
       setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
       try {
-        await set(ref(db, 'userData'), {
+        await set(ref(db, `userData/${user.uid}`), {
           categories,
           shoppingLists,
           inventory,
@@ -256,7 +296,7 @@ export function AppProvider({ children }: AppProviderProps) {
     }, 1000); // Debounce for 1 second
 
     return () => clearTimeout(timeout);
-  }, [categories, shoppingLists, inventory, activeListId, currency, firebaseConfig?.apiKey]);
+  }, [categories, shoppingLists, inventory, activeListId, currency, firebaseConfig?.apiKey, user?.uid]);
 
   // Sync to Firebase Realtime Database
   const syncToFirebase = useCallback(async () => {
@@ -264,9 +304,13 @@ export function AppProvider({ children }: AppProviderProps) {
       setSyncStatus(prev => ({ ...prev, isSyncing: false, error: 'Firebase not initialized. Please configure Firebase settings.' }));
       return;
     }
+    if (!user?.uid) {
+      setSyncStatus(prev => ({ ...prev, isSyncing: false, error: 'User not authenticated' }));
+      return;
+    }
     setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
     try {
-      await set(ref(db, 'userData'), {
+      await set(ref(db, `userData/${user.uid}`), {
         categories,
         shoppingLists,
         inventory,
@@ -278,7 +322,7 @@ export function AppProvider({ children }: AppProviderProps) {
     } catch (error) {
       setSyncStatus(prev => ({ ...prev, isSyncing: false, error: (error as Error).message }));
     }
-  }, [categories, shoppingLists, inventory, activeListId, currency]);
+  }, [categories, shoppingLists, inventory, activeListId, currency, user?.uid]);
 
   // Load from Firebase Realtime Database
   const loadFromFirebase = useCallback(async () => {
@@ -286,9 +330,13 @@ export function AppProvider({ children }: AppProviderProps) {
       setSyncStatus(prev => ({ ...prev, isSyncing: false, error: 'Firebase not initialized. Please configure Firebase settings.' }));
       return;
     }
+    if (!user?.uid) {
+      setSyncStatus(prev => ({ ...prev, isSyncing: false, error: 'User not authenticated' }));
+      return;
+    }
     setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
     try {
-      const snapshot = await get(ref(db, 'userData'));
+      const snapshot = await get(ref(db, `userData/${user.uid}`));
       if (snapshot.exists()) {
         const data = snapshot.val();
         if (data.categories) setCategories(data.categories);
@@ -306,17 +354,16 @@ export function AppProvider({ children }: AppProviderProps) {
     } catch (error) {
       setSyncStatus(prev => ({ ...prev, isSyncing: false, error: (error as Error).message }));
     }
-  }, []);
+  }, [user?.uid]);
 
   // Auto-load from Firebase on app startup
   useEffect(() => {
     if (firebaseConfig?.apiKey && db && typeof db === 'object' && Object.keys(db).length > 0) {
-      // Only load if we haven't loaded yet (no last sync time)
-      if (!syncStatus.lastSynced) {
+      if (!syncStatus.lastSynced && user?.uid) {
         loadFromFirebase();
       }
     }
-  }, [firebaseConfig?.apiKey]);
+  }, [firebaseConfig?.apiKey, user?.uid]);
 
   const addCategory = useCallback((category: { name: string; description?: string }): Category => {
     const newCategory: Category = {
@@ -443,6 +490,8 @@ export function AppProvider({ children }: AppProviderProps) {
   }, [shoppingLists, activeListId]);
 
   const value: AppContextType = useMemo(() => ({
+    user,
+    authLoading,
     categories,
     shoppingLists,
     inventory,
@@ -455,6 +504,10 @@ export function AppProvider({ children }: AppProviderProps) {
     setCurrency,
     setLanguage,
     setFirebaseConfig,
+    login,
+    logout,
+    register,
+    loginWithGithub,
     addCategory,
     updateCategory,
     deleteCategory,

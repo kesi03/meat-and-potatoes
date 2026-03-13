@@ -1,7 +1,26 @@
 import { resources } from "./i18n"
-import { db, app } from "./firebase";
+import { db, app, auth } from "./firebase";
 import { ref, set, update } from "firebase/database";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GithubAuthProvider, signOut } from "firebase/auth";
+
+const getAuthInstance = () => {
+  if (!auth) throw new Error('Firebase Auth not initialized');
+  return auth;
+};
+
+export const isAuthInitialized = () => auth !== null;
+
+export const loginWithEmail = (email: string, password: string) => signInWithEmailAndPassword(getAuthInstance(), email, password);
+export const registerWithEmail = (email: string, password: string) => createUserWithEmailAndPassword(getAuthInstance(), email, password);
+export const loginWithGithub = () => signInWithPopup(getAuthInstance(), new GithubAuthProvider());
+export const logout = () => signOut(getAuthInstance());
+export const observeAuth = (callback: (user: any) => void) => {
+  if (!auth) {
+    callback(null);
+    return () => {};
+  }
+  return onAuthStateChanged(auth, callback);
+};
 
 
 
@@ -100,8 +119,14 @@ export async function saveCategories(): Promise<void> {
 
   const activeListId = localStorage.getItem("shopping-inventory-app-activeListId");
 
+  const currentUser = auth?.currentUser;
 
-  await set(ref(db, 'userData'), {
+  if (!currentUser?.uid) {
+    console.error('User not authenticated');
+    return;
+  }
+
+  await set(ref(db, `userData/${currentUser.uid}`), {
     categories,
     activeListId: activeListId || '',
     shoppingLists: shoppingLists ? JSON.parse(shoppingLists) : [],

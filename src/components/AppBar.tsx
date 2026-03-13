@@ -7,6 +7,8 @@ import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import AddIcon from '@mui/icons-material/Add';
+import LogoutIcon from '@mui/icons-material/Logout';
+import Avatar from '@mui/material/Avatar';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
@@ -16,7 +18,7 @@ import { DeviceBanner } from './DeviceBanner';
 function ResponsiveAppBar() {
   const { t } = useTranslation();
   const location = useLocation();
-  const { activeListId, addItemToList, categories, currency, getActiveList } = useApp();
+  const { activeListId, addItemToList, categories, currency, getActiveList, user, logout } = useApp();
   const appBarActions = useAppBarActions();
 
   const activeList = getActiveList();
@@ -117,6 +119,27 @@ function ResponsiveAppBar() {
               {t('addList')}
             </Button>
           )}
+
+          <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+            {user?.photoURL ? (
+              <Avatar src={user.photoURL} sx={{ width: 32, height: 32 }} />
+            ) : user ? (
+              <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+                {user.email?.[0]?.toUpperCase()}
+              </Avatar>
+            ) : null}
+            <Button
+              color="inherit"
+              startIcon={<LogoutIcon />}
+              onClick={async () => {
+                await logout();
+                window.location.reload();
+              }}
+              sx={{ ml: 1 }}
+            >
+              {t('logout') || 'Logout'}
+            </Button>
+          </Box>
 
 
 

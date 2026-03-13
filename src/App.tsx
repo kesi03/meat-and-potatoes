@@ -1,6 +1,6 @@
 import './firebase';
 import { createBrowserRouter, RouterProvider, useLocation, useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ThemeProvider, CssBaseline, Paper, Box } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
 import { AppBarActionsProvider } from './context/AppBarActions';
@@ -10,6 +10,7 @@ import ListsPage from './pages/ListsPage';
 import ShoppingListView from './components/ShoppingListView';
 import InventoryPage from './pages/InventoryPage';
 import AdminPage from './pages/AdminPage';
+import LoginPage from './pages/LoginPage';
 import theme from './theme';
 import type { ShoppingItem } from './context/AppContext';
 import AppBar from './components/AppBar';
@@ -24,10 +25,13 @@ const NAVIGATION = [
 ];
 
 function AppContent() {
-  const { moveItemToInventory, shoppingLists, addItemToList, updateItemInList, deleteItemFromList, categories, currency, activeListId, setActiveListId } = useApp();
+  const { user, authLoading, moveItemToInventory, shoppingLists, addItemToList, updateItemInList, deleteItemFromList, categories, currency, activeListId, setActiveListId } = useApp();
   const location = useLocation();
   const params = useParams();
   const listName = params['*']?.replace('list/', '');
+  const [, setForceUpdate] = useState(0);
+
+  console.log('AppContent render:', { user: !!user, authLoading });
 
   const selectedList = listName ? shoppingLists.find(l => l.name.toLowerCase() === listName.toLowerCase()) : null;
 
@@ -40,6 +44,20 @@ function AppContent() {
   const handleMoveToInventory = (item: ShoppingItem) => {
     moveItemToInventory('', item.id, item.quantity);
   };
+
+  useEffect(() => {
+    if (user) {
+      setForceUpdate(n => n + 1);
+    }
+  }, [user]);
+
+  if (authLoading) {
+    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>Loading...</Box>;
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
 
   return (
 
