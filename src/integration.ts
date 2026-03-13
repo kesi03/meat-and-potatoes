@@ -15,11 +15,15 @@ export const registerWithEmail = (email: string, password: string) => createUser
 export const loginWithGithub = () => signInWithPopup(getAuthInstance(), new GithubAuthProvider());
 export const logout = () => signOut(getAuthInstance());
 export const observeAuth = (callback: (user: any) => void) => {
+  console.log('observeAuth called, auth:', !!auth);
   if (!auth) {
     callback(null);
     return () => {};
   }
-  return onAuthStateChanged(auth, callback);
+  return onAuthStateChanged(auth, (u) => {
+    console.log('Auth state changed:', u?.email);
+    callback(u);
+  });
 };
 
 

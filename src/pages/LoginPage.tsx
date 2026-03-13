@@ -45,6 +45,7 @@ export default function LoginPage() {
       } else {
         await login(email, password);
       }
+      console.log('Login successful, user should be set');
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
     } finally {

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -9,17 +10,20 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import AddIcon from '@mui/icons-material/Add';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Avatar from '@mui/material/Avatar';
+import IconButton from '@mui/material/IconButton';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAppBarActions } from '../context/AppBarActions';
 import { DeviceBanner } from './DeviceBanner';
+import { ProfileDialog } from './dialogs';
 
 function ResponsiveAppBar() {
   const { t } = useTranslation();
   const location = useLocation();
-  const { activeListId, addItemToList, categories, currency, getActiveList, user, logout } = useApp();
+  const { activeListId, addItemToList, categories, currency, getActiveList, user, logout, profile, updateProfile } = useApp();
   const appBarActions = useAppBarActions();
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   const activeList = getActiveList();
 
@@ -121,13 +125,17 @@ function ResponsiveAppBar() {
           )}
 
           <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
-            {user?.photoURL ? (
-              <Avatar src={user.photoURL} sx={{ width: 32, height: 32 }} />
-            ) : user ? (
-              <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
-                {user.email?.[0]?.toUpperCase()}
-              </Avatar>
-            ) : null}
+            <IconButton onClick={() => setProfileDialogOpen(true)}>
+              {profile.image ? (
+                <Avatar src={profile.image} sx={{ width: 32, height: 32 }} />
+              ) : user?.photoURL ? (
+                <Avatar src={user.photoURL} sx={{ width: 32, height: 32 }} />
+              ) : user ? (
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+                  {profile.alias?.[0] || profile.firstName?.[0] || user.email?.[0]?.toUpperCase()}
+                </Avatar>
+              ) : null}
+            </IconButton>
             <Button
               color="inherit"
               startIcon={<LogoutIcon />}
@@ -140,6 +148,13 @@ function ResponsiveAppBar() {
               {t('logout') || 'Logout'}
             </Button>
           </Box>
+
+          <ProfileDialog
+            open={profileDialogOpen}
+            profile={profile}
+            onSave={updateProfile}
+            onClose={() => setProfileDialogOpen(false)}
+          />
 
 
 

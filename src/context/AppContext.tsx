@@ -75,6 +75,16 @@ export interface SyncStatus {
   error: string | null;
 }
 
+export interface Profile {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  alias: string;
+  image: string;
+  language: string;
+}
+
 interface AppContextType {
   user: User | null;
   authLoading: boolean;
@@ -86,10 +96,12 @@ interface AppContextType {
   language: string;
   firebaseConfig: FirebaseConfig | null;
   syncStatus: SyncStatus;
+  profile: Profile;
   setActiveListId: (id: string) => void;
   setCurrency: (currency: CurrencyCode) => void;
   setLanguage: (language: string) => void;
   setFirebaseConfig: (config: FirebaseConfig | null) => void;
+  updateProfile: (updates: Partial<Profile>) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   loginWithGithub: () => Promise<void>;
@@ -200,6 +212,43 @@ export function AppProvider({ children }: AppProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
 
+  const [profile, setProfile] = useState<Profile>(() => {
+    const stored = localStorage.getItem(`${STORAGE_KEY}-profile`);
+    return stored ? JSON.parse(stored) : {
+      userId: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      alias: '',
+      image: '',
+      language: 'en',
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem(`${STORAGE_KEY}-profile`, JSON.stringify(profile));
+  }, [profile]);
+
+  const updateProfile = useCallback((updates: Partial<Profile>) => {
+    setProfile(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  useEffect(() => {
+    console.log('User changed:', JSON.stringify(user));
+    if (user?.uid) {
+      setProfile(prev => {
+        const needsUpdate = !prev.userId || !prev.email;
+        if (!needsUpdate) return prev;
+        console.log('Updating profile with user data - email:', user.email, 'providerData:', user.providerData);
+        return {
+          ...prev,
+          userId: prev.userId || user.uid,
+          email: prev.email || user.email || user.providerData?.[0]?.email || '',
+        };
+      });
+    }
+  }, [user]);
+
   const login = useCallback(async (email: string, password: string) => {
     await loginWithEmail(email, password);
   }, []);
@@ -279,6 +328,7 @@ export function AppProvider({ children }: AppProviderProps) {
       setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
       try {
         await set(ref(db, `userData/${user.uid}`), {
+          profile,
           categories,
           shoppingLists,
           inventory,
@@ -296,7 +346,7 @@ export function AppProvider({ children }: AppProviderProps) {
     }, 1000); // Debounce for 1 second
 
     return () => clearTimeout(timeout);
-  }, [categories, shoppingLists, inventory, activeListId, currency, firebaseConfig?.apiKey, user?.uid]);
+  }, [categories, shoppingLists, inventory, activeListId, currency, firebaseConfig?.apiKey, user?.uid, profile]);
 
   // Sync to Firebase Realtime Database
   const syncToFirebase = useCallback(async () => {
@@ -311,6 +361,7 @@ export function AppProvider({ children }: AppProviderProps) {
     setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
     try {
       await set(ref(db, `userData/${user.uid}`), {
+        profile,
         categories,
         shoppingLists,
         inventory,
@@ -322,7 +373,7 @@ export function AppProvider({ children }: AppProviderProps) {
     } catch (error) {
       setSyncStatus(prev => ({ ...prev, isSyncing: false, error: (error as Error).message }));
     }
-  }, [categories, shoppingLists, inventory, activeListId, currency, user?.uid]);
+  }, [categories, shoppingLists, inventory, activeListId, currency, user?.uid, profile]);
 
   // Load from Firebase Realtime Database
   const loadFromFirebase = useCallback(async () => {
@@ -339,6 +390,7 @@ export function AppProvider({ children }: AppProviderProps) {
       const snapshot = await get(ref(db, `userData/${user.uid}`));
       if (snapshot.exists()) {
         const data = snapshot.val();
+        if (data.profile) setProfile({ ...data.profile, userId: user.uid });
         if (data.categories) setCategories(data.categories);
         if (data.shoppingLists) {
           setShoppingLists(data.shoppingLists.map((list: ShoppingList) => ({
@@ -500,10 +552,12 @@ export function AppProvider({ children }: AppProviderProps) {
     language,
     firebaseConfig,
     syncStatus,
+    profile,
     setActiveListId,
     setCurrency,
     setLanguage,
     setFirebaseConfig,
+    updateProfile,
     login,
     logout,
     register,
@@ -525,7 +579,7 @@ export function AppProvider({ children }: AppProviderProps) {
     getActiveList,
     syncToFirebase,
     loadFromFirebase,
-  }), [categories, shoppingLists, inventory, activeListId, currency, language, firebaseConfig, syncStatus, addCategory, updateCategory, deleteCategory, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, moveItemToInventory, addInventoryItem, updateInventoryItem, deleteInventoryItem, getActiveList, syncToFirebase, loadFromFirebase]);
+  }), [categories, shoppingLists, inventory, activeListId, currency, language, firebaseConfig, syncStatus, profile, addCategory, updateCategory, deleteCategory, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, moveItemToInventory, addInventoryItem, updateInventoryItem, deleteInventoryItem, getActiveList, syncToFirebase, loadFromFirebase]);
 
   return (
     <AppContext.Provider value={value}>
