@@ -8,21 +8,6 @@ import type { ShoppingItem } from '../context/AppContext';
 import { generateId } from '../meat';
 import { ListDialog, ItemDialog, SaveToInventoryDialog } from '../components/dialogs';
 
-const STORAGE_KEY = 'shopping-list-picked-items';
-
-const loadPickedItems = (listId: string): Set<string> => {
-  try {
-    const stored = localStorage.getItem(`${STORAGE_KEY}-${listId}`);
-    return stored ? new Set(JSON.parse(stored)) : new Set();
-  } catch {
-    return new Set();
-  }
-};
-
-const savePickedItems = (listId: string, items: Set<string>) => {
-  localStorage.setItem(`${STORAGE_KEY}-${listId}`, JSON.stringify([...items]));
-};
-
 interface ListsPageProps {
   onMoveToInventory: (item: ShoppingItem) => void;
   initialListId?: string;
@@ -34,12 +19,11 @@ export enum ToggleMode{
 }
 
 export default function ListsPage({ onMoveToInventory, initialListId }: ListsPageProps) {
-  const { shoppingLists, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId } = useApp();
+  const { shoppingLists, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem } = useApp();
   const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
   const [pickingMode, setPickingMode] = useState<ToggleMode>(ToggleMode.PICK);
-  const [pickedItems, setPickedItems] = useState<Set<string>>(new Set());
   const [listDialog, setListDialog] = useState({ open: false, name: '', copyFromStandard: true });
   const [itemDialog, setItemDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; item: ShoppingItem | null; listId: string | null }>({ open: false, mode: 'add', item: null, listId: null });
   const [saveToInventoryDialog, setSaveToInventoryDialog] = useState({ open: false });
@@ -50,21 +34,12 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
     }
   }, [initialListId]);
 
-  useEffect(() => {
-    if (selectedListId) {
-      setPickedItems(loadPickedItems(selectedListId));
+  const handleSetPickedItems = useCallback((itemId: string) => {
+    const listId = selectedListId || activeListId;
+    if (listId) {
+      togglePickedItem(listId, itemId);
     }
-  }, [selectedListId]);
-
-  const handleSetPickedItems = useCallback((items: Set<string> | ((prev: Set<string>) => Set<string>)) => {
-    setPickedItems(prev => {
-      const newItems = typeof items === 'function' ? items(prev) : items;
-      if (selectedListId) {
-        savePickedItems(selectedListId, newItems);
-      }
-      return newItems;
-    });
-  }, [selectedListId]);
+  }, [selectedListId, activeListId, togglePickedItem]);
 
   useEffect(() => {
     appBarActions.current.openAddList = () => setListDialog({ open: true, name: '', copyFromStandard: true });
@@ -116,27 +91,27 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
 
   const selectedList = shoppingLists.find(l => l.id === selectedListId);
   const listItems = selectedList?.items?.filter(item => !categoryFilter || item.category === categoryFilter) || [];
+  const pickedItems = selectedList?.pickedItems || [];
 
   useEffect(() => {
-    if (pickingMode && selectedList && listItems.length > 0 && pickedItems.size === listItems.length) {
+    if (pickingMode && selectedList && listItems.length > 0 && pickedItems.length === listItems.length) {
       setTimeout(() => {
         setSaveToInventoryDialog({ open: true });
       }, 300);
     }
-  }, [pickingMode, selectedList, listItems.length, pickedItems.size]);
+  }, [pickingMode, selectedList, listItems.length, pickedItems.length]);
 
   const handleSavePickedItemsToInventory = () => {
     if (!selectedListId) return;
     
     listItems.forEach(item => {
-      if (pickedItems.has(item.id)) {
+      if (pickedItems.includes(item.id)) {
         moveItemToInventory(selectedListId, item.id, item.quantity);
       }
     });
 
     setSaveToInventoryDialog({ open: false });
     setPickingMode(ToggleMode.BROWSE);
-    setPickedItems(new Set());
   };
 
   return (

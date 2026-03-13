@@ -22,7 +22,6 @@ import { CURRENCIES, formatCurrency, CurrencyCode, getTranslatedItemName, getTra
 import type { Category, ShoppingList } from '../context/AppContext';
 import { getCategoryName, getCategoryDescription } from '../context/AppContext';
 import { useTranslation } from 'react-i18next';
-import { FirebaseConfig } from '../context/AppContext';
 import GB from 'country-flag-icons/react/3x2/GB';
 import GBWLS from 'country-flag-icons/react/3x2/GB-WLS';
 import GBSCT from 'country-flag-icons/react/3x2/GB-SCT';
@@ -41,7 +40,6 @@ import CornishFlag from '../flags/CornishFlag.svg';
 import ManxFlag from '../flags/ManxFlag.svg';
 import SamiFlag  from '../flags/SamiFlag.svg';
 import BretonFlag from '../flags/BretonFlag.svg';
-import { saveCategories } from '../integration';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', Flag: GB },
@@ -72,8 +70,6 @@ interface AdminViewProps {
   onCurrencyChange: (currency: CurrencyCode) => void;
   language: string;
   onLanguageChange: (language: string) => void;
-  firebaseConfig: FirebaseConfig | null;
-  onFirebaseConfigChange: (config: FirebaseConfig | null) => void;
   standardList?: ShoppingList;
   onEditStandardItem: (item: any) => void;
   onAddStandardItem: () => void;
@@ -88,8 +84,6 @@ export default function AdminView({
   onCurrencyChange,
   language,
   onLanguageChange,
-  firebaseConfig,
-  onFirebaseConfigChange,
   standardList,
   onEditStandardItem,
   onAddStandardItem,
@@ -117,8 +111,6 @@ export default function AdminView({
         <Tab label={t('localeSettings')} data-testid="tab-locale" />
         <Tab label={t('category')} data-testid="tab-category" />
         <Tab label={t('standardList')} data-testid="tab-standard-list" />
-        <Tab label="Firebase" data-testid="tab-firebase" />
-        <Tab label="Integration" data-testid="tab-integration" />
       </Tabs>
 
       {adminTab === 0 && (
@@ -230,103 +222,6 @@ export default function AdminView({
               ))}
             </List>
           )}
-        </Box>
-      )}
-
-      {adminTab === 3 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>Firebase Configuration</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Configure your Firebase settings. Changes will require a page reload.
-          </Typography>
-          <TextField
-            fullWidth
-            label="API Key"
-            data-testid="firebase-api-key"
-            value={firebaseConfig?.apiKey || ''}
-            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, apiKey: e.target.value } as FirebaseConfig)}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Auth Domain"
-            data-testid="firebase-auth-domain"
-            value={firebaseConfig?.authDomain || ''}
-            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, authDomain: e.target.value } as FirebaseConfig)}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Project ID"
-            data-testid="firebase-project-id"
-            value={firebaseConfig?.projectId || ''}
-            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, projectId: e.target.value } as FirebaseConfig)}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Storage Bucket"
-            value={firebaseConfig?.storageBucket || ''}
-            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, storageBucket: e.target.value } as FirebaseConfig)}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Messaging Sender ID"
-            value={firebaseConfig?.messagingSenderId || ''}
-            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, messagingSenderId: e.target.value } as FirebaseConfig)}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="App ID"
-            value={firebaseConfig?.appId || ''}
-            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, appId: e.target.value } as FirebaseConfig)}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Measurement ID (optional)"
-            value={firebaseConfig?.measurementId || ''}
-            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, measurementId: e.target.value } as FirebaseConfig)}
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            fullWidth
-            label="Database URL (optional)"
-            value={firebaseConfig?.databaseURL || ''}
-            onChange={(e) => onFirebaseConfigChange({ ...firebaseConfig, databaseURL: e.target.value } as FirebaseConfig)}
-            placeholder="https://your-project-default-rtdb.region.firebasedatabase.app"
-            sx={{ mb: 3 }}
-          />
-          <Button 
-            variant="contained" 
-            onClick={() => {
-              if (firebaseConfig) {
-                localStorage.setItem('shopping-inventory-app-firebaseConfig', JSON.stringify(firebaseConfig));
-                window.location.reload();
-              }
-            }}
-          >
-            Save & Reload
-          </Button>
-        </Box>
-      )}
-      {adminTab === 4 && (
-<Box>      <Typography variant="h6" gutterBottom>Integration</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          This section is for testing integration features. You can trigger category extraction and saving here.
-        </Typography>
-        <Button variant="contained" onClick={() => {
-          // const userId = getAuth(app).currentUser?.uid;
-          // if (!userId) {
-          //   console.warn("No authenticated user. Categories will not be saved to Firebase.");
-          //   return;
-          // }
-          saveCategories();
-        }}>
-          Extract & Save Categories
-        </Button>
         </Box>
       )}
     </Box>

@@ -26,7 +26,7 @@ const LANGUAGES = [
 ];
 
 export default function AdminPage() {
-  const { categories, addCategory, updateCategory, deleteCategory, currency, setCurrency, language, setLanguage, firebaseConfig, setFirebaseConfig, shoppingLists, addItemToList, updateItemInList } = useApp();
+  const { categories, addCategory, updateCategory, deleteCategory, currency, setCurrency, language, setLanguage, shoppingLists, addItemToList, updateItemInList } = useApp();
   const [categoryDialog, setCategoryDialog] = useState(getInitialCategoryDialogState());
   const [isTranslating, setIsTranslating] = useState(false);
   const [itemDialog, setItemDialog] = useState({ open: false, mode: 'add' as 'add' | 'edit', item: null as ShoppingItem | null });
@@ -119,8 +119,6 @@ export default function AdminPage() {
         onCurrencyChange={setCurrency}
         language={language}
         onLanguageChange={setLanguage}
-        firebaseConfig={firebaseConfig}
-        onFirebaseConfigChange={setFirebaseConfig}
         standardList={standardList}
         onEditStandardItem={handleEditStandardItem}
         onAddStandardItem={handleAddStandardItem}

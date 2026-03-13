@@ -49,8 +49,8 @@ interface ShoppingListViewProps {
   currency: CurrencyCode;
   pickingMode: ToggleMode
   setPickingMode: (pickMode: ToggleMode) => void;
-  pickedItems: Set<string>;
-  setPickedItems: React.Dispatch<React.SetStateAction<Set<string>>>;
+  pickedItems: string[];
+  setPickedItems: (itemId: string) => void;
   onBack?: () => void;
 }
 
@@ -81,19 +81,11 @@ export default function ShoppingListView({
   );
 
   const pickedCost = items
-    .filter(item => pickedItems.has(item.id))
+    .filter(item => pickedItems.includes(item.id))
     .reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
 
   const handleTogglePick = (itemId: string) => {
-    setPickedItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
-    });
+    setPickedItems(itemId);
   };
 
   const filteredItems = categoryFilter
@@ -178,7 +170,7 @@ export default function ShoppingListView({
             <Box sx={{ ml: 'auto', textAlign: 'right' }} data-testid="cost-display">
 
             <Typography variant="subtitle1" color="primary" fontWeight={500} data-testid="picking-progress">
-                {pickedItems.size} / {items.length} ({formatCurrency(pickedCost, currency)})
+                {pickedItems.length} / {items.length} ({formatCurrency(pickedCost, currency)})
               </Typography>
             </Box>
             {Object.entries(groupedItems).map(([category, categoryItems]) => (
@@ -207,12 +199,12 @@ export default function ShoppingListView({
                         sx={{
                           mb: 1,
                           borderRadius: 1,
-                          textDecoration: pickedItems.has(item.id) ? 'line-through' : 'none',
-                          opacity: pickedItems.has(item.id) ? 0.6 : 1,
+                          textDecoration: pickedItems.includes(item.id) ? 'line-through' : 'none',
+                          opacity: pickedItems.includes(item.id) ? 0.6 : 1,
                         }}
                         secondaryAction={
                           <Checkbox
-                            checked={pickedItems.has(item.id)}
+                            checked={pickedItems.includes(item.id)}
                             onChange={() => handleTogglePick(item.id)}
                           />
                         }
@@ -220,7 +212,7 @@ export default function ShoppingListView({
                         <ListItemAvatar>
                           <Avatar
                             sx={{
-                              bgcolor: pickedItems.has(item.id)
+                              bgcolor: pickedItems.includes(item.id)
                                 ? 'success.main'
                                 : 'primary.light',
                             }}
