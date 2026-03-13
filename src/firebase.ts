@@ -14,16 +14,44 @@ export interface FirebaseConfig {
   databaseURL?: string;
 }
 
-function getFirebaseConfig(): FirebaseConfig | null {
+const dedaultFirebaseConfig: FirebaseConfig = {
+        apiKey
+          :
+          "AIzaSyCWL78tVJcYfHoaz4cCu3_Eo_6PO1vW2fw",
+        appId
+          :
+          "1:807562708584:web:1e668778003a083260dddd",
+        authDomain
+          :
+          "meat-and-potatoes-86149.firebaseapp.com",
+        databaseURL
+          :
+          "https://meat-and-potatoes-86149-default-rtdb.europe-west1.firebasedatabase.app",
+        measurementId
+          :
+          "G-D53SRDFZFJ",
+        messagingSenderId
+          :
+          "807562708584",
+        projectId
+          :
+          "meat-and-potatoes-86149",
+        storageBucket
+          :
+          "meat-and-potatoes-86149.firebasestorage.app",
+      };
+
+function getFirebaseConfig(): FirebaseConfig{
+
   const stored = localStorage.getItem('shopping-inventory-app-firebaseConfig');
   if (stored) {
     try {
       return JSON.parse(stored);
     } catch {
-      return null;
+      return dedaultFirebaseConfig;
     }
   }
-  return null;
+  return dedaultFirebaseConfig;
 }
 
 const firebaseConfig = getFirebaseConfig();
