@@ -234,12 +234,10 @@ export function AppProvider({ children }: AppProviderProps) {
   }, []);
 
   useEffect(() => {
-    console.log('User changed:', JSON.stringify(user));
     if (user?.uid) {
       setProfile(prev => {
         const needsUpdate = !prev.userId || !prev.email;
         if (!needsUpdate) return prev;
-        console.log('Updating profile with user data - email:', user.email, 'providerData:', user.providerData);
         return {
           ...prev,
           userId: prev.userId || user.uid,

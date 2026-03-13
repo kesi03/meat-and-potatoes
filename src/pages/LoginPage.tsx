@@ -7,7 +7,7 @@ import { auth as firebaseAuth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
-  const { user, login, register, loginWithGithub, firebaseConfig } = useApp();
+  const { user, login, register, loginWithGithub, firebaseConfig, updateProfile } = useApp();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,9 +17,12 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
+      if (!user.email && email) {
+        updateProfile({ email });
+      }
       navigate('/lists', { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, email, updateProfile]);
 
   useEffect(() => {
     if (!firebaseAuth) return;
@@ -45,7 +48,7 @@ export default function LoginPage() {
       } else {
         await login(email, password);
       }
-      console.log('Login successful, user should be set');
+      updateProfile({ email });
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
     } finally {
@@ -58,7 +61,6 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await loginWithGithub();
-      document.location.reload(); // Force reload to update auth state across tabs
     } catch (err: any) {
       setError(err.message || 'GitHub login failed');
     } finally {

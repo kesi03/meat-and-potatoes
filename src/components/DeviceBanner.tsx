@@ -40,13 +40,22 @@ interface DeviceBannerProps {
     categories: Category[];
     currency: CurrencyCode;
     forceShow?: boolean;
+    scanTrigger?: number;
+    hideButton?: boolean;
 }
 
-export function DeviceBanner({ listId, addItemToList, categories, currency, forceShow = false }: DeviceBannerProps) {
+export function DeviceBanner({ listId, addItemToList, categories, currency, forceShow = false, scanTrigger, hideButton = false }: DeviceBannerProps) {
     const currencySymbol = getCurrencyByCode(currency)?.symbol || '$';
     const device = getDeviceInfo();
     const showScanner = forceShow || device.isIOS || device.isAndroid;
     const [dialogOpen, setDialogOpen] = useState(false);
+    
+    useEffect(() => {
+        if (scanTrigger && scanTrigger > 0) {
+            setDialogOpen(true);
+        }
+    }, [scanTrigger]);
+
     const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null);
     const [itemName, setItemName] = useState('');
     const [itemCategory, setItemCategory] = useState('');
@@ -275,9 +284,11 @@ export function DeviceBanner({ listId, addItemToList, categories, currency, forc
     if (showScanner) {
         return (
             <>
-                <IconButton onClick={() => setDialogOpen(true)} sx={{ color: 'white' }}>
-                    <BarcodeReaderIcon />
-                </IconButton>
+                {!hideButton && (
+                    <IconButton onClick={() => setDialogOpen(true)} sx={{ color: 'white' }}>
+                        <BarcodeReaderIcon />
+                    </IconButton>
+                )}
 
                 <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
                 <DialogContent>

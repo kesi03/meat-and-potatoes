@@ -14,7 +14,7 @@ import {
   MenuItem,
   IconButton,
 } from '@mui/material';
-import { PhotoCamera } from '@mui/icons-material';
+import { PhotoCamera, Upload } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import type { Profile } from '../../context/AppContext';
 
@@ -118,7 +118,6 @@ export default function ProfileDialog({
       const reader = new FileReader();
       reader.onloadend = () => {
         setCapturedImage(reader.result as string);
-        setShowCropper(true);
       };
       reader.readAsDataURL(file);
     }
@@ -215,17 +214,25 @@ export default function ProfileDialog({
           >
             {formData.firstName?.[0] || formData.alias?.[0] || formData.email?.[0]?.toUpperCase() || '?'}
           </Avatar>
-          <IconButton
-            onClick={startCamera}
-            sx={{ bgcolor: 'grey.200' }}
-          >
-            <PhotoCamera />
-          </IconButton>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <IconButton
+              onClick={startCamera}
+              sx={{ bgcolor: 'grey.200' }}
+            >
+              <PhotoCamera />
+            </IconButton>
+            <IconButton
+              onClick={() => fileInputRef.current?.click()}
+              sx={{ bgcolor: 'grey.200' }}
+            >
+              <Upload />
+            </IconButton>
+          </Box>
           <input
             type="file"
             ref={fileInputRef}
             style={{ display: 'none' }}
-            accept="image/*"
+            accept="image/png,image/jpeg,image/gif"
             onChange={handleFileChange}
           />
         </Box>
