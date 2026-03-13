@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { ref, set, get } from 'firebase/database';
 import { User } from 'firebase/auth';
 import { loginWithEmail, registerWithEmail, loginWithGithub as loginWithGithubAuth, logout as firebaseLogout, observeAuth } from '../integration';
+import { setSession, clearSession, hasValidSession, initActivityTracking } from '../session';
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -288,14 +289,26 @@ export function AppProvider({ children }: AppProviderProps) {
 
   const logout = useCallback(async () => {
     await firebaseLogout();
+    clearSession();
     setUser(null);
   }, []);
+
+  // Initialize activity tracking for session timeout
+  useEffect(() => {
+    const cleanup = initActivityTracking(() => {
+      logout();
+    });
+    return cleanup;
+  }, [logout]);
 
   useEffect(() => {
     console.log('Setting up auth observer');
     try {
       const unsubscribe = observeAuth((u) => {
         console.log('Auth observer callback:', u?.email);
+        if (u) {
+          setSession(u.uid, u.email || undefined);
+        }
         setUser(u);
         setAuthLoading(false);
       });
@@ -306,14 +319,11 @@ export function AppProvider({ children }: AppProviderProps) {
     }
   }, []);
 
-  // Fallback to ensure authLoading is set to false after a timeout
+  // Initial auth check - if we have a valid session, don't show loading
   useEffect(() => {
-    console.log('Auth loading fallback timer set');
-    const timer = setTimeout(() => {
-      console.log('Auth loading fallback timer fired');
+    if (hasValidSession()) {
       setAuthLoading(false);
-    }, 3000);
-    return () => clearTimeout(timer);
+    }
   }, []);
 
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({

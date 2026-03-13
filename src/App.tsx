@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ThemeProvider, CssBaseline, Paper, Box, LinearProgress } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
 import { AppBarActionsProvider } from './context/AppBarActions';
+import { hasValidSession } from './session';
 
 import { ShoppingCart, Inventory2, Settings } from '@mui/icons-material';
 import ListsPage from './pages/ListsPage';
@@ -51,7 +52,7 @@ function AppContent() {
     }
   }, [user]);
 
-  if (authLoading) {
+  if (authLoading && !hasValidSession()) {
     return (
       <Box sx={{ width: '100%', minHeight: '100vh' }}>
         <LinearProgress />
@@ -59,7 +60,7 @@ function AppContent() {
     );
   }
 
-  if (!user) {
+  if (!user && !hasValidSession()) {
     return <LoginPage />;
   }
 
