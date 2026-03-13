@@ -17,9 +17,11 @@ export const logout = () => signOut(getAuthInstance());
 export const observeAuth = (callback: (user: any) => void) => {
   console.log('observeAuth called, auth:', !!auth);
   if (!auth) {
+    console.log('observeAuth: auth is null, calling callback with null');
     callback(null);
     return () => {};
   }
+  console.log('observeAuth: auth available, setting up onAuthStateChanged');
   return onAuthStateChanged(auth, (u) => {
     console.log('Auth state changed:', u?.email);
     callback(u);

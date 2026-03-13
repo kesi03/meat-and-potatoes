@@ -64,7 +64,6 @@ function AppContent() {
   }
 
   return (
-
     <>
       <AppBar />
       <Box sx={{ p: 2, mt: 8 }}>

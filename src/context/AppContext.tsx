@@ -209,9 +209,6 @@ export function AppProvider({ children }: AppProviderProps) {
     return stored ? JSON.parse(stored) : null;
   });
 
-  const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
   const [profile, setProfile] = useState<Profile>(() => {
     const stored = localStorage.getItem(`${STORAGE_KEY}-profile`);
     return stored ? JSON.parse(stored) : {
@@ -225,12 +222,42 @@ export function AppProvider({ children }: AppProviderProps) {
     };
   });
 
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState<boolean>(false);
+
   useEffect(() => {
     localStorage.setItem(`${STORAGE_KEY}-profile`, JSON.stringify(profile));
   }, [profile]);
 
   const updateProfile = useCallback((updates: Partial<Profile>) => {
     setProfile(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  // Set authLoading to true initially, then false after a short delay
+
+  // Set authLoading to true initially, then false after a short delay
+  useEffect(() => {
+    setAuthLoading(true);
+    // Small delay to allow auth to initialize
+    const timer = setTimeout(() => {
+      setAuthLoading(false);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    console.log('Setting up auth observer');
+    try {
+      const unsubscribe = observeAuth((u) => {
+        console.log('Auth observer callback:', u?.email);
+        setUser(u);
+        setAuthLoading(false);
+      });
+      return () => unsubscribe();
+    } catch (e) {
+      console.error('Auth observer error:', e);
+      setAuthLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -265,12 +292,29 @@ export function AppProvider({ children }: AppProviderProps) {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = observeAuth((u) => {
-      setUser(u);
+    console.log('Setting up auth observer');
+    try {
+      const unsubscribe = observeAuth((u) => {
+        console.log('Auth observer callback:', u?.email);
+        setUser(u);
+        setAuthLoading(false);
+      });
+      return () => unsubscribe();
+    } catch (e) {
+      console.error('Auth observer error:', e);
       setAuthLoading(false);
-    });
-    return () => unsubscribe();
-  });
+    }
+  }, []);
+
+  // Fallback to ensure authLoading is set to false after a timeout
+  useEffect(() => {
+    console.log('Auth loading fallback timer set');
+    const timer = setTimeout(() => {
+      console.log('Auth loading fallback timer fired');
+      setAuthLoading(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
     lastSynced: null,

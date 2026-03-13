@@ -80,7 +80,6 @@ function ResponsiveAppBar() {
 
   const handleLogoutClick = async () => {
     await logout();
-    window.location.reload();
   };
 
   return (
