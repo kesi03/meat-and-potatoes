@@ -155,7 +155,11 @@ export function AppProvider({ children }: AppProviderProps) {
 
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>(() => {
     const stored = localStorage.getItem(`${STORAGE_KEY}-lists`);
-    return stored ? JSON.parse(stored) : DEFAULT_LISTS;
+    const parsed = stored ? JSON.parse(stored) : DEFAULT_LISTS;
+    return parsed.map((list: ShoppingList) => ({
+      ...list,
+      items: list.items || [],
+    }));
   });
 
   const [inventory, setInventory] = useState<InventoryItem[]>(() => {
@@ -288,7 +292,12 @@ export function AppProvider({ children }: AppProviderProps) {
       if (snapshot.exists()) {
         const data = snapshot.val();
         if (data.categories) setCategories(data.categories);
-        if (data.shoppingLists) setShoppingLists(data.shoppingLists);
+        if (data.shoppingLists) {
+          setShoppingLists(data.shoppingLists.map((list: ShoppingList) => ({
+            ...list,
+            items: list.items || [],
+          })));
+        }
         if (data.inventory) setInventory(data.inventory);
         if (data.activeListId) setActiveListId(data.activeListId);
         if (data.currency) setCurrency(data.currency);
