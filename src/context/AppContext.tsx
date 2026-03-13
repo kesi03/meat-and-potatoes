@@ -210,7 +210,7 @@ export function AppProvider({ children }: AppProviderProps) {
   });
 
   const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const [profile, setProfile] = useState<Profile>(() => {
     const stored = localStorage.getItem(`${STORAGE_KEY}-profile`);

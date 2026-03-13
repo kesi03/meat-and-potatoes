@@ -1,7 +1,7 @@
 import './firebase';
 import { createBrowserRouter, RouterProvider, useLocation, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { ThemeProvider, CssBaseline, Paper, Box } from '@mui/material';
+import { ThemeProvider, CssBaseline, Paper, Box, LinearProgress } from '@mui/material';
 import { AppProvider, useApp } from './context/AppContext';
 import { AppBarActionsProvider } from './context/AppBarActions';
 
@@ -52,7 +52,11 @@ function AppContent() {
   }, [user]);
 
   if (authLoading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>Loading...</Box>;
+    return (
+      <Box sx={{ width: '100%', minHeight: '100vh' }}>
+        <LinearProgress />
+      </Box>
+    );
   }
 
   if (!user) {
