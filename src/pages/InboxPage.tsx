@@ -36,6 +36,30 @@ export default function InboxPage() {
     return date.toLocaleDateString();
   };
 
+  const handleAccept = async (notification: any) => {
+    if (!notification.invitationId) return;
+    setProcessing(notification.id);
+    try {
+      await acceptInvitation(notification.invitationId, notification.id);
+    } catch (error) {
+      console.error('Error accepting invitation:', error);
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const handleDecline = async (notification: any) => {
+    if (!notification.invitationId) return;
+    setProcessing(notification.id);
+    try {
+      await declineInvitation(notification.invitationId, notification.id);
+    } catch (error) {
+      console.error('Error declining invitation:', error);
+    } finally {
+      setProcessing(null);
+    }
+  };
+
   return (
     <Box sx={{ pb: 7 }}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>

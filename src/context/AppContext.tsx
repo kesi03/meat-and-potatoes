@@ -135,8 +135,8 @@ interface AppContextType {
   setFirebaseConfig: (config: FirebaseConfig | null) => void;
   updateProfile: (updates: Partial<Profile>) => void;
   shareList: (listId: string, listName: string, email: string, message: string) => Promise<void>;
-  acceptInvitation: (invitationId: string) => Promise<void>;
-  declineInvitation: (invitationId: string) => Promise<void>;
+  acceptInvitation: (invitationId: string, notificationId?: string) => Promise<void>;
+  declineInvitation: (invitationId: string, notificationId?: string) => Promise<void>;
   markNotificationRead: (notificationId: string) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
@@ -393,7 +393,7 @@ export function AppProvider({ children }: AppProviderProps) {
     error: null,
   });
 
-  // Sync to Firebase
+  // Sync to Firebase - only sync user-controlled data, NOT notifications/sharedLists
   const syncToFirebase = useCallback(async () => {
     if (!db) {
       setSyncStatus(prev => ({ ...prev, isSyncing: false, error: 'Firebase not initialized' }));
@@ -405,15 +405,14 @@ export function AppProvider({ children }: AppProviderProps) {
     }
     setSyncStatus(prev => ({ ...prev, isSyncing: true, error: null }));
     try {
-      await set(ref(db, `userData/${user.uid}`), {
-        profile,
-        categories,
-        shoppingLists,
-        inventory,
-        activeListId,
-        currency,
-        lastUpdated: new Date().toISOString(),
-      });
+      // Only sync data that user controls - don't overwrite notifications/sharedLists
+      await set(ref(db, `userData/${user.uid}/profile`), profile);
+      await set(ref(db, `userData/${user.uid}/categories`), categories);
+      await set(ref(db, `userData/${user.uid}/shoppingLists`), shoppingLists);
+      await set(ref(db, `userData/${user.uid}/inventory`), inventory);
+      await set(ref(db, `userData/${user.uid}/activeListId`), activeListId);
+      await set(ref(db, `userData/${user.uid}/currency`), currency);
+      await set(ref(db, `userData/${user.uid}/lastUpdated`), new Date().toISOString());
       setSyncStatus({ lastSynced: new Date(), isSyncing: false, error: null });
     } catch (error) {
       setSyncStatus(prev => ({ ...prev, isSyncing: false, error: (error as Error).message }));
@@ -487,12 +486,17 @@ export function AppProvider({ children }: AppProviderProps) {
   }, [user?.uid, profile]);
 
   // Accept an invitation
-  const acceptInvitation = useCallback(async (invitationId: string) => {
+  const acceptInvitation = useCallback(async (invitationId: string, notificationId?: string) => {
     if (!user?.uid) return;
     
     try {
       const acceptFn = httpsCallable(functions, 'acceptInvitation');
       await acceptFn({ invitationId, userId: user.uid });
+      
+      // Update notification status if notificationId provided
+      if (notificationId) {
+        await set(ref(db, `userData/${user.uid}/notifications/${notificationId}/status`), 'accepted');
+      }
       
       // Refresh shared lists
       const sharedSnapshot = await get(ref(db, `userData/${user.uid}/sharedLists`));
@@ -511,12 +515,17 @@ export function AppProvider({ children }: AppProviderProps) {
   }, [user?.uid]);
 
   // Decline an invitation
-  const declineInvitation = useCallback(async (invitationId: string) => {
+  const declineInvitation = useCallback(async (invitationId: string, notificationId?: string) => {
     if (!user?.uid) return;
     
     try {
       const declineFn = httpsCallable(functions, 'declineInvitation');
       await declineFn({ invitationId, userId: user.uid });
+      
+      // Update notification status if notificationId provided
+      if (notificationId) {
+        await set(ref(db, `userData/${user.uid}/notifications/${notificationId}/status`), 'declined');
+      }
     } catch (error) {
       console.error('Error declining invitation:', error);
       throw error;
