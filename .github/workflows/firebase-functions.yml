@@ -35,14 +35,11 @@ jobs:
         with:
           version: '>=418.0.0'
 
-      - name: Create .env file
-        run: |
-          cd functions
-          echo "SMTP_USER=${{ secrets.SMTP_USER }}" > .env
-          echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
-
       - name: Build
         run: cd functions && npm run build
 
       - name: Deploy functions
-        run: firebase deploy --only functions --project ${{ secrets.FIREBASE_PROJECT_ID }} --env .env
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+        run: firebase deploy --only functions --project ${{ secrets.FIREBASE_PROJECT_ID }}
