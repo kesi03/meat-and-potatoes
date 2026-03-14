@@ -6,3 +6,4 @@ export { default as ItemDialog } from './ItemDialog';
 export { default as ListDialog } from './ListDialog';
 export { default as SaveToInventoryDialog } from './SaveToInventoryDialog';
 export { default as ProfileDialog } from './ProfileDialog';
+export { default as ShareDialog } from './ShareDialog';

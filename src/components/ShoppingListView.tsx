@@ -52,6 +52,7 @@ interface ShoppingListViewProps {
   pickedItems: string[];
   setPickedItems: (itemId: string) => void;
   onBack?: () => void;
+  onShare?: () => void;
 }
 
 export default function ShoppingListView({
@@ -71,6 +72,7 @@ export default function ShoppingListView({
   pickedItems,
   setPickedItems,
   onBack,
+  onShare,
 }: ShoppingListViewProps) {
   const { t, i18n } = useTranslation();
   const [expandedItem, setExpandedItem] = useState<string | null>(null);

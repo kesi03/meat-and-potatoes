@@ -3,6 +3,8 @@ import { generateId, STANDARD_ITEMS, CurrencyCode, DEFAULT_CURRENCY } from '../m
 import { db } from '../firebase';
 import { ref, set, get } from 'firebase/database';
 import { User } from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebase';
 import { loginWithEmail, registerWithEmail, loginWithGithub as loginWithGithubAuth, logout as firebaseLogout, observeAuth } from '../integration';
 import { setSession, clearSession, hasValidSession, initActivityTracking, getSession } from '../session';
 import i18n from '../i18n';
@@ -88,6 +90,25 @@ export interface Profile {
   language: string;
 }
 
+export interface SharedList {
+  listId: string;
+  listName: string;
+  ownerId: string;
+  addedAt: number;
+  role: 'owner' | 'member';
+  members?: Record<string, { addedAt: number; role: string }>;
+}
+
+export interface Notification {
+  id: string;
+  type: string;
+  fromUserId?: string;
+  listId?: string;
+  listName?: string;
+  read: boolean;
+  createdAt: number;
+}
+
 interface AppContextType {
   user: User | null;
   authLoading: boolean;
@@ -97,6 +118,9 @@ interface AppContextType {
   shoppingLists: ShoppingList[];
   inventory: InventoryItem[];
   activeListId: string;
+  sharedLists: SharedList[];
+  notifications: Notification[];
+  unreadCount: number;
   currency: CurrencyCode;
   language: string;
   firebaseConfig: FirebaseConfig | null;
@@ -107,6 +131,10 @@ interface AppContextType {
   setLanguage: (language: string) => void;
   setFirebaseConfig: (config: FirebaseConfig | null) => void;
   updateProfile: (updates: Partial<Profile>) => void;
+  shareList: (listId: string, listName: string, email: string, message: string) => Promise<void>;
+  acceptInvitation: (invitationId: string) => Promise<void>;
+  declineInvitation: (invitationId: string) => Promise<void>;
+  markNotificationRead: (notificationId: string) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   loginWithGithub: () => Promise<void>;
@@ -181,6 +209,9 @@ export function AppProvider({ children }: AppProviderProps) {
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>(DEFAULT_LISTS);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [activeListId, setActiveListId] = useState<string>('standard');
+  const [sharedLists, setSharedLists] = useState<SharedList[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [currency, setCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY);
   const [language, setLanguage] = useState<string>('en');
   const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig | null>(null);
@@ -360,6 +391,78 @@ export function AppProvider({ children }: AppProviderProps) {
     localStorage.setItem(`${STORAGE_KEY}-offline`, offline.toString());
   }, [user?.uid, categories, shoppingLists, inventory, activeListId, currency, profile, syncToFirebase]);
 
+  // Share a list with another user
+  const shareList = useCallback(async (listId: string, listName: string, email: string, message: string) => {
+    if (!user?.uid) return;
+    
+    try {
+      const shareListFn = httpsCallable(functions, 'sendInvitation');
+      await shareListFn({
+        listId,
+        listName,
+        ownerId: user.uid,
+        ownerName: profile.alias || profile.firstName || profile.email,
+        email,
+        message,
+      });
+    } catch (error) {
+      console.error('Error sharing list:', error);
+      throw error;
+    }
+  }, [user?.uid, profile]);
+
+  // Accept an invitation
+  const acceptInvitation = useCallback(async (invitationId: string) => {
+    if (!user?.uid) return;
+    
+    try {
+      const acceptFn = httpsCallable(functions, 'acceptInvitation');
+      await acceptFn({ invitationId, userId: user.uid });
+      
+      // Refresh shared lists
+      const sharedSnapshot = await get(ref(db, `userData/${user.uid}/sharedLists`));
+      if (sharedSnapshot.exists()) {
+        const data = sharedSnapshot.val();
+        const lists = Object.entries(data).map(([id, value]: [string, any]) => ({
+          listId: id,
+          ...value,
+        }));
+        setSharedLists(lists);
+      }
+    } catch (error) {
+      console.error('Error accepting invitation:', error);
+      throw error;
+    }
+  }, [user?.uid]);
+
+  // Decline an invitation
+  const declineInvitation = useCallback(async (invitationId: string) => {
+    if (!user?.uid) return;
+    
+    try {
+      const declineFn = httpsCallable(functions, 'declineInvitation');
+      await declineFn({ invitationId, userId: user.uid });
+    } catch (error) {
+      console.error('Error declining invitation:', error);
+      throw error;
+    }
+  }, [user?.uid]);
+
+  // Mark notification as read
+  const markNotificationRead = useCallback((notificationId: string) => {
+    if (!user?.uid) return;
+    
+    setNotifications(prev => 
+      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+    );
+    setUnreadCount(prev => Math.max(0, prev - 1));
+    
+    // Update in Firebase
+    if (db && user?.uid) {
+      set(ref(db, `userData/${user.uid}/notifications/${notificationId}/read`), true);
+    }
+  }, [user?.uid]);
+
   // Load from Firebase
   const loadFromFirebase = useCallback(async () => {
     if (!db) {
@@ -389,6 +492,25 @@ export function AppProvider({ children }: AppProviderProps) {
         if (data.inventory) setInventory(data.inventory);
         if (data.activeListId) setActiveListId(data.activeListId);
         if (data.currency) setCurrency(data.currency);
+        
+        // Load shared lists
+        if (data.sharedLists) {
+          const lists = Object.entries(data.sharedLists).map(([id, value]: [string, any]) => ({
+            listId: id,
+            ...value,
+          }));
+          setSharedLists(lists);
+        }
+        
+        // Load notifications
+        if (data.notifications) {
+          const notifs = Object.entries(data.notifications).map(([id, value]: [string, any]) => ({
+            id,
+            ...value,
+          })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          setNotifications(notifs);
+          setUnreadCount(notifs.filter(n => !n.read).length);
+        }
       } else {
         // First login - create profile from user data
         const newProfile: Profile = {
@@ -562,6 +684,9 @@ export function AppProvider({ children }: AppProviderProps) {
     shoppingLists,
     inventory,
     activeListId,
+    sharedLists,
+    notifications,
+    unreadCount,
     currency,
     language,
     firebaseConfig,
@@ -572,6 +697,10 @@ export function AppProvider({ children }: AppProviderProps) {
     setLanguage,
     setFirebaseConfig,
     updateProfile,
+    shareList,
+    acceptInvitation,
+    declineInvitation,
+    markNotificationRead,
     login,
     register,
     loginWithGithub,

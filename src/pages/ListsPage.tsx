@@ -6,7 +6,7 @@ import { useApp } from '../context/AppContext';
 import { useAppBarActions } from '../context/AppBarActions';
 import type { ShoppingItem } from '../context/AppContext';
 import { generateId } from '../meat';
-import { ListDialog, ItemDialog, SaveToInventoryDialog } from '../components/dialogs';
+import { ListDialog, ItemDialog, SaveToInventoryDialog, ShareDialog } from '../components/dialogs';
 
 interface ListsPageProps {
   onMoveToInventory: (item: ShoppingItem) => void;
@@ -19,7 +19,7 @@ export enum ToggleMode{
 }
 
 export default function ListsPage({ onMoveToInventory, initialListId }: ListsPageProps) {
-  const { shoppingLists, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem } = useApp();
+  const { shoppingLists, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList } = useApp();
   const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -27,6 +27,7 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
   const [listDialog, setListDialog] = useState({ open: false, name: '', copyFromStandard: true });
   const [itemDialog, setItemDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; item: ShoppingItem | null; listId: string | null }>({ open: false, mode: 'add', item: null, listId: null });
   const [saveToInventoryDialog, setSaveToInventoryDialog] = useState({ open: false });
+  const [shareDialog, setShareDialog] = useState({ open: false, listId: '', listName: '' });
 
   useEffect(() => {
     if (initialListId) {

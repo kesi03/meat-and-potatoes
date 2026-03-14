@@ -25,15 +25,17 @@ import { useApp } from '../context/AppContext';
 import { useAppBarActions } from '../context/AppBarActions';
 import { DeviceBanner } from './DeviceBanner';
 import { ProfileDialog } from './dialogs';
-import { AccountTreeRounded, BarcodeReader, CloudOff, Cloud } from '@mui/icons-material';
+import { ShareDialog } from './dialogs';
+import { AccountTreeRounded, BarcodeReader, CloudOff, Cloud, PersonSearch } from '@mui/icons-material';
 import { Divider } from '@mui/material';
 
 function ResponsiveAppBar() {
   const { t } = useTranslation();
   const location = useLocation();
-  const { activeListId, addItemToList, categories, currency, getActiveList, user, logout, profile, updateProfile, offlineMode, setOfflineMode } = useApp();
+  const { activeListId, addItemToList, categories, currency, getActiveList, user, logout, profile, updateProfile, offlineMode, setOfflineMode, shareList } = useApp();
   const appBarActions = useAppBarActions();
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState({ open: false, listId: '', listName: '' });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [scanTrigger, setScanTrigger] = useState(0);
   const open = Boolean(anchorEl);
@@ -212,18 +214,25 @@ function ResponsiveAppBar() {
                   <LogoutIcon sx={{ mr: 1 }} fontSize="small" />
                   {t('logout')}
                 </MenuItem>
+                {isOnListPage && activeList && (
+                  <>
+                    <Divider />
+                    <MenuItem onClick={() => { handleClose(); setShareDialogOpen({ open: true, listId: activeList.id, listName: activeList.name }); }}>
+                      <PersonSearch sx={{ mr: 1 }} fontSize="small" />
+                      {t('share')}
+                    </MenuItem>
+                    <DeviceBanner
+                      listId={activeList.id}
+                      addItemToList={addItemToList}
+                      categories={categories}
+                      currency={currency}
+                      forceShow={true}
+                      scanTrigger={scanTrigger}
+                      hideButton={true}
+                    />
+                  </>
+                )}
               </Menu>
-              {isOnListPage && activeList && (
-                <DeviceBanner
-                  listId={activeList.id}
-                  addItemToList={addItemToList}
-                  categories={categories}
-                  currency={currency}
-                  forceShow={true}
-                  scanTrigger={scanTrigger}
-                  hideButton={true}
-                />
-              )}
             </>
           )}
 
@@ -232,6 +241,14 @@ function ResponsiveAppBar() {
             profile={profile}
             onSave={updateProfile}
             onClose={() => setProfileDialogOpen(false)}
+          />
+
+          <ShareDialog
+            open={shareDialogOpen.open}
+            listId={shareDialogOpen.listId}
+            listName={shareDialogOpen.listName}
+            onClose={() => setShareDialogOpen({ open: false, listId: '', listName: '' })}
+            onShare={(email, message) => shareList(shareDialogOpen.listId, shareDialogOpen.listName, email, message)}
           />
 
 

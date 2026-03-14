@@ -2,6 +2,7 @@ import { initializeApp, FirebaseApp } from "firebase/app";
 import { getAnalytics, Analytics } from "firebase/analytics";
 import { getDatabase, Database } from "firebase/database";
 import { getAuth, Auth } from "firebase/auth";
+import { getFunctions, Functions } from "firebase/functions";
 
 export interface FirebaseConfig {
   apiKey: string;
@@ -60,6 +61,7 @@ let app: FirebaseApp;
 let analytics: Analytics;
 let db: Database;
 let auth: Auth | null;
+let functions: Functions;
 
 if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId && firebaseConfig.storageBucket && firebaseConfig.messagingSenderId && firebaseConfig.appId && firebaseConfig.databaseURL) {
   try {
@@ -67,18 +69,21 @@ if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.authDomain && fire
     analytics = getAnalytics(app);
     db = getDatabase(app, firebaseConfig.databaseURL);
     auth = getAuth(app);
+    functions = getFunctions(app);
     console.log('Firebase initialized successfully');
     console.log('Firebase config:', firebaseConfig);
     console.log('Firebase app name:', app.name);
     console.log('Firebase analytics:', analytics);
     console.log('Firebase Realtime Database:', db);
     console.log('Firebase Auth:', auth);
+    console.log('Firebase Functions:', functions);
   } catch (error) {
     console.error('Failed to initialize Firebase:', error);
     app = initializeApp({});
     analytics = {} as Analytics;
     db = {} as Database;
     auth = null;
+    functions = {} as Functions;
   }
 } else {
   console.warn('Firebase config not found in localStorage. Realtime Database syncing will not work until config is provided.');
@@ -86,6 +91,7 @@ if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.authDomain && fire
   analytics = {} as Analytics;
   db = {} as Database;
   auth = null;
+  functions = {} as Functions;
 }
 
-export { app, analytics, db, auth };
+export { app, analytics, db, auth, functions };
