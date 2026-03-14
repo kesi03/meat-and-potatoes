@@ -21,7 +21,7 @@ export enum ToggleMode{
 }
 
 export default function ListsPage({ onMoveToInventory, initialListId }: ListsPageProps) {
-  const { shoppingLists, sharedLists, sharedListItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList, user } = useApp();
+  const { shoppingLists, sharedLists, sharedListItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList, user, setActiveListId } = useApp();
   const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -36,6 +36,41 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
       setSelectedListId(initialListId);
     }
   }, [initialListId]);
+
+  useEffect(() => {
+    if (selectedListId) {
+      const isShared = sharedLists.some(l => l.listId === selectedListId);
+      if (isShared) {
+        setActiveListId(selectedListId);
+      }
+    }
+  }, [selectedListId, sharedLists, setActiveListId]);
+
+  useEffect(() => {
+    if (!selectedListId) {
+      const listFromUrl = window.location.pathname.match(/\/list\/(.+)/);
+      if (listFromUrl) {
+        const urlSlug = listFromUrl[1];
+        // Convert URL slug to list name: my-shopping-list -> My Shopping List
+        const listNameFromSlug = urlSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        
+        // First check shared lists
+        const matchedSharedList = sharedLists.find(l => l.listName?.toLowerCase() === urlSlug.toLowerCase() || l.listName?.toLowerCase() === listNameFromSlug.toLowerCase());
+        if (matchedSharedList) {
+          setSelectedListId(matchedSharedList.listId);
+          setActiveListId(matchedSharedList.listId);
+          return;
+        }
+        
+        // Then check own shopping lists
+        const matchedOwnList = shoppingLists.find(l => l.name?.toLowerCase() === urlSlug.toLowerCase() || l.name?.toLowerCase() === listNameFromSlug.toLowerCase());
+        if (matchedOwnList) {
+          setSelectedListId(matchedOwnList.id);
+          setActiveListId(matchedOwnList.id);
+        }
+      }
+    }
+  }, [sharedLists, shoppingLists, selectedListId, setActiveListId]);
 
   const handleSetPickedItems = useCallback((itemId: string) => {
     const listId = selectedListId || activeListId;
@@ -100,11 +135,9 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
     if (!listId) return;
     
     if (ownerId && user?.uid) {
-      // For shared lists, delete from owner's Firebase list and update local state
       const targetOwnerId = ownerId === 'self' ? user.uid : ownerId;
       const itemRef = ref(db, `userData/${targetOwnerId}/shoppingLists/${listId}/items/${itemId}`);
       remove(itemRef);
-      setSharedListItems(prev => prev.filter(item => item.id !== itemId));
     } else {
       deleteItemFromList(listId, itemId);
     }
@@ -113,7 +146,10 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
   const selectedList = shoppingLists.find(l => l.id === selectedListId);
   const selectedSharedList = sharedLists.find(l => l.listId === selectedListId);
   const isSharedList = !!selectedSharedList;
-  const listItems = (isSharedList ? sharedListItems : selectedList?.items || []).filter(item => !categoryFilter || item.category === categoryFilter);
+  const isSharedListMember = isSharedList && selectedSharedList?.role === 'member';
+  console.log('[ListsPage] selectedListId:', selectedListId, 'selectedSharedList:', selectedSharedList, 'isSharedListMember:', isSharedListMember, 'sharedListItems:', sharedListItems.length, 'selectedList?.items:', selectedList?.items?.length);
+  const listItems = (isSharedListMember ? sharedListItems : selectedList?.items || []).filter(item => !categoryFilter || item.category === categoryFilter);
+  console.log('[ListsPage] listItems:', listItems.length);
   const pickedItems = selectedList?.pickedItems || [];
 
   useEffect(() => {
@@ -150,7 +186,7 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
       )}
       {(selectedListId && (selectedList || isSharedList)) && (
         <ShoppingListView
-          list={selectedList}
+          list={selectedList || { id: selectedListId, name: selectedSharedList?.listName || '', items: [], isStandard: false }}
           items={listItems}
           shared={isSharedList}
           categories={categories}
@@ -166,7 +202,10 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
           setPickingMode={setPickingMode}
           pickedItems={pickedItems}
           setPickedItems={handleSetPickedItems}
-          onBack={() => setSelectedListId(null)}
+          onBack={() => {
+            setSelectedListId(null);
+            setActiveListId('standard');
+          }}
         />
       )}
 

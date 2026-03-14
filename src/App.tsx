@@ -79,7 +79,7 @@ function AppContent() {
       {location.pathname.startsWith('/list/') && (
         <ListsPage 
           onMoveToInventory={handleMoveToInventory}
-          initialListId={selectedList?.id}
+          initialListId={selectedSharedList?.listId || selectedList?.id}
         />
       )}
       {location.pathname === '/inventory' && <InventoryPage />}

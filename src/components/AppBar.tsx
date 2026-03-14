@@ -198,12 +198,12 @@ function ResponsiveAppBar() {
                     {t('addList')}
                   </MenuItem>
                 )}
-                <Divider />
+                <Divider sx={{ borderColor: 'primary.dark', borderWidth: 1 }} />
                 <MenuItem onClick={() => setOfflineMode(!offlineMode)}>
                   {offlineMode ? <CloudOff sx={{ mr: 1 }} fontSize="small" /> : <Cloud sx={{ mr: 1 }} fontSize="small" />}
                   {offlineMode ? t('online') : t('offline')}
                 </MenuItem>
-                 <Divider />
+                 <Divider sx={{ borderColor: 'primary.dark', borderWidth: 1 }} />
                 <MenuItem onClick={handleProfileClick}>
                   {(profile.image || user?.photoURL) ? (
                     <Avatar src={profile.image || user?.photoURL || undefined} sx={{ width: 20, height: 20, mr: 1 }} />
@@ -217,22 +217,21 @@ function ResponsiveAppBar() {
                   {t('logout')}
                 </MenuItem>
                 {isOnListPage && activeList && (
-                  <>
-                    <Divider />
-                    <MenuItem onClick={() => { handleClose(); setShareDialogOpen({ open: true, listId: activeList.id, listName: activeList.name }); }}>
-                      <PersonSearch sx={{ mr: 1 }} fontSize="small" />
-                      {t('share')}
-                    </MenuItem>
-                    <DeviceBanner
-                      listId={activeList.id}
-                      addItemToList={addItemToList}
-                      categories={categories}
-                      currency={currency}
-                      forceShow={true}
-                      scanTrigger={scanTrigger}
-                      hideButton={true}
-                    />
-                  </>
+                  <MenuItem onClick={() => { handleClose(); setShareDialogOpen({ open: true, listId: activeList.id, listName: activeList.name }); }}>
+                    <PersonSearch sx={{ mr: 1 }} fontSize="small" />
+                    {t('share')}
+                  </MenuItem>
+                )}
+                {isOnListPage && activeList && (
+                  <DeviceBanner
+                    listId={activeList.id}
+                    addItemToList={addItemToList}
+                    categories={categories}
+                    currency={currency}
+                    forceShow={true}
+                    scanTrigger={scanTrigger}
+                    hideButton={true}
+                  />
                 )}
               </Menu>
             </>

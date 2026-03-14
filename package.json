@@ -21,6 +21,7 @@
     "country-flag-icons": "^1.6.15",
     "firebase": "^12.10.0",
     "i18next": "^25.8.13",
+    "playwright": "^1.58.2",
     "react": "^19.2.0",
     "react-barcode": "^1.6.1",
     "react-dom": "^19.2.0",

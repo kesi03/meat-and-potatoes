@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from 'react';
 import { generateId, STANDARD_ITEMS, CurrencyCode, DEFAULT_CURRENCY } from '../meat';
 import { db } from '../firebase';
-import { ref, set, get, onValue } from 'firebase/database';
+import { ref, set, get, onValue, update } from 'firebase/database';
 import { User } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase';
@@ -122,6 +122,7 @@ interface AppContextType {
   inventory: InventoryItem[];
   activeListId: string;
   sharedLists: SharedList[];
+  sharedListItems: ShoppingItem[];
   notifications: Notification[];
   unreadCount: number;
   currency: CurrencyCode;
@@ -148,7 +149,7 @@ interface AppContextType {
   addShoppingList: (name: string, items?: ShoppingItem[]) => ShoppingList;
   updateShoppingList: (id: string, updates: Partial<ShoppingList>) => void;
   deleteShoppingList: (id: string) => void;
-  addItemToList: (listId: string, item: Omit<ShoppingItem, 'id'>) => ShoppingItem;
+  addItemToList: (listId: string, item: Omit<ShoppingItem, 'id'>, ownerId?: string) => ShoppingItem;
   updateItemInList: (listId: string, itemId: string, updates: Partial<ShoppingItem>) => void;
   deleteItemFromList: (listId: string, itemId: string) => void;
   togglePickedItem: (listId: string, itemId: string) => void;
@@ -236,31 +237,53 @@ export function AppProvider({ children }: AppProviderProps) {
     localStorage.setItem(`${STORAGE_KEY}-profile`, JSON.stringify(profile));
   }, [profile]);
 
-  // Load shared list items when activeListId is a shared list
+  // Load shared list items when activeListId is a shared list - use real-time listener
+  console.log('[SharedList] ===== NEW CODE RUNNING ===== activeListId:', activeListId, 'sharedLists:', sharedLists.map(l => l.listId), 'user:', !!user?.uid);
   useEffect(() => {
-    const loadSharedListItems = async () => {
-      const sharedList = sharedLists.find(l => l.listId === activeListId);
-      if (sharedList && user?.uid) {
-        try {
-          const snapshot = await get(ref(db, `userData/${sharedList.ownerId}/shoppingLists/${sharedList.listId}`));
-          if (snapshot.exists()) {
-            const data = snapshot.val();
-            setSharedListItems(data.items || []);
-          } else {
-            setSharedListItems([]);
-          }
-        } catch (error) {
-          console.error('Error loading shared list items:', error);
-          setSharedListItems([]);
+    console.log('[SharedList] ===== USE EFFECT FIRED ===== activeListId:', activeListId);
+    
+    const sharedList = sharedLists.find(l => l.listId === activeListId);
+    if (!sharedList || !user?.uid) {
+      console.log('[SharedList] No sharedList or user, clearing items');
+      setSharedListItems([]);
+      return;
+    }
+
+    // shoppingLists is an array, not an object - query the whole array and filter by listName
+    console.log('[SharedList] NEW LISTENER: Fetching all shoppingLists from:', `userData/${sharedList.ownerId}/shoppingLists`, 'looking for listName:', sharedList.listName);
+    const listsRef = ref(db, `userData/${sharedList.ownerId}/shoppingLists`);
+    
+    const unsubscribe = onValue(listsRef, (snapshot) => {
+      console.log('[SharedList] NEW LISTENER: triggered, exists:', snapshot.exists());
+      if (snapshot.exists()) {
+        const lists = snapshot.val();
+        console.log('[SharedList] NEW LISTENER: lists found, type:', Array.isArray(lists) ? 'array' : typeof lists, 'length:', Array.isArray(lists) ? lists.length : 'N/A');
+        if (Array.isArray(lists)) {
+          console.log('[SharedList] NEW LISTENER: list names:', lists.map((l: any) => l.name));
         }
+        // Find the list by NAME (not ID) - this handles case where list was re-created with new ID
+        let foundList = Array.isArray(lists) ? lists.find((l: any) => l.name?.toLowerCase() === sharedList.listName?.toLowerCase()) : null;
+        
+        // Fallback: if name doesn't match, find the first non-standard list (common case when list was re-created)
+        if (!foundList && Array.isArray(lists)) {
+          const nonStandardLists = lists.filter((l: any) => !l.isStandard);
+          if (nonStandardLists.length === 1) {
+            foundList = nonStandardLists[0];
+            console.log('[SharedList] NEW LISTENER: using fallback - first non-standard list:', foundList?.name);
+          }
+        }
+        
+        console.log('[SharedList] NEW LISTENER: found list by name:', foundList ? foundList.name : 'not found');
+        setSharedListItems(foundList?.items || []);
       } else {
         setSharedListItems([]);
       }
-    };
+    }, (error) => {
+      console.error('[SharedList] NEW LISTENER: error:', error);
+      setSharedListItems([]);
+    });
 
-    if (user?.uid) {
-      loadSharedListItems();
-    }
+    return () => unsubscribe();
   }, [activeListId, sharedLists, user?.uid]);
 
   // Real-time listener for notifications
@@ -664,9 +687,34 @@ export function AppProvider({ children }: AppProviderProps) {
   }, []);
 
   const updateShoppingList = useCallback((id: string, updates: Partial<ShoppingList>) => {
+    const list = shoppingLists.find(l => l.id === id);
+    const oldName = list?.name;
+    
     setShoppingLists(prev => prev.map(list => 
       list.id === id ? { ...list, ...updates } : list
     ));
+
+    // If name changed, update the list in Firebase and sync to shared list members
+    if (updates.name && updates.name !== oldName && user?.uid) {
+      const listRef = ref(db, `userData/${user.uid}/shoppingLists/${id}`);
+      update(listRef, { name: updates.name });
+
+      // Also update shared list entries for all members who have this list shared
+      const sharedListRef = ref(db, `userData/${user.uid}/sharedLists`);
+      get(sharedListRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const sharedListsData = snapshot.val();
+      Object.entries(sharedListsData).forEach(([memberId, memberData]: [string, any]) => {
+        if (memberData.members) {
+          Object.keys(memberData.members).forEach(memberUserId => {
+            const memberSharedListRef = ref(db, `userData/${memberUserId}/sharedLists/${id}/listName`);
+            update(memberSharedListRef, { name: updates.name });
+          });
+        }
+      });
+        }
+      });
+    }
   }, []);
 
   const deleteShoppingList = useCallback((id: string) => {
