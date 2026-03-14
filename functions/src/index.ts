@@ -1,23 +1,24 @@
 import { onCall } from "firebase-functions/v2/https";
-import { defineSecret } from "firebase-functions/params";
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as nodemailer from "nodemailer";
-
-const smtpUser = defineSecret("SMTP_USER");
-const smtpPassword = defineSecret("SMTP_PASSWORD");
 
 admin.initializeApp();
 
 const db = admin.database();
 
-const getTransporter = (secretValues: { SMTP_USER?: string; SMTP_PASSWORD?: string }) => nodemailer.createTransport({
-  service: "iCloud",
-  auth: {
-    user: secretValues.SMTP_USER || process.env.SMTP_USER,
-    pass: secretValues.SMTP_PASSWORD || process.env.SMTP_PASSWORD,
-  },
-});
+const getTransporter = () => {
+  const smtpUser = functions.config().smtp?.user || process.env.SMTP_USER;
+  const smtpPass = functions.config().smtp?.pass || process.env.SMTP_PASSWORD;
+  
+  return nodemailer.createTransport({
+    service: "iCloud",
+    auth: {
+      user: smtpUser,
+      pass: smtpPass,
+    },
+  });
+};
 
 // Look up user by email
 export const lookupUser = onCall(async (request) => {
@@ -45,9 +46,7 @@ export const lookupUser = onCall(async (request) => {
 });
 
 // Send invitation to join a shared list
-export const sendInvitation = onCall({
-  secrets: [smtpUser, smtpPassword]
-}, async (request) => {
+export const sendInvitation = onCall(async (request) => {
   const { listId, listName, ownerId, ownerName, email, message } = request.data;
 
   if (!listId || !email || !ownerId) {
@@ -76,11 +75,7 @@ export const sendInvitation = onCall({
   // Send email
   const acceptLink = `https://meat-and-potatoes.web.app/accept-invitation/${invitationId}`;
   
-  const secretValues = {
-    SMTP_USER: smtpUser.value(),
-    SMTP_PASSWORD: smtpPassword.value(),
-  };
-  const transporter = getTransporter(secretValues);
+  const transporter = getTransporter();
 
   const mailOptions = {
     from: "Meat & Potatoes <kester.simm@icloud.com>",

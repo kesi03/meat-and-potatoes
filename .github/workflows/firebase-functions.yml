@@ -35,11 +35,9 @@ jobs:
         with:
           version: '>=418.0.0'
 
-      - name: Set Firebase secrets
+      - name: Set environment variables
         run: |
-          cd functions
-          echo -n "${{ secrets.SMTP_USER }}" | firebase functions:secrets:set SMTP_USER --data-file=- --project=${{ secrets.FIREBASE_PROJECT_ID }}
-          echo -n "${{ secrets.SMTP_PASSWORD }}" | firebase functions:secrets:set SMTP_PASSWORD --data-file=- --project=${{ secrets.FIREBASE_PROJECT_ID }}
+          firebase functions:config:set smtp.user="${{ secrets.SMTP_USER }}" smtp.pass="${{ secrets.SMTP_PASSWORD }}" --project ${{ secrets.FIREBASE_PROJECT_ID }}
 
       - name: Build
         run: cd functions && npm run build
