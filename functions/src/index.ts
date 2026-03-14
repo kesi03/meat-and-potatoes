@@ -8,8 +8,8 @@ admin.initializeApp();
 const db = admin.database();
 
 const getTransporter = () => {
-  const smtpUser = functions.config().smtp?.user || process.env.SMTP_USER;
-  const smtpPass = functions.config().smtp?.pass || process.env.SMTP_PASSWORD;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASSWORD;
   
   return nodemailer.createTransport({
     service: "iCloud",
