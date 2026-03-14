@@ -42,4 +42,5 @@ jobs:
         env:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-        run: firebase deploy --only functions --project ${{ secrets.FIREBASE_PROJECT_ID }}
+        run: |
+          firebase deploy --only functions --project "${{ secrets.FIREBASE_PROJECT_ID }}"
