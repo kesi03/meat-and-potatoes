@@ -26,15 +26,6 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MEAT_AND_POTATOES_86149 }}
-
-      - uses: google-github-actions/setup-gcloud@v2
-        with:
-          version: '>=418.0.0'
-
       - name: Build
         run: cd functions && npm run build
 
@@ -42,5 +33,4 @@ jobs:
         env:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-        run: |
-          firebase deploy --only functions --project "${{ secrets.FIREBASE_PROJECT_ID }}"
+        run: firebase deploy --only functions --project "${{ secrets.FIREBASE_PROJECT_ID }}" --token "${{ secrets.FIREBASE_TOKEN }}"
