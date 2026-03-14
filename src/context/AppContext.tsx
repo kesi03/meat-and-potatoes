@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from 'react';
 import { generateId, STANDARD_ITEMS, CurrencyCode, DEFAULT_CURRENCY } from '../meat';
 import { db } from '../firebase';
-import { ref, set, get } from 'firebase/database';
+import { ref, set, get, onValue } from 'firebase/database';
 import { User } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase';
@@ -262,6 +262,50 @@ export function AppProvider({ children }: AppProviderProps) {
       loadSharedListItems();
     }
   }, [activeListId, sharedLists, user?.uid]);
+
+  // Real-time listener for notifications
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const notificationsRef = ref(db, `userData/${user.uid}/notifications`);
+    const unsubscribe = onValue(notificationsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const notifs = Object.entries(data).map(([id, value]: [string, any]) => ({
+          id,
+          ...value,
+        })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        setNotifications(notifs);
+        setUnreadCount(notifs.filter((n: Notification) => !n.read).length);
+      } else {
+        setNotifications([]);
+        setUnreadCount(0);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid]);
+
+  // Real-time listener for shared lists
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const sharedListsRef = ref(db, `userData/${user.uid}/sharedLists`);
+    const unsubscribe = onValue(sharedListsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const lists = Object.entries(data).map(([id, value]: [string, any]) => ({
+          listId: id,
+          ...value,
+        }));
+        setSharedLists(lists);
+      } else {
+        setSharedLists([]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid]);
 
   const updateProfile = useCallback((updates: Partial<Profile>) => {
     setProfile(prev => ({ ...prev, ...updates }));
