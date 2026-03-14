@@ -54,11 +54,18 @@ export const sendInvitation = onCall(async (request) => {
   });
 
   // Check if user exists and get their userId
-  const userSnapshot = await db.ref("userData").orderByChild("profile/email").equalTo(email).once("value");
+  const userDataSnapshot = await db.ref("userData").once("value");
   let recipientUserId = null;
-  if (userSnapshot.exists()) {
-    const data = userSnapshot.val();
-    recipientUserId = Object.keys(data)[0];
+  
+  if (userDataSnapshot.exists()) {
+    const userData = userDataSnapshot.val();
+    for (const [uid, data] of Object.entries(userData)) {
+      const profile = (data as any)?.profile;
+      if (profile?.email?.toLowerCase() === email.toLowerCase()) {
+        recipientUserId = uid;
+        break;
+      }
+    }
   }
 
   // If recipient has an account, create a notification

@@ -7,59 +7,12 @@ import { db } from '../firebase';
 import { ref, update, remove } from 'firebase/database';
 
 export default function InboxPage() {
-  const { notifications, acceptInvitation, declineInvitation, markNotificationRead, unreadCount } = useApp();
-  const appBarActions = useAppBarActions();
-  const [processing, setProcessing] = useState<string | null>(null);
+  const { notifications, acceptInvitation, declineInvitation, markNotificationRead, unreadCount, user } = useApp();
 
-  useEffect(() => {
-    appBarActions.current.openAddList = undefined;
-    appBarActions.current.openAddItem = undefined;
-    appBarActions.current.openAddInventory = undefined;
-  }, [appBarActions]);
+  console.log('Notifications:', notifications);
+  console.log('User:', user?.uid);
 
-  const handleAccept = async (notification: any) => {
-    setProcessing(notification.id);
-    try {
-      await acceptInvitation(notification.invitationId);
-      await markNotificationRead(notification.id);
-    } finally {
-      setProcessing(null);
-    }
-  };
-
-  const handleDecline = async (notification: any) => {
-    setProcessing(notification.id);
-    try {
-      await declineInvitation(notification.invitationId);
-      await markNotificationRead(notification.id);
-    } finally {
-      setProcessing(null);
-    }
-  };
-
-  const formatDate = (timestamp: number) => {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Yesterday';
-    if (days < 7) return `${days} days ago`;
-    return date.toLocaleDateString();
-  };
-
-  const getNotificationTitle = (notification: any) => {
-    switch (notification.type) {
-      case 'invitation':
-        return `${notification.fromName || 'Someone'} shared "${notification.listName}" with you`;
-      default:
-        return 'New notification';
-    }
-  };
-
-  const invitationNotifications = notifications.filter(n => n.type === 'invitation');
+  const invitationNotifications = notifications.filter(n => n.type === 'invitation' || n.type === 'invitation_accepted');
 
   return (
     <Box sx={{ pb: 7 }}>

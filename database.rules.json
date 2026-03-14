@@ -4,7 +4,18 @@
       "$uid": {
         ".read": "$uid === auth.uid",
         ".write": "$uid === auth.uid",
-        ".indexOn": ["profile/email"]
+        "profile": {
+          ".indexOn": ["email"]
+        },
+        "notifications": {
+          ".indexOn": ["createdAt", "read"]
+        },
+        "sharedLists": {
+          ".indexOn": ["ownerId"]
+        },
+        "shoppingLists": {
+          ".indexOn": ["name"]
+        }
       }
     },
     "shoppingLists": {
@@ -15,20 +26,14 @@
       ".read": "auth != null",
       "$listId": {
         "$userId": {
-          ".read": "auth != null && data.child('members').hasChild(auth.uid)",
+          ".read": "auth != null",
           ".write": "auth != null"
         }
       }
     },
-    "notifications": {
-      "$uid": {
-        ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid"
-      }
-    },
     "invitations": {
       "$invitationId": {
-        ".read": "auth != null && data.child('email').val() === auth.token.email",
+        ".read": "auth != null",
         ".write": "auth != null"
       }
     }
