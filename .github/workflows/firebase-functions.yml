@@ -34,15 +34,21 @@ jobs:
           cd functions
           echo -n "${{ secrets.SMTP_USER }}" | firebase functions:secrets:set SMTP_USER --data-file=- --project=${{ secrets.FIREBASE_PROJECT_ID }}
           echo -n "${{ secrets.SMTP_PASSWORD }}" | firebase functions:secrets:set SMTP_PASSWORD --data-file=- --project=${{ secrets.FIREBASE_PROJECT_ID }}
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
 
       - name: Build
         run: cd functions && npm run build
 
       - name: Deploy to Firebase
-        uses: w9jds/firebase-action@v2
+        uses: google-github-actions/auth@v2
         with:
-          args: deploy --only functions --project=${{ secrets.FIREBASE_PROJECT_ID }}
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MEAT_AND_POTATOES_86149 }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: '>=418.0.0'
+
+      - name: Deploy functions
+        run: firebase deploy --only functions --project ${{ secrets.FIREBASE_PROJECT_ID }}
