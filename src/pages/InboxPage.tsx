@@ -12,6 +12,30 @@ export default function InboxPage() {
 
   const invitationNotifications = notifications.filter(n => n.type === 'invitation' || n.type === 'invitation_accepted');
 
+  const getNotificationTitle = (notification: any) => {
+    switch (notification.type) {
+      case 'invitation':
+        return `${notification.fromName || 'Someone'} shared "${notification.listName}" with you`;
+      case 'invitation_accepted':
+        return `${notification.fromName || 'Someone'} accepted your invitation`;
+      default:
+        return 'New notification';
+    }
+  };
+
+  const formatDate = (timestamp: number) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days} days ago`;
+    return date.toLocaleDateString();
+  };
+
   return (
     <Box sx={{ pb: 7 }}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>
