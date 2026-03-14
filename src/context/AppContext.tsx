@@ -267,10 +267,13 @@ export function AppProvider({ children }: AppProviderProps) {
   useEffect(() => {
     if (!user?.uid) return;
 
+    console.log('Setting up notifications listener for:', user.uid);
     const notificationsRef = ref(db, `userData/${user.uid}/notifications`);
     const unsubscribe = onValue(notificationsRef, (snapshot) => {
+      console.log('Notifications snapshot exists:', snapshot.exists());
       if (snapshot.exists()) {
         const data = snapshot.val();
+        console.log('Notification data:', data);
         const notifs = Object.entries(data).map(([id, value]: [string, any]) => ({
           id,
           ...value,

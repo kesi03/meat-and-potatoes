@@ -76,6 +76,8 @@ export const sendInvitation = onCall(async (request) => {
   if (recipientUserId) {
     console.log('Creating notification for:', recipientUserId);
     const notificationRef = db.ref(`userData/${recipientUserId}/notifications`).push();
+    const notificationId = notificationRef.key;
+    console.log('Notification ID:', notificationId);
     await notificationRef.set({
       type: "invitation",
       fromUserId: ownerId,
@@ -87,6 +89,9 @@ export const sendInvitation = onCall(async (request) => {
       read: false,
       createdAt: admin.database.ServerValue.TIMESTAMP,
     });
+    console.log('Notification created successfully');
+  } else {
+    console.log('No recipient user ID found, skipping notification creation');
   }
 
   // Send email
