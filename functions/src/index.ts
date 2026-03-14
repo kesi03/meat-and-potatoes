@@ -20,31 +20,6 @@ const getTransporter = () => {
   });
 };
 
-// Look up user by email
-export const lookupUser = onCall(async (request) => {
-  const { email } = request.data;
-  
-  if (!email) {
-    throw new functions.https.HttpsError("invalid-argument", "Email is required");
-  }
-
-  // Search in user profiles
-  const snapshot = await db.ref("userData").orderByChild("profile/email").equalTo(email).once("value");
-  
-  if (snapshot.exists()) {
-    const data = snapshot.val();
-    const userId = Object.keys(data)[0];
-    const profile = data[userId]?.profile;
-    return {
-      found: true,
-      userId,
-      name: profile?.alias || profile?.firstName || email.split("@")[0],
-    };
-  }
-
-  return { found: false };
-});
-
 // Send invitation to join a shared list
 export const sendInvitation = onCall(async (request) => {
   const { listId, listName, ownerId, ownerName, email, message } = request.data;

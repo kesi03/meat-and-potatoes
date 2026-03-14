@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Box, Typography, CircularProgress, Alert } from '@mui/material';
 import { PersonAdd, Check, Email } from '@mui/icons-material';
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../firebase';
+import { db } from '../../firebase';
+import { ref, get } from 'firebase/database';
 
 interface ShareDialogProps {
   open: boolean;
@@ -23,15 +23,28 @@ export default function ShareDialog({ open, listId, listName, onClose, onShare }
   const handleEmailChange = async (value: string) => {
     setEmail(value);
     setUserFound(null);
-    setError('');
-    
+
     if (value.includes('@') && value.includes('.')) {
       try {
-        const lookupUser = httpsCallable(functions, 'lookupUser');
-        const result = await lookupUser({ email: value });
-        setUserFound(result.data as { found: boolean; name?: string });
+        const snapshot = await get(ref(db, 'userData'));
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const userEntry = Object.entries(data).find(([_, v]: [string, any]) => 
+            v.profile?.email?.toLowerCase() === value.toLowerCase()
+          );
+          if (userEntry) {
+            const [, userData] = userEntry as [string, any];
+            setUserFound({
+              found: true,
+              name: userData.profile?.alias || userData.profile?.firstName || value.split('@')[0]
+            });
+          } else {
+            setUserFound({ found: false });
+          }
+        }
       } catch {
-        // User not found - this is fine for non-members
+        // Error searching - treat as not found
+        setUserFound({ found: false });
       }
     }
   };
