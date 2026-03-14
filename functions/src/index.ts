@@ -11,13 +11,7 @@ const getTransporter = () => {
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASSWORD;
   
-  console.log('SMTP config check:', { 
-    user: smtpUser ? 'set' : 'missing', 
-    pass: smtpPass ? 'set' : 'missing' 
-  });
-  
   if (!smtpUser || !smtpPass) {
-    console.error('SMTP credentials missing!');
     throw new Error('SMTP credentials not configured');
   }
   
@@ -54,19 +48,15 @@ export const sendInvitation = onCall(async (request) => {
   });
 
   // Check if user exists and get their userId
-  console.log('Looking for user with email:', email);
   const userDataSnapshot = await db.ref("userData").once("value");
   let recipientUserId = null;
   
   if (userDataSnapshot.exists()) {
     const userData = userDataSnapshot.val();
-    console.log('All user data keys:', Object.keys(userData));
     for (const [uid, data] of Object.entries(userData)) {
       const profile = (data as any)?.profile;
-      console.log('Checking user:', uid, 'email:', profile?.email);
       if (profile?.email?.toLowerCase() === email.toLowerCase()) {
         recipientUserId = uid;
-        console.log('Found matching user:', uid);
         break;
       }
     }
@@ -74,11 +64,7 @@ export const sendInvitation = onCall(async (request) => {
 
   // If recipient has an account, create a notification
   if (recipientUserId) {
-    console.log('Creating notification for:', recipientUserId);
     const notificationRef = db.ref(`userData/${recipientUserId}/notifications`).push();
-    const notificationId = notificationRef.key;
-    console.log('Notification path:', `userData/${recipientUserId}/notifications/${notificationId}`);
-    console.log('Notification ID:', notificationId);
     await notificationRef.set({
       type: "invitation",
       fromUserId: ownerId,
@@ -90,9 +76,6 @@ export const sendInvitation = onCall(async (request) => {
       read: false,
       createdAt: admin.database.ServerValue.TIMESTAMP,
     });
-    console.log('Notification created successfully');
-  } else {
-    console.log('No recipient user ID found, skipping notification creation');
   }
 
   // Send email

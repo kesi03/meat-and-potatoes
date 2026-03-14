@@ -10,9 +10,6 @@ export default function InboxPage() {
   const { notifications, acceptInvitation, declineInvitation, markNotificationRead, unreadCount, user } = useApp();
   const [processing, setProcessing] = useState<string | null>(null);
 
-  console.log('Notifications:', notifications);
-  console.log('User:', user?.uid);
-
   const invitationNotifications = notifications.filter(n => n.type === 'invitation' || n.type === 'invitation_accepted');
 
   return (
