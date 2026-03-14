@@ -269,11 +269,14 @@ export function AppProvider({ children }: AppProviderProps) {
 
     console.log('Setting up notifications listener for:', user.uid);
     const notificationsRef = ref(db, `userData/${user.uid}/notifications`);
+    console.log('Notifications ref path:', notificationsRef.toString());
     const unsubscribe = onValue(notificationsRef, (snapshot) => {
       console.log('Notifications snapshot exists:', snapshot.exists());
+      console.log('Notifications snapshot key:', snapshot.key);
+      console.log('Notifications snapshot val:', JSON.stringify(snapshot.val()));
       if (snapshot.exists()) {
         const data = snapshot.val();
-        console.log('Notification data:', data);
+        console.log('Notification data:', JSON.stringify(data));
         const notifs = Object.entries(data).map(([id, value]: [string, any]) => ({
           id,
           ...value,
@@ -293,8 +296,11 @@ export function AppProvider({ children }: AppProviderProps) {
   useEffect(() => {
     if (!user?.uid) return;
 
+    console.log('Setting up sharedLists listener for:', user.uid);
     const sharedListsRef = ref(db, `userData/${user.uid}/sharedLists`);
     const unsubscribe = onValue(sharedListsRef, (snapshot) => {
+      console.log('SharedLists snapshot exists:', snapshot.exists());
+      console.log('SharedLists data:', snapshot.val());
       if (snapshot.exists()) {
         const data = snapshot.val();
         const lists = Object.entries(data).map(([id, value]: [string, any]) => ({

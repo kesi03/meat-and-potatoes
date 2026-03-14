@@ -8,6 +8,7 @@ import { ref, update, remove } from 'firebase/database';
 
 export default function InboxPage() {
   const { notifications, acceptInvitation, declineInvitation, markNotificationRead, unreadCount, user } = useApp();
+  const [processing, setProcessing] = useState<string | null>(null);
 
   console.log('Notifications:', notifications);
   console.log('User:', user?.uid);

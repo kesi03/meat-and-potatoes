@@ -77,6 +77,7 @@ export const sendInvitation = onCall(async (request) => {
     console.log('Creating notification for:', recipientUserId);
     const notificationRef = db.ref(`userData/${recipientUserId}/notifications`).push();
     const notificationId = notificationRef.key;
+    console.log('Notification path:', `userData/${recipientUserId}/notifications/${notificationId}`);
     console.log('Notification ID:', notificationId);
     await notificationRef.set({
       type: "invitation",
