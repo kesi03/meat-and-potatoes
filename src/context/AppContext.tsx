@@ -620,15 +620,27 @@ export function AppProvider({ children }: AppProviderProps) {
     setShoppingLists(prev => prev.filter(list => list.id !== id));
   }, []);
 
-  const addItemToList = useCallback((listId: string, item: Omit<ShoppingItem, 'id'>): ShoppingItem => {
+  const addItemToList = useCallback((listId: string, item: Omit<ShoppingItem, 'id'>, ownerId?: string): ShoppingItem => {
     const newItem: ShoppingItem = { ...item, id: generateId() };
-    setShoppingLists(prev => prev.map(list => 
-      list.id === listId 
-        ? { ...list, items: [...list.items, newItem] }
-        : list
-    ));
+    
+    // If ownerId is provided, this is a shared list - update local state and sync to owner
+    if (ownerId && user?.uid) {
+      // Update local shared list items
+      setSharedListItems(prev => [...prev, newItem]);
+      
+      // Sync to owner's list in Firebase
+      const targetOwnerId = ownerId === 'self' ? user.uid : ownerId;
+      set(ref(db, `userData/${targetOwnerId}/shoppingLists/${listId}/items/${newItem.id}`), newItem);
+    } else {
+      // Regular list update
+      setShoppingLists(prev => prev.map(list => 
+        list.id === listId 
+          ? { ...list, items: [...list.items, newItem] }
+          : list
+      ));
+    }
     return newItem;
-  }, []);
+  }, [user?.uid]);
 
   const updateItemInList = useCallback((listId: string, itemId: string, updates: Partial<ShoppingItem>) => {
     setShoppingLists(prev => prev.map(list => 

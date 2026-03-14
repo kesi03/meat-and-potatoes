@@ -7,6 +7,8 @@ import { useAppBarActions } from '../context/AppBarActions';
 import type { ShoppingItem } from '../context/AppContext';
 import { generateId } from '../meat';
 import { ListDialog, ItemDialog, SaveToInventoryDialog, ShareDialog } from '../components/dialogs';
+import { db } from '../firebase';
+import { ref, remove } from 'firebase/database';
 
 interface ListsPageProps {
   onMoveToInventory: (item: ShoppingItem) => void;
@@ -19,7 +21,7 @@ export enum ToggleMode{
 }
 
 export default function ListsPage({ onMoveToInventory, initialListId }: ListsPageProps) {
-  const { shoppingLists, sharedLists, sharedListItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList } = useApp();
+  const { shoppingLists, sharedLists, sharedListItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList, user } = useApp();
   const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -65,8 +67,12 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
     if (selectedListId === listId) setSelectedListId(null);
   };
 
-  const handleAddItem = (listId: string) => {
-    setItemDialog({ open: true, mode: 'add', item: null, listId });
+  const handleAddItem = (listId: string, ownerId?: string) => {
+    setItemDialog({ open: true, mode: 'add', item: null, listId: ownerId ? listId : listId });
+    if (ownerId) {
+      // Store ownerId temporarily for the save operation
+      (window as any).__pendingOwnerId = ownerId;
+    }
   };
 
   const handleEditItem = (item: ShoppingItem, listId: string) => {
@@ -75,26 +81,40 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
 
   const handleSaveItem = (data: any) => {
     if (!itemDialog.listId) return;
+    const ownerId = (window as any).__pendingOwnerId;
     if (itemDialog.mode === 'add') {
       const newItem: ShoppingItem = { ...data, id: generateId() };
-      addItemToList(itemDialog.listId, newItem);
+      addItemToList(itemDialog.listId, newItem, ownerId);
     } else if (itemDialog.item) {
       updateItemInList(itemDialog.listId, itemDialog.item.id, data);
     }
     setItemDialog({ open: false, mode: 'add', item: null, listId: null });
+    (window as any).__pendingOwnerId = undefined;
   };
 
   const handleDeleteItemFromList = (itemId: string) => {
     const listId = itemDialog.listId || selectedListId;
+    const sharedList = sharedLists.find(l => l.listId === listId);
+    const ownerId = sharedList?.ownerId;
+    
     if (!listId) return;
-    deleteItemFromList(listId, itemId);
+    
+    if (ownerId && user?.uid) {
+      // For shared lists, delete from owner's Firebase list and update local state
+      const targetOwnerId = ownerId === 'self' ? user.uid : ownerId;
+      const itemRef = ref(db, `userData/${targetOwnerId}/shoppingLists/${listId}/items/${itemId}`);
+      remove(itemRef);
+      setSharedListItems(prev => prev.filter(item => item.id !== itemId));
+    } else {
+      deleteItemFromList(listId, itemId);
+    }
   };
 
   const selectedList = shoppingLists.find(l => l.id === selectedListId);
   const selectedSharedList = sharedLists.find(l => l.listId === selectedListId);
   const isSharedList = !!selectedSharedList;
   const listItems = (isSharedList ? sharedListItems : selectedList?.items || []).filter(item => !categoryFilter || item.category === categoryFilter);
-  const pickedItems = isSharedList ? [] : (selectedList?.pickedItems || []);
+  const pickedItems = selectedList?.pickedItems || [];
 
   useEffect(() => {
     if (pickingMode && selectedList && listItems.length > 0 && pickedItems.length === listItems.length) {
@@ -136,7 +156,7 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
           categories={categories}
           categoryFilter={categoryFilter}
           setCategoryFilter={setCategoryFilter}
-          onAddItem={isSharedList ? () => {} : () => handleAddItem(selectedListId)}
+          onAddItem={() => handleAddItem(selectedListId, isSharedList ? selectedSharedList?.ownerId : undefined)}
           onEditItem={(item) => handleEditItem(item, selectedListId)}
           onDeleteItem={handleDeleteItemFromList}
           onMoveToInventory={onMoveToInventory}

@@ -27,7 +27,7 @@ const NAVIGATION = [
 ];
 
 function AppContent() {
-  const { user, authLoading, moveItemToInventory, shoppingLists, addItemToList, updateItemInList, deleteItemFromList, categories, currency, activeListId, setActiveListId } = useApp();
+  const { user, authLoading, moveItemToInventory, shoppingLists, sharedLists, addItemToList, updateItemInList, deleteItemFromList, categories, currency, activeListId, setActiveListId } = useApp();
   const location = useLocation();
   const params = useParams();
   const listName = params['*']?.replace('list/', '');
@@ -36,12 +36,17 @@ function AppContent() {
   console.log('AppContent render:', { user: !!user, authLoading });
 
   const selectedList = listName ? shoppingLists.find(l => l.name.toLowerCase() === listName.toLowerCase()) : null;
+  
+  // Also check shared lists by name
+  const selectedSharedList = listName ? sharedLists.find(l => l.listName.toLowerCase() === listName.toLowerCase()) : null;
 
   useEffect(() => {
     if (selectedList && selectedList.id !== activeListId) {
       setActiveListId(selectedList.id);
+    } else if (selectedSharedList && selectedSharedList.listId !== activeListId) {
+      setActiveListId(selectedSharedList.listId);
     }
-  }, [selectedList, activeListId, setActiveListId]);
+  }, [selectedList, selectedSharedList, activeListId, setActiveListId]);
 
   const handleMoveToInventory = (item: ShoppingItem) => {
     moveItemToInventory('', item.id, item.quantity);
