@@ -213,6 +213,7 @@ export function AppProvider({ children }: AppProviderProps) {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [activeListId, setActiveListId] = useState<string>('standard');
   const [sharedLists, setSharedLists] = useState<SharedList[]>([]);
+  const [sharedListItems, setSharedListItems] = useState<ShoppingItem[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [currency, setCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY);
@@ -234,6 +235,33 @@ export function AppProvider({ children }: AppProviderProps) {
   useEffect(() => {
     localStorage.setItem(`${STORAGE_KEY}-profile`, JSON.stringify(profile));
   }, [profile]);
+
+  // Load shared list items when activeListId is a shared list
+  useEffect(() => {
+    const loadSharedListItems = async () => {
+      const sharedList = sharedLists.find(l => l.listId === activeListId);
+      if (sharedList && user?.uid) {
+        try {
+          const snapshot = await get(ref(db, `userData/${sharedList.ownerId}/shoppingLists/${sharedList.listId}`));
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            setSharedListItems(data.items || []);
+          } else {
+            setSharedListItems([]);
+          }
+        } catch (error) {
+          console.error('Error loading shared list items:', error);
+          setSharedListItems([]);
+        }
+      } else {
+        setSharedListItems([]);
+      }
+    };
+
+    if (user?.uid) {
+      loadSharedListItems();
+    }
+  }, [activeListId, sharedLists, user?.uid]);
 
   const updateProfile = useCallback((updates: Partial<Profile>) => {
     setProfile(prev => ({ ...prev, ...updates }));
@@ -675,8 +703,25 @@ export function AppProvider({ children }: AppProviderProps) {
   }, []);
 
   const getActiveList = useCallback(() => {
-    return shoppingLists.find(list => list.id === activeListId);
-  }, [shoppingLists, activeListId]);
+    // First check user's own lists
+    const list = shoppingLists.find(list => list.id === activeListId);
+    if (list) return list;
+    
+    // Then check shared lists
+    const shared = sharedLists.find(list => list.listId === activeListId);
+    if (shared) {
+      return {
+        id: shared.listId,
+        name: shared.listName,
+        isStandard: false,
+        items: [],
+        ownerId: shared.ownerId,
+        isShared: true,
+      };
+    }
+    
+    return undefined;
+  }, [shoppingLists, sharedLists, activeListId]);
 
   const value = useMemo(() => ({
     user,
@@ -688,6 +733,7 @@ export function AppProvider({ children }: AppProviderProps) {
     inventory,
     activeListId,
     sharedLists,
+    sharedListItems,
     notifications,
     unreadCount,
     currency,

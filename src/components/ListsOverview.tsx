@@ -1,5 +1,5 @@
-import { Box, Typography, Card, CardActions, Button, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Breadcrumbs, Link } from '@mui/material';
-import { ShoppingCart, Add, HomeMaxOutlined, Home } from '@mui/icons-material';
+import { Box, Typography, Card, CardActions, Button, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Breadcrumbs, Link, Divider } from '@mui/material';
+import { ShoppingCart, Add, HomeMaxOutlined, Home, People, FolderShared } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,14 +10,22 @@ interface ShoppingList {
   items: Array<{ id: string }>;
 }
 
+interface SharedList {
+  listId: string;
+  listName: string;
+  ownerId: string;
+  role: string;
+}
+
 interface ListsOverviewProps {
   lists: ShoppingList[];
+  sharedLists?: SharedList[];
   onSelectList: (id: string) => void;
   onDeleteList: (id: string) => void;
   onAddList: () => void;
 }
 
-export default function ListsOverview({ lists, onSelectList, onDeleteList, onAddList }: ListsOverviewProps) {
+export default function ListsOverview({ lists, sharedLists = [], onSelectList, onDeleteList, onAddList }: ListsOverviewProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -31,7 +39,37 @@ export default function ListsOverview({ lists, onSelectList, onDeleteList, onAdd
           <Typography sx={{ color: 'text.primary' }}>{t('myLists')}</Typography>
       </Breadcrumbs>
 
-      {lists.length === 0 ? (
+      {sharedLists.length > 0 && (
+        <>
+          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <FolderShared fontSize="small" /> Shared with me
+          </Typography>
+          <List data-testid="shared-lists-container" sx={{ mb: 2 }}>
+            {sharedLists.map(sharedList => (
+              <ListItem
+                key={sharedList.listId}
+                disablePadding
+                sx={{ mb: 1 }}
+              >
+                <Card sx={{ width: '100%', bgcolor: 'action.hover' }}>
+                  <ListItemButton onClick={() => handleSelectList(sharedList.listId, sharedList.listName)}>
+                    <ListItemIcon>
+                      <FolderShared color="secondary" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={sharedList.listName} 
+                      secondary={sharedList.role === 'owner' ? 'Owner' : 'Member'}
+                    />
+                  </ListItemButton>
+                </Card>
+              </ListItem>
+            ))}
+          </List>
+          <Divider sx={{ my: 2 }} />
+        </>
+      )}
+
+      {lists.length === 0 && sharedLists.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }} data-testid="no-lists-message">
           <Typography variant="body1" color="text.secondary" gutterBottom>
             No shopping lists yet

@@ -14,6 +14,7 @@ export const resources = {
       actions: 'Actions',
       back: 'Back',
       myLists: 'My Lists',
+      sharedWithMe: 'Shared with me',
       inventory: 'Inventory',
       inbox: 'Inbox',
       confirmInventoryClear: 'Clear Inventory',

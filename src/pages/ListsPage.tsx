@@ -19,7 +19,7 @@ export enum ToggleMode{
 }
 
 export default function ListsPage({ onMoveToInventory, initialListId }: ListsPageProps) {
-  const { shoppingLists, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList } = useApp();
+  const { shoppingLists, sharedLists, sharedListItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList } = useApp();
   const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -91,8 +91,10 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
   };
 
   const selectedList = shoppingLists.find(l => l.id === selectedListId);
-  const listItems = selectedList?.items?.filter(item => !categoryFilter || item.category === categoryFilter) || [];
-  const pickedItems = selectedList?.pickedItems || [];
+  const selectedSharedList = sharedLists.find(l => l.listId === selectedListId);
+  const isSharedList = !!selectedSharedList;
+  const listItems = (isSharedList ? sharedListItems : selectedList?.items || []).filter(item => !categoryFilter || item.category === categoryFilter);
+  const pickedItems = isSharedList ? [] : (selectedList?.pickedItems || []);
 
   useEffect(() => {
     if (pickingMode && selectedList && listItems.length > 0 && pickedItems.length === listItems.length) {
@@ -120,19 +122,21 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
       {!selectedListId && (
         <ListsOverview
           lists={shoppingLists.filter(l => !l.isStandard)}
+          sharedLists={sharedLists}
           onSelectList={setSelectedListId}
           onDeleteList={handleDeleteList}
           onAddList={() => setListDialog({ open: true, name: '', copyFromStandard: true })}
         />
       )}
-      {selectedListId && selectedList && (
+      {(selectedListId && (selectedList || isSharedList)) && (
         <ShoppingListView
           list={selectedList}
           items={listItems}
+          shared={isSharedList}
           categories={categories}
           categoryFilter={categoryFilter}
           setCategoryFilter={setCategoryFilter}
-          onAddItem={() => handleAddItem(selectedListId)}
+          onAddItem={isSharedList ? () => {} : () => handleAddItem(selectedListId)}
           onEditItem={(item) => handleEditItem(item, selectedListId)}
           onDeleteItem={handleDeleteItemFromList}
           onMoveToInventory={onMoveToInventory}
