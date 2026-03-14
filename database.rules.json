@@ -2,21 +2,21 @@
   "rules": {
     "userData": {
       "$uid": {
+        ".read": "auth != null",
         ".write": "$uid === auth.uid",
         "profile": {
-          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid",
           ".indexOn": ["email"]
         },
         "notifications": {
           ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid",
           ".indexOn": ["createdAt", "read"]
         },
         "sharedLists": {
-          ".read": "auth != null",
           ".indexOn": ["ownerId"]
         },
         "shoppingLists": {
-          ".read": "auth != null",
           ".indexOn": ["name"]
         }
       }
