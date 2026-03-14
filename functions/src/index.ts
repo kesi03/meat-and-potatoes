@@ -53,12 +53,32 @@ export const sendInvitation = onCall(async (request) => {
     createdAt: admin.database.ServerValue.TIMESTAMP,
   });
 
-  // Check if user exists
+  // Check if user exists and get their userId
   const userSnapshot = await db.ref("userData").orderByChild("profile/email").equalTo(email).once("value");
-  const userExists = userSnapshot.exists();
+  let recipientUserId = null;
+  if (userSnapshot.exists()) {
+    const data = userSnapshot.val();
+    recipientUserId = Object.keys(data)[0];
+  }
+
+  // If recipient has an account, create a notification
+  if (recipientUserId) {
+    const notificationRef = db.ref(`userData/${recipientUserId}/notifications`).push();
+    await notificationRef.set({
+      type: "invitation",
+      fromUserId: ownerId,
+      fromName: ownerName || "Someone",
+      listId,
+      listName,
+      invitationId,
+      status: "pending",
+      read: false,
+      createdAt: admin.database.ServerValue.TIMESTAMP,
+    });
+  }
 
   // Send email
-  const acceptLink = `meat-and-potatoes-86149.web.app/accept-invitation/${invitationId}`;
+  const acceptLink = `https://meat-and-potatoes-86149.web.app/accept-invitation/${invitationId}`;
   
   const transporter = getTransporter();
 
@@ -71,7 +91,7 @@ ${message || `I'd like to share my shopping list "${listName}" with you.`}
 
 Click here to accept: ${acceptLink}
 
-${!userExists ? "You'll need to create an account to join." : "You can view this in your inbox once you sign in."}
+${!recipientUserId ? "You'll need to create an account to join." : "You can view this in your inbox once you sign in."}
 
 - Meat & Potatoes App
     `.trim(),
