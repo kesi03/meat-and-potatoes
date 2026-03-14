@@ -25,13 +25,13 @@ import { useApp } from '../context/AppContext';
 import { useAppBarActions } from '../context/AppBarActions';
 import { DeviceBanner } from './DeviceBanner';
 import { ProfileDialog } from './dialogs';
-import { AccountTreeRounded, BarcodeReader } from '@mui/icons-material';
+import { AccountTreeRounded, BarcodeReader, CloudOff, Cloud } from '@mui/icons-material';
 import { Divider } from '@mui/material';
 
 function ResponsiveAppBar() {
   const { t } = useTranslation();
   const location = useLocation();
-  const { activeListId, addItemToList, categories, currency, getActiveList, user, logout, profile, updateProfile } = useApp();
+  const { activeListId, addItemToList, categories, currency, getActiveList, user, logout, profile, updateProfile, offlineMode, setOfflineMode } = useApp();
   const appBarActions = useAppBarActions();
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -195,6 +195,11 @@ function ResponsiveAppBar() {
                   </MenuItem>
                 )}
                 <Divider />
+                <MenuItem onClick={() => setOfflineMode(!offlineMode)}>
+                  {offlineMode ? <CloudOff sx={{ mr: 1 }} fontSize="small" /> : <Cloud sx={{ mr: 1 }} fontSize="small" />}
+                  {offlineMode ? t('online') : t('offline')}
+                </MenuItem>
+                 <Divider />
                 <MenuItem onClick={handleProfileClick}>
                   {(profile.image || user?.photoURL) ? (
                     <Avatar src={profile.image || user?.photoURL || undefined} sx={{ width: 20, height: 20, mr: 1 }} />

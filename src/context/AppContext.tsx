@@ -91,6 +91,8 @@ export interface Profile {
 interface AppContextType {
   user: User | null;
   authLoading: boolean;
+  offlineMode: boolean;
+  setOfflineMode: (offline: boolean) => void;
   categories: Category[];
   shoppingLists: ShoppingList[];
   inventory: InventoryItem[];
@@ -171,6 +173,10 @@ export function AppProvider({ children }: AppProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [offlineMode, setOfflineMode] = useState<boolean>(() => {
+    const stored = localStorage.getItem(`${STORAGE_KEY}-offline`);
+    return stored === 'true';
+  });
   const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
   const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>(DEFAULT_LISTS);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -308,6 +314,52 @@ export function AppProvider({ children }: AppProviderProps) {
     }
   }, [categories, shoppingLists, inventory, activeListId, currency, user?.uid, profile]);
 
+  // Handle offline mode toggle
+  const handleSetOfflineMode = useCallback(async (offline: boolean) => {
+    const userId = user?.uid;
+    if (!userId) return;
+
+    if (offline) {
+      // Save current state to localStorage (skip if quota exceeded)
+      try {
+        localStorage.setItem(`${STORAGE_KEY}-${userId}-offline-categories`, JSON.stringify(categories));
+        localStorage.setItem(`${STORAGE_KEY}-${userId}-offline-shoppingLists`, JSON.stringify(shoppingLists));
+        localStorage.setItem(`${STORAGE_KEY}-${userId}-offline-inventory`, JSON.stringify(inventory));
+        localStorage.setItem(`${STORAGE_KEY}-${userId}-offline-activeListId`, activeListId);
+        localStorage.setItem(`${STORAGE_KEY}-${userId}-offline-currency`, currency);
+        localStorage.setItem(`${STORAGE_KEY}-${userId}-offline-profile`, JSON.stringify(profile));
+      } catch (e) {
+        console.error('LocalStorage quota exceeded:', e);
+        setSyncStatus(prev => ({ ...prev, error: 'LocalStorage full. Cannot enable offline mode.' }));
+        return;
+      }
+    } else {
+      // Load from localStorage (local wins)
+      const localCategories = localStorage.getItem(`${STORAGE_KEY}-${userId}-offline-categories`);
+      const localLists = localStorage.getItem(`${STORAGE_KEY}-${userId}-offline-shoppingLists`);
+      const localInventory = localStorage.getItem(`${STORAGE_KEY}-${userId}-offline-inventory`);
+      const localActiveListId = localStorage.getItem(`${STORAGE_KEY}-${userId}-offline-activeListId`);
+      const localCurrency = localStorage.getItem(`${STORAGE_KEY}-${userId}-offline-currency`);
+      const localProfile = localStorage.getItem(`${STORAGE_KEY}-${userId}-offline-profile`);
+
+      if (localCategories) setCategories(JSON.parse(localCategories));
+      if (localLists) {
+        const lists = JSON.parse(localLists);
+        setShoppingLists(lists.map((list: ShoppingList) => ({ ...list, items: list.items || [] })));
+      }
+      if (localInventory) setInventory(JSON.parse(localInventory));
+      if (localActiveListId) setActiveListId(localActiveListId);
+      if (localCurrency) setCurrency(localCurrency as CurrencyCode);
+      if (localProfile) setProfile(JSON.parse(localProfile));
+
+      // Sync merged data to Firebase
+      await syncToFirebase();
+    }
+
+    setOfflineMode(offline);
+    localStorage.setItem(`${STORAGE_KEY}-offline`, offline.toString());
+  }, [user?.uid, categories, shoppingLists, inventory, activeListId, currency, profile, syncToFirebase]);
+
   // Load from Firebase
   const loadFromFirebase = useCallback(async () => {
     if (!db) {
@@ -365,14 +417,14 @@ export function AppProvider({ children }: AppProviderProps) {
     loadFromFirebase();
   }, [user?.uid]);
 
-  // Auto-sync on changes (debounced) - only after data is loaded from Firebase
+  // Auto-sync on changes (debounced) - only after data is loaded from Firebase and not in offline mode
   useEffect(() => {
-    if (!user?.uid || !dataLoaded) return;
+    if (!user?.uid || !dataLoaded || offlineMode) return;
     const timeout = setTimeout(() => {
       syncToFirebase();
     }, 1000);
     return () => clearTimeout(timeout);
-  }, [categories, shoppingLists, inventory, activeListId, currency, profile, user?.uid, dataLoaded]);
+  }, [categories, shoppingLists, inventory, activeListId, currency, profile, user?.uid, dataLoaded, offlineMode]);
 
   const addCategory = useCallback((category: { name: string; description?: string }): Category => {
     const newCategory: Category = {
@@ -504,6 +556,8 @@ export function AppProvider({ children }: AppProviderProps) {
   const value = useMemo(() => ({
     user,
     authLoading,
+    offlineMode,
+    setOfflineMode: handleSetOfflineMode,
     categories,
     shoppingLists,
     inventory,
