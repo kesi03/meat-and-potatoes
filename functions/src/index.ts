@@ -58,7 +58,7 @@ export const sendInvitation = onCall(async (request) => {
   const userExists = userSnapshot.exists();
 
   // Send email
-  const acceptLink = `https://meat-and-potatoes.web.app/accept-invitation/${invitationId}`;
+  const acceptLink = `meat-and-potatoes-86149.web.app/accept-invitation/${invitationId}`;
   
   const transporter = getTransporter();
 
