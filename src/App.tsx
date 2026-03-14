@@ -8,6 +8,7 @@ import { hasValidSession } from './session';
 
 import { ShoppingCart, Inventory2, Settings } from '@mui/icons-material';
 import ListsPage from './pages/ListsPage';
+import InboxPage from './pages/InboxPage';
 import ShoppingListView from './components/ShoppingListView';
 import InventoryPage from './pages/InventoryPage';
 import AdminPage from './pages/AdminPage';
@@ -77,6 +78,7 @@ function AppContent() {
         />
       )}
       {location.pathname === '/inventory' && <InventoryPage />}
+      {location.pathname === '/inbox' && <InboxPage />}
       {location.pathname === '/admin' && <AdminPage />}
       </Box>
       <SimpleBottomNavigation />

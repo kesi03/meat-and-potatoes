@@ -1,0 +1,36 @@
+{
+  "rules": {
+    "userData": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid",
+        ".indexOn": ["profile/email"]
+      }
+    },
+    "shoppingLists": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "sharedLists": {
+      ".read": "auth != null",
+      "$listId": {
+        "$userId": {
+          ".read": "auth != null && data.child('members').hasChild(auth.uid)",
+          ".write": "auth != null"
+        }
+      }
+    },
+    "notifications": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "invitations": {
+      "$invitationId": {
+        ".read": "auth != null && data.child('email').val() === auth.token.email",
+        ".write": "auth != null"
+      }
+    }
+  }
+}

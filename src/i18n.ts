@@ -15,6 +15,7 @@ export const resources = {
       back: 'Back',
       myLists: 'My Lists',
       inventory: 'Inventory',
+      inbox: 'Inbox',
       confirmInventoryClear: 'Clear Inventory',
       confirmClearInventory: 'Are you sure you want to clear the entire inventory? This action cannot be undone.',
       yes: 'Yes',

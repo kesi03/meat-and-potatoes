@@ -103,8 +103,11 @@ export interface Notification {
   id: string;
   type: string;
   fromUserId?: string;
+  fromName?: string;
   listId?: string;
   listName?: string;
+  invitationId?: string;
+  status?: 'pending' | 'accepted' | 'declined';
   read: boolean;
   createdAt: number;
 }

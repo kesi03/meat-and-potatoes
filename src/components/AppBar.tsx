@@ -19,20 +19,22 @@ import ListIcon from '@mui/icons-material/List';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
+import Badge from '@mui/material/Badge';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAppBarActions } from '../context/AppBarActions';
 import { DeviceBanner } from './DeviceBanner';
 import { ProfileDialog } from './dialogs';
 import { ShareDialog } from './dialogs';
-import { AccountTreeRounded, BarcodeReader, CloudOff, Cloud, PersonSearch } from '@mui/icons-material';
+import { AccountTreeRounded, BarcodeReader, CloudOff, Cloud, PersonSearch, Mail } from '@mui/icons-material';
 import { Divider } from '@mui/material';
 
 function ResponsiveAppBar() {
   const { t } = useTranslation();
   const location = useLocation();
-  const { activeListId, addItemToList, categories, currency, getActiveList, user, logout, profile, updateProfile, offlineMode, setOfflineMode, shareList } = useApp();
+  const navigate = useNavigate();
+  const { activeListId, addItemToList, categories, currency, getActiveList, user, logout, profile, updateProfile, offlineMode, setOfflineMode, shareList, unreadCount } = useApp();
   const appBarActions = useAppBarActions();
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState({ open: false, listId: '', listName: '' });
@@ -251,6 +253,17 @@ function ResponsiveAppBar() {
             onShare={(email, message) => shareList(shareDialogOpen.listId, shareDialogOpen.listName, email, message)}
           />
 
+          {user && (
+            <IconButton
+              color="inherit"
+              onClick={() => navigate('/inbox')}
+              sx={{ ml: 1 }}
+            >
+              <Badge badgeContent={unreadCount} color="error">
+                <Mail />
+              </Badge>
+            </IconButton>
+          )}
 
 
         </Toolbar>
