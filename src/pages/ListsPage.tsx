@@ -21,7 +21,7 @@ export enum ToggleMode{
 }
 
 export default function ListsPage({ onMoveToInventory, initialListId }: ListsPageProps) {
-  const { shoppingLists, sharedLists, sharedListItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList, user, setActiveListId } = useApp();
+  const { shoppingLists, sharedLists, sharedListItems, sharedListPickedItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList, user, setActiveListId } = useApp();
   const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -55,7 +55,7 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
         const listNameFromSlug = urlSlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         
         // First check shared lists
-        const matchedSharedList = sharedLists.find(l => l.listName?.toLowerCase() === urlSlug.toLowerCase() || l.listName?.toLowerCase() === listNameFromSlug.toLowerCase());
+        const matchedSharedList = sharedLists.find(l => (l.listName || (l as any).name)?.toLowerCase() === urlSlug.toLowerCase() || (l.listName || (l as any).name)?.toLowerCase() === listNameFromSlug.toLowerCase());
         if (matchedSharedList) {
           setSelectedListId(matchedSharedList.listId);
           setActiveListId(matchedSharedList.listId);
@@ -150,7 +150,7 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
   console.log('[ListsPage] selectedListId:', selectedListId, 'selectedSharedList:', selectedSharedList, 'isSharedListMember:', isSharedListMember, 'sharedListItems:', sharedListItems.length, 'selectedList?.items:', selectedList?.items?.length);
   const listItems = (isSharedListMember ? sharedListItems : selectedList?.items || []).filter(item => !categoryFilter || item.category === categoryFilter);
   console.log('[ListsPage] listItems:', listItems.length);
-  const pickedItems = selectedList?.pickedItems || [];
+  const pickedItems = isSharedList ? sharedListPickedItems : (selectedList?.pickedItems || []);
 
   useEffect(() => {
     if (pickingMode && selectedList && listItems.length > 0 && pickedItems.length === listItems.length) {

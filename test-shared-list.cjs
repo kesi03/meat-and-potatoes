@@ -17,7 +17,7 @@ async function test() {
   });
 
   // Go to app
-  await page.goto('http://localhost:3000');
+  await page.goto('http://localhost:5173');
   await page.waitForTimeout(3000);
   
   // Check if login form exists
@@ -33,7 +33,7 @@ async function test() {
   }
   
   console.log('=== Testing /list/my-shopping-list ===');
-  await page.goto('http://localhost:3000/list/my-shopping-list');
+  await page.goto('http://localhost:5173/list/my-shopping-list');
   await page.waitForTimeout(3000);
   
   const myShoppingContent = await page.textContent('body');
@@ -41,12 +41,39 @@ async function test() {
   console.log('Page shows Shopping:', myShoppingContent.includes('Shopping') || myShoppingContent.includes('My Shopping'));
   
   console.log('=== Testing /list/kesi03 (shared list) ===');
-  await page.goto('http://localhost:3000/list/kesi03');
+  await page.goto('http://localhost:5173/list/kesi03');
   await page.waitForTimeout(3000);
   
   const kesiContent = await page.textContent('body');
   console.log('Shared list shows Milk:', kesiContent.includes('Milk'));
   console.log('Shared list shows Kesi03:', kesiContent.includes('Kesi03') || kesiContent.includes('kesi03'));
+  
+  console.log('=== Testing picking an item in shared list ===');
+  // Find the first checkbox and check its state before clicking
+  const checkbox = await page.$('input[type="checkbox"]');
+  if (checkbox) {
+    console.log('Found checkbox, checking initial state...');
+    const initialChecked = await checkbox.isChecked();
+    console.log('Initial checkbox checked:', initialChecked);
+    
+    console.log('Clicking checkbox...');
+    await checkbox.click();
+    await page.waitForTimeout(500);
+    
+    const afterClickChecked = await checkbox.isChecked();
+    console.log('After click checkbox checked:', afterClickChecked);
+    console.log('Checkbox toggled correctly:', initialChecked !== afterClickChecked);
+  } else {
+    console.log('No checkbox found, checking for clickable list items...');
+    const listItemButton = await page.$('[role="checkbox"]');
+    if (listItemButton) {
+      console.log('Found role="checkbox", clicking...');
+      await listItemButton.click();
+      await page.waitForTimeout(1000);
+    } else {
+      console.log('No clickable item found');
+    }
+  }
   
   await browser.close();
 }

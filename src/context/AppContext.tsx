@@ -92,7 +92,8 @@ export interface Profile {
 
 export interface SharedList {
   listId: string;
-  listName: string;
+  listName?: string;
+  name?: string;
   ownerId: string;
   addedAt: number;
   role: 'owner' | 'member';
@@ -123,6 +124,7 @@ interface AppContextType {
   activeListId: string;
   sharedLists: SharedList[];
   sharedListItems: ShoppingItem[];
+  sharedListPickedItems: string[];
   notifications: Notification[];
   unreadCount: number;
   currency: CurrencyCode;
@@ -215,6 +217,7 @@ export function AppProvider({ children }: AppProviderProps) {
   const [activeListId, setActiveListId] = useState<string>('standard');
   const [sharedLists, setSharedLists] = useState<SharedList[]>([]);
   const [sharedListItems, setSharedListItems] = useState<ShoppingItem[]>([]);
+  const [sharedListPickedItems, setSharedListPickedItems] = useState<string[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [currency, setCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY);
@@ -765,16 +768,26 @@ export function AppProvider({ children }: AppProviderProps) {
   }, []);
 
   const togglePickedItem = useCallback((listId: string, itemId: string) => {
-    setShoppingLists(prev => prev.map(list => {
-      if (list.id !== listId) return list;
-      const pickedItems = list.pickedItems || [];
-      if (pickedItems.includes(itemId)) {
-        return { ...list, pickedItems: pickedItems.filter(id => id !== itemId) };
-      } else {
-        return { ...list, pickedItems: [...pickedItems, itemId] };
-      }
-    }));
-  }, []);
+    const isShared = sharedLists.some(l => l.listId === listId);
+    if (isShared) {
+      setSharedListPickedItems(prev => {
+        if (prev.includes(itemId)) {
+          return prev.filter(id => id !== itemId);
+        }
+        return [...prev, itemId];
+      });
+    } else {
+      setShoppingLists(prev => prev.map(list => {
+        if (list.id !== listId) return list;
+        const pickedItems = list.pickedItems || [];
+        if (pickedItems.includes(itemId)) {
+          return { ...list, pickedItems: pickedItems.filter(id => id !== itemId) };
+        } else {
+          return { ...list, pickedItems: [...pickedItems, itemId] };
+        }
+      }));
+    }
+  }, [sharedLists]);
 
   const moveItemToInventory = useCallback((listId: string, itemId: string, homeQuantity?: number) => {
     const list = shoppingLists.find(l => l.id === listId);
@@ -825,11 +838,12 @@ export function AppProvider({ children }: AppProviderProps) {
     if (shared) {
       return {
         id: shared.listId,
-        name: shared.listName,
+        name: shared.listName || shared.name || '',
         isStandard: false,
         items: [],
         ownerId: shared.ownerId,
         isShared: true,
+        pickedItems: sharedListPickedItems,
       };
     }
     
@@ -847,6 +861,7 @@ export function AppProvider({ children }: AppProviderProps) {
     activeListId,
     sharedLists,
     sharedListItems,
+    sharedListPickedItems,
     notifications,
     unreadCount,
     currency,
@@ -885,7 +900,7 @@ export function AppProvider({ children }: AppProviderProps) {
     getActiveList,
     syncToFirebase,
     loadFromFirebase,
-  }), [categories, shoppingLists, inventory, activeListId, currency, language, firebaseConfig, syncStatus, profile, addCategory, updateCategory, deleteCategory, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, togglePickedItem, moveItemToInventory, addInventoryItem, updateInventoryItem, deleteInventoryItem, getActiveList, syncToFirebase, loadFromFirebase]);
+  }), [categories, shoppingLists, inventory, activeListId, sharedListPickedItems, currency, language, firebaseConfig, syncStatus, profile, addCategory, updateCategory, deleteCategory, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, togglePickedItem, moveItemToInventory, addInventoryItem, updateInventoryItem, deleteInventoryItem, getActiveList, syncToFirebase, loadFromFirebase]);
 
   return (
     <AppContext.Provider value={value}>

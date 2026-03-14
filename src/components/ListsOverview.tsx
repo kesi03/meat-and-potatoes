@@ -12,7 +12,8 @@ interface ShoppingList {
 
 interface SharedList {
   listId: string;
-  listName: string;
+  listName?: string;
+  name?: string;
   ownerId: string;
   role: string;
 }
@@ -30,6 +31,7 @@ export default function ListsOverview({ lists, sharedLists = [], onSelectList, o
   const navigate = useNavigate();
 
   const handleSelectList = (id: string, name: string) => {
+    if (!name) return;
     navigate(`/list/${name.toLowerCase().replace(/\s+/g, '-')}`);
   };
   return (
@@ -52,12 +54,12 @@ export default function ListsOverview({ lists, sharedLists = [], onSelectList, o
                 sx={{ mb: 1 }}
               >
                 <Card sx={{ width: '100%', bgcolor: 'action.hover' }}>
-                  <ListItemButton onClick={() => handleSelectList(sharedList.listId, sharedList.listName)}>
+                  <ListItemButton onClick={() => handleSelectList(sharedList.listId, sharedList.listName || sharedList.name || '')}>
                     <ListItemIcon>
                       <FolderShared color="secondary" />
                     </ListItemIcon>
                     <ListItemText 
-                      primary={sharedList.listName} 
+                      primary={sharedList.listName || sharedList.name} 
                       secondary={sharedList.role === 'owner' ? 'Owner' : 'Member'}
                     />
                   </ListItemButton>

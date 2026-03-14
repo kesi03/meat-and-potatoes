@@ -38,7 +38,7 @@ function AppContent() {
   const selectedList = listName ? shoppingLists.find(l => l.name?.toLowerCase() === listName.toLowerCase()) : null;
   
   // Also check shared lists by name
-  const selectedSharedList = listName ? sharedLists.find(l => l.listName?.toLowerCase() === listName.toLowerCase()) : null;
+  const selectedSharedList = listName ? sharedLists.find(l => (l.listName || (l as any).name)?.toLowerCase() === listName.toLowerCase()) : null;
 
   useEffect(() => {
     if (selectedList && selectedList.id !== activeListId) {
