@@ -29,7 +29,10 @@ jobs:
       - name: Create .env file
         run: |
           cd functions
-          printf 'SMTP_USER=%s\nSMTP_PASSWORD=%s\n' "${{ secrets.SMTP_USER }}" "${{ secrets.SMTP_PASSWORD }}" > .env
+          printf 'SMTP_USER=%s\nSMTP_PASSWORD=%s\n' "$SMTP_USER" "$SMTP_PASSWORD" > .env
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
 
       - name: Build
         run: cd functions && npm run build

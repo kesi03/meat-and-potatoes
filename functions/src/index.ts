@@ -11,6 +11,16 @@ const getTransporter = () => {
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASSWORD;
   
+  console.log('SMTP config check:', { 
+    user: smtpUser ? 'set' : 'missing', 
+    pass: smtpPass ? 'set' : 'missing' 
+  });
+  
+  if (!smtpUser || !smtpPass) {
+    console.error('SMTP credentials missing!');
+    throw new Error('SMTP credentials not configured');
+  }
+  
   return nodemailer.createTransport({
     service: "iCloud",
     auth: {
