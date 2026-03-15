@@ -74,10 +74,28 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
 
   const handleSetPickedItems = useCallback((itemId: string) => {
     const listId = selectedListId || activeListId;
+    console.log('[ListsPage] handleSetPickedItems itemId:', itemId, 'listId:', listId);
+    console.log('[ListsPage] handleSetPickedItems calling togglePickedItem, togglePickedItem exists:', typeof togglePickedItem);
     if (listId) {
+      console.log('[ListsPage] about to call togglePickedItem');
       togglePickedItem(listId, itemId);
+      console.log('[ListsPage] called togglePickedItem');
     }
   }, [selectedListId, activeListId, togglePickedItem]);
+
+  // Prevent double-toggle by tracking recently toggled items
+  const [recentlyToggled, setRecentlyToggled] = useState<Record<string, number>>({});
+  
+  const handleSetPickedItemsWithDebounce = useCallback((itemId: string) => {
+    const now = Date.now();
+    const lastToggle = recentlyToggled[itemId] || 0;
+    if (now - lastToggle < 500) {
+      console.log('[ListsPage] Debouncing toggle for item:', itemId);
+      return;
+    }
+    setRecentlyToggled(prev => ({ ...prev, [itemId]: now }));
+    handleSetPickedItems(itemId);
+  }, [handleSetPickedItems, recentlyToggled]);
 
   useEffect(() => {
     appBarActions.current.openAddList = () => setListDialog({ open: true, name: '', copyFromStandard: true });
@@ -151,6 +169,7 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
   const listItems = (isSharedListMember ? sharedListItems : selectedList?.items || []).filter(item => !categoryFilter || item.category === categoryFilter);
   console.log('[ListsPage] listItems:', listItems.length);
   const pickedItems = isSharedList ? sharedListPickedItems : (selectedList?.pickedItems || []);
+  console.log('[ListsPage] pickedItems:', pickedItems, 'isSharedList:', isSharedList, 'sharedListPickedItems:', sharedListPickedItems);
 
   useEffect(() => {
     if (pickingMode && selectedList && listItems.length > 0 && pickedItems.length === listItems.length) {

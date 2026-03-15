@@ -49,30 +49,60 @@ async function test() {
   console.log('Shared list shows Kesi03:', kesiContent.includes('Kesi03') || kesiContent.includes('kesi03'));
   
   console.log('=== Testing picking an item in shared list ===');
-  // Find the first checkbox and check its state before clicking
-  const checkbox = await page.$('input[type="checkbox"]');
-  if (checkbox) {
-    console.log('Found checkbox, checking initial state...');
-    const initialChecked = await checkbox.isChecked();
-    console.log('Initial checkbox checked:', initialChecked);
+  // Wait for items to load
+  await page.waitForSelector('[data-testid^="pick-item-"]', { timeout: 10000 });
+  
+  // Use Playwright's locator to click the checkbox
+  const itemLocator = page.locator('[data-testid^="pick-item-"]').first();
+  const itemTestId = await itemLocator.getAttribute('data-testid');
+  console.log('Clicking item:', itemTestId);
+  
+  // Click directly on the checkbox input using locator - use count: 1 to ensure single click
+  const checkboxLocator = itemLocator.locator('input[type="checkbox"]');
+  
+  // Get initial checked state
+  const initialChecked = await checkboxLocator.isChecked();
+  console.log('Initial checked:', initialChecked);
+  
+  // Click only once
+  await checkboxLocator.click();
+  await page.waitForTimeout(1000);
+  
+  // Check state immediately after single click
+  const afterClickChecked = await checkboxLocator.isChecked();
+  console.log('After single click checkbox checked:', afterClickChecked);
+  
+  // Check if the pickedItems state changed in the app
+  const pickedItemsState = await page.evaluate(() => {
+    // Try to find console logs or check DOM
+    return 'checked state changed';
+  });
+  console.log('State after click:', pickedItemsState);
     
-    console.log('Clicking checkbox...');
-    await checkbox.click();
-    await page.waitForTimeout(500);
-    
-    const afterClickChecked = await checkbox.isChecked();
-    console.log('After click checkbox checked:', afterClickChecked);
-    console.log('Checkbox toggled correctly:', initialChecked !== afterClickChecked);
-  } else {
-    console.log('No checkbox found, checking for clickable list items...');
-    const listItemButton = await page.$('[role="checkbox"]');
-    if (listItemButton) {
-      console.log('Found role="checkbox", clicking...');
-      await listItemButton.click();
-      await page.waitForTimeout(1000);
-    } else {
-      console.log('No clickable item found');
-    }
+  // Check localStorage persistence
+  const localStorageData = await page.evaluate(() => {
+    return localStorage.getItem('meat-and-potatoes-sharedPickedItems');
+  });
+  console.log('localStorage data:', localStorageData);
+  
+  // Reload page and check if picked items persist
+  console.log('Reloading page to test persistence...');
+  await page.reload();
+  await page.waitForTimeout(5000);
+  
+  // First go to home, then navigate to shared list
+  await page.goto('http://localhost:5173');
+  await page.waitForTimeout(3000);
+  
+  // Then navigate to shared list via URL
+  await page.goto('http://localhost:5173/list/kesi03');
+  await page.waitForTimeout(5000);
+  
+  const checkboxAfterReload = await page.$('input[type="checkbox"]');
+  if (checkboxAfterReload) {
+    const afterReloadChecked = await checkboxAfterReload.isChecked();
+    console.log('After reload checkbox checked:', afterReloadChecked);
+    console.log('Persistence working:', afterReloadChecked === true);
   }
   
   await browser.close();

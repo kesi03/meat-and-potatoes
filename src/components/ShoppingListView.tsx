@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Box,
   Typography,
@@ -88,9 +88,10 @@ export default function ShoppingListView({
     .filter(item => pickedItems.includes(item.id))
     .reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
 
-  const handleTogglePick = (itemId: string) => {
+  const handleTogglePick = useCallback((itemId: string) => {
+    console.log('[ShoppingListView] handleTogglePick itemId:', itemId);
     setPickedItems(itemId);
-  };
+  }, []);
 
   const filteredItems = categoryFilter
     ? items.filter(item => item.category === categoryFilter)

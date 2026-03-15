@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from 'react';
 import { generateId, STANDARD_ITEMS, CurrencyCode, DEFAULT_CURRENCY } from '../meat';
 import { db } from '../firebase';
-import { ref, set, get, onValue, update } from 'firebase/database';
+import { ref, set, get, onValue, update, remove } from 'firebase/database';
 import { User } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase';
@@ -288,6 +288,30 @@ export function AppProvider({ children }: AppProviderProps) {
 
     return () => unsubscribe();
   }, [activeListId, sharedLists, user?.uid]);
+
+  // Real-time listener for shared list picked items
+  useEffect(() => {
+    if (!user?.uid || !activeListId) {
+      setSharedListPickedItems([]);
+      return;
+    }
+
+    const pickedItemsRef = ref(db, `userData/${user.uid}/sharedListPickedItems/${activeListId}`);
+    const unsubscribe = onValue(pickedItemsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const pickedItems = Object.keys(data).filter(key => data[key] === true);
+        setSharedListPickedItems(pickedItems);
+      } else {
+        setSharedListPickedItems([]);
+      }
+    }, (error) => {
+      console.error('[SharedList] pickedItems listener error:', error);
+      setSharedListPickedItems([]);
+    });
+
+    return () => unsubscribe();
+  }, [activeListId, user?.uid, db]);
 
   // Real-time listener for notifications
   useEffect(() => {
@@ -769,13 +793,30 @@ export function AppProvider({ children }: AppProviderProps) {
 
   const togglePickedItem = useCallback((listId: string, itemId: string) => {
     const isShared = sharedLists.some(l => l.listId === listId);
+    console.log('[ListsPage] togglePickedItem listId:', listId, 'itemId:', itemId, 'isShared:', isShared, 'sharedLists:', sharedLists.map(l => l.listId));
     if (isShared) {
+      // Determine new state first
+      const isCurrentlyPicked = sharedListPickedItems.includes(itemId);
+      const willBePicked = !isCurrentlyPicked;
+
       setSharedListPickedItems(prev => {
-        if (prev.includes(itemId)) {
-          return prev.filter(id => id !== itemId);
-        }
-        return [...prev, itemId];
+        const newPickedItems = prev.includes(itemId)
+          ? prev.filter(id => id !== itemId)
+          : [...prev, itemId];
+        return newPickedItems;
       });
+
+      // Sync to Firebase separately to avoid race condition with listener
+      if (user?.uid) {
+        const pickedItemsRef = ref(db, `userData/${user.uid}/sharedListPickedItems/${listId}/${itemId}`);
+        if (willBePicked) {
+          console.log('[ListsPage] togglePickedItem Saving to Firebase (now picked)');
+          set(pickedItemsRef, true).catch(err => console.error('[ListsPage] togglePickedItem Firebase set error:', err));
+        } else {
+          console.log('[ListsPage] togglePickedItem Removing from Firebase (was picked)');
+          remove(pickedItemsRef).catch(err => console.error('[ListsPage] togglePickedItem Firebase remove error:', err));
+        }
+      }
     } else {
       setShoppingLists(prev => prev.map(list => {
         if (list.id !== listId) return list;
@@ -787,7 +828,7 @@ export function AppProvider({ children }: AppProviderProps) {
         }
       }));
     }
-  }, [sharedLists]);
+  }, [sharedLists, sharedListPickedItems, user, db]);
 
   const moveItemToInventory = useCallback((listId: string, itemId: string, homeQuantity?: number) => {
     const list = shoppingLists.find(l => l.id === listId);
