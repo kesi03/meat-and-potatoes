@@ -21,7 +21,7 @@ export enum ToggleMode{
 }
 
 export default function ListsPage({ onMoveToInventory, initialListId }: ListsPageProps) {
-  const { shoppingLists, sharedLists, sharedListItems, sharedListPickedItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList, user, setActiveListId } = useApp();
+  const { shoppingLists, sharedLists, sharedListItems, sharedListPickedItems, memberPickedItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList, user, setActiveListId } = useApp();
   const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -168,7 +168,7 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
   console.log('[ListsPage] selectedListId:', selectedListId, 'selectedSharedList:', selectedSharedList, 'isSharedListMember:', isSharedListMember, 'sharedListItems:', sharedListItems.length, 'selectedList?.items:', selectedList?.items?.length);
   const listItems = (isSharedListMember ? sharedListItems : selectedList?.items || []).filter(item => !categoryFilter || item.category === categoryFilter);
   console.log('[ListsPage] listItems:', listItems.length);
-  const pickedItems = isSharedList ? sharedListPickedItems : (selectedList?.pickedItems || []);
+  const pickedItems = isSharedList ? [...new Set([...sharedListPickedItems, ...(selectedSharedList?.role === 'owner' ? memberPickedItems : [])])] : (selectedList?.pickedItems || []);
   console.log('[ListsPage] pickedItems:', pickedItems, 'isSharedList:', isSharedList, 'sharedListPickedItems:', sharedListPickedItems);
 
   useEffect(() => {

@@ -14,11 +14,32 @@
           ".indexOn": ["createdAt", "read"]
         },
         "sharedLists": {
-          ".indexOn": ["ownerId"]
+          ".indexOn": ["ownerId"],
+          "$listId": {
+            "members": {
+              ".write": "$uid === auth.uid"
+            }
+          }
         },
         "shoppingLists": {
+          "$listId": {
+            "pickedItems": {
+              ".write": "$uid === auth.uid || root.child('userData/' + auth.uid + '/sharedLists/' + $listId).exists()"
+            }
+          },
           ".indexOn": ["name"]
+        },
+        "sharedListPickedItems": {
+          "$listId": {
+            ".write": "auth != null"
+          }
         }
+      }
+    },
+    "sharedPickedItems": {
+      "$listId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
       }
     },
     "shoppingLists": {

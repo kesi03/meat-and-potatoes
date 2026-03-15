@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from 'react';
 import { generateId, STANDARD_ITEMS, CurrencyCode, DEFAULT_CURRENCY } from '../meat';
 import { db } from '../firebase';
-import { ref, set, get, onValue, update, remove } from 'firebase/database';
+import { ref, set, get, onValue, update, remove, push } from 'firebase/database';
 import { User } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../firebase';
@@ -125,6 +125,7 @@ interface AppContextType {
   sharedLists: SharedList[];
   sharedListItems: ShoppingItem[];
   sharedListPickedItems: string[];
+  memberPickedItems: string[];
   notifications: Notification[];
   unreadCount: number;
   currency: CurrencyCode;
@@ -289,7 +290,7 @@ export function AppProvider({ children }: AppProviderProps) {
     return () => unsubscribe();
   }, [activeListId, sharedLists, user?.uid]);
 
-  // Real-time listener for shared list picked items
+  // Real-time listener for shared list picked items (member's own picks)
   useEffect(() => {
     if (!user?.uid || !activeListId) {
       setSharedListPickedItems([]);
@@ -312,6 +313,37 @@ export function AppProvider({ children }: AppProviderProps) {
 
     return () => unsubscribe();
   }, [activeListId, user?.uid, db]);
+
+  // Real-time listener for shared picked items from other members (for owner)
+  const [memberPickedItems, setMemberPickedItems] = useState<string[]>([]);
+  useEffect(() => {
+    if (!user?.uid || !activeListId) {
+      setMemberPickedItems([]);
+      return;
+    }
+
+    const isOwner = sharedLists.some(l => l.listId === activeListId && l.role === 'owner');
+    if (!isOwner) {
+      setMemberPickedItems([]);
+      return;
+    }
+
+    const sharedPickedRef = ref(db, `sharedPickedItems/${activeListId}`);
+    const unsubscribe = onValue(sharedPickedRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const pickedItems = Object.keys(data);
+        setMemberPickedItems(pickedItems);
+      } else {
+        setMemberPickedItems([]);
+      }
+    }, (error) => {
+      console.error('[SharedList] memberPickedItems listener error:', error);
+      setMemberPickedItems([]);
+    });
+
+    return () => unsubscribe();
+  }, [activeListId, sharedLists, user?.uid, db]);
 
   // Real-time listener for notifications
   useEffect(() => {
@@ -792,7 +824,8 @@ export function AppProvider({ children }: AppProviderProps) {
   }, []);
 
   const togglePickedItem = useCallback((listId: string, itemId: string) => {
-    const isShared = sharedLists.some(l => l.listId === listId);
+    const sharedList = sharedLists.find(l => l.listId === listId);
+    const isShared = !!sharedList;
     console.log('[ListsPage] togglePickedItem listId:', listId, 'itemId:', itemId, 'isShared:', isShared, 'sharedLists:', sharedLists.map(l => l.listId));
     if (isShared) {
       // Determine new state first
@@ -815,6 +848,35 @@ export function AppProvider({ children }: AppProviderProps) {
         } else {
           console.log('[ListsPage] togglePickedItem Removing from Firebase (was picked)');
           remove(pickedItemsRef).catch(err => console.error('[ListsPage] togglePickedItem Firebase remove error:', err));
+        }
+
+        // If current user is a member (not owner), also write to shared path and notify owner
+        if (sharedList && sharedList.role === 'member' && sharedList.ownerId) {
+          // Write to shared path so owner can see member picks
+          const sharedPickedRef = ref(db, `sharedPickedItems/${listId}/${itemId}`);
+          if (willBePicked) {
+            set(sharedPickedRef, {
+              pickedBy: user.uid,
+              pickedByName: user.displayName || 'Someone',
+              timestamp: Date.now()
+            }).catch(err => console.error('[SharedList] sharedPickedItems error:', err));
+          } else {
+            remove(sharedPickedRef).catch(err => console.error('[SharedList] sharedPickedItems remove error:', err));
+          }
+          // Notify owner when item is picked
+          if (willBePicked) {
+            const notificationRef = ref(db, `userData/${sharedList.ownerId}/notifications`);
+            push(notificationRef, {
+              type: 'item_picked',
+              fromUserId: user.uid,
+              fromName: user.displayName || 'Someone',
+              listId,
+              listName: sharedList.listName || sharedList.name || 'Shared List',
+              itemId,
+              read: false,
+              createdAt: Date.now(),
+            }).catch(err => console.error('[SharedList] Notification error:', err));
+          }
         }
       }
     } else {
@@ -903,6 +965,7 @@ export function AppProvider({ children }: AppProviderProps) {
     sharedLists,
     sharedListItems,
     sharedListPickedItems,
+    memberPickedItems,
     notifications,
     unreadCount,
     currency,
@@ -941,7 +1004,7 @@ export function AppProvider({ children }: AppProviderProps) {
     getActiveList,
     syncToFirebase,
     loadFromFirebase,
-  }), [categories, shoppingLists, inventory, activeListId, sharedListPickedItems, currency, language, firebaseConfig, syncStatus, profile, addCategory, updateCategory, deleteCategory, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, togglePickedItem, moveItemToInventory, addInventoryItem, updateInventoryItem, deleteInventoryItem, getActiveList, syncToFirebase, loadFromFirebase]);
+  }), [categories, shoppingLists, inventory, activeListId, sharedListPickedItems, memberPickedItems, currency, language, firebaseConfig, syncStatus, profile, addCategory, updateCategory, deleteCategory, addShoppingList, updateShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, togglePickedItem, moveItemToInventory, addInventoryItem, updateInventoryItem, deleteInventoryItem, getActiveList, syncToFirebase, loadFromFirebase]);
 
   return (
     <AppContext.Provider value={value}>
