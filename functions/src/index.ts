@@ -152,11 +152,17 @@ export const acceptInvitation = onCall(async (request) => {
     role: "member",
   });
 
+  // Get the accepting user's profile for the notification
+  const userProfileSnapshot = await db.ref(`userData/${userId}/profile`).once('value');
+  const userProfile = userProfileSnapshot.val();
+  const fromName = userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ''}`.trim() : userProfile?.email || 'Someone';
+
   // Create notification for the owner
   const notificationRef = db.ref(`userData/${invitation.ownerId}/notifications`).push();
   await notificationRef.set({
     type: "invitation_accepted",
     fromUserId: userId,
+    fromName: fromName,
     listId: invitation.listId,
     listName: invitation.listName,
     read: false,

@@ -105,9 +105,9 @@ export default function InboxPage() {
                     </>
                   ) : (
                     <Chip 
-                      label={notification.status === 'accepted' ? 'Accepted' : 'Declined'} 
+                      label={notification.type === 'invitation_accepted' || notification.status === 'accepted' ? 'Accepted' : 'Declined'} 
                       size="small" 
-                      color={notification.status === 'accepted' ? 'success' : 'default'}
+                      color={notification.type === 'invitation_accepted' || notification.status === 'accepted' ? 'success' : 'default'}
                     />
                   )
                 }

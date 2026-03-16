@@ -123,6 +123,7 @@ interface AppContextType {
   inventory: InventoryItem[];
   activeListId: string;
   sharedLists: SharedList[];
+  memberProfiles: Record<string, { firstName?: string; lastName?: string; alias?: string }>;
   sharedListItems: ShoppingItem[];
   sharedListPickedItems: string[];
   memberPickedItems: string[];
@@ -219,6 +220,7 @@ export function AppProvider({ children }: AppProviderProps) {
   const [sharedLists, setSharedLists] = useState<SharedList[]>([]);
   const [sharedListItems, setSharedListItems] = useState<ShoppingItem[]>([]);
   const [sharedListPickedItems, setSharedListPickedItems] = useState<string[]>([]);
+  const [memberProfiles, setMemberProfiles] = useState<Record<string, { firstName?: string; lastName?: string; alias?: string }>>({});
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [currency, setCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY);
@@ -358,7 +360,7 @@ export function AppProvider({ children }: AppProviderProps) {
           ...value,
         })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         setNotifications(notifs);
-        setUnreadCount(notifs.filter((n: Notification) => !n.read && n.status !== 'accepted').length);
+        setUnreadCount(notifs.filter((n: Notification) => !n.read && n.status !== 'accepted' && n.status !== 'declined' && n.type !== 'invitation_accepted').length);
       } else {
         setNotifications([]);
         setUnreadCount(0);
@@ -373,7 +375,7 @@ export function AppProvider({ children }: AppProviderProps) {
     if (!user?.uid) return;
 
     const sharedListsRef = ref(db, `userData/${user.uid}/sharedLists`);
-    const unsubscribe = onValue(sharedListsRef, (snapshot) => {
+    const unsubscribe = onValue(sharedListsRef, async (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
         const lists = Object.entries(data).map(([id, value]: [string, any]) => ({
@@ -381,8 +383,29 @@ export function AppProvider({ children }: AppProviderProps) {
           ...value,
         }));
         setSharedLists(lists);
+        
+        const memberIds = new Set<string>();
+        lists.forEach((list: SharedList) => {
+          if (list.members) {
+            Object.keys(list.members).forEach(id => memberIds.add(id));
+          }
+        });
+        
+        if (memberIds.size > 0) {
+          const profiles: Record<string, { firstName?: string; lastName?: string; alias?: string }> = {};
+          await Promise.all(
+            Array.from(memberIds).map(async (memberId) => {
+              const profileSnapshot = await get(ref(db, `userData/${memberId}/profile`));
+              if (profileSnapshot.exists()) {
+                profiles[memberId] = profileSnapshot.val();
+              }
+            })
+          );
+          setMemberProfiles(profiles);
+        }
       } else {
         setSharedLists([]);
+        setMemberProfiles({});
       }
     });
 
@@ -578,7 +601,7 @@ export function AppProvider({ children }: AppProviderProps) {
       // Update notification status if notificationId provided
       if (notificationId) {
         await set(ref(db, `userData/${user.uid}/notifications/${notificationId}/status`), 'accepted');
-        setUnreadCount(notifications.filter((n: Notification) => !n.read && n.status !== 'accepted').length);
+        setUnreadCount(notifications.filter((n: Notification) => !n.read && n.status !== 'accepted' && n.status !== 'declined' && n.type !== 'invitation_accepted').length);
       }
       
       // Refresh shared lists
@@ -621,7 +644,7 @@ export function AppProvider({ children }: AppProviderProps) {
     
     setNotifications(prev => {
       const updated = prev.map(n => n.id === notificationId ? { ...n, read: true } : n);
-      setUnreadCount(updated.filter((n: Notification) => !n.read && n.status !== 'accepted').length);
+      setUnreadCount(updated.filter((n: Notification) => !n.read && n.status !== 'accepted' && n.status !== 'declined' && n.type !== 'invitation_accepted').length);
       return updated;
     });
     
@@ -677,7 +700,7 @@ export function AppProvider({ children }: AppProviderProps) {
             ...value,
           })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
           setNotifications(notifs);
-          setUnreadCount(notifs.filter((n: Notification) => !n.read && n.status !== 'accepted').length);
+        setUnreadCount(notifs.filter((n: Notification) => !n.read && n.status !== 'accepted' && n.status !== 'declined' && n.type !== 'invitation_accepted').length);
         }
       } else {
         // First login - create profile from user data
@@ -965,6 +988,7 @@ export function AppProvider({ children }: AppProviderProps) {
     inventory,
     activeListId,
     sharedLists,
+    memberProfiles,
     sharedListItems,
     sharedListPickedItems,
     memberPickedItems,

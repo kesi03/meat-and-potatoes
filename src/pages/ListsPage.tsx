@@ -21,7 +21,7 @@ export enum ToggleMode{
 }
 
 export default function ListsPage({ onMoveToInventory, initialListId }: ListsPageProps) {
-  const { shoppingLists, sharedLists, sharedListItems, sharedListPickedItems, memberPickedItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList, user, setActiveListId } = useApp();
+  const { shoppingLists, sharedLists, memberProfiles, sharedListItems, sharedListPickedItems, memberPickedItems, addShoppingList, deleteShoppingList, addItemToList, updateItemInList, deleteItemFromList, categories, currency, moveItemToInventory, activeListId, togglePickedItem, shareList, user, setActiveListId } = useApp();
   const appBarActions = useAppBarActions();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState('');
@@ -198,6 +198,7 @@ export default function ListsPage({ onMoveToInventory, initialListId }: ListsPag
         <ListsOverview
           lists={shoppingLists.filter(l => !l.isStandard)}
           sharedLists={sharedLists}
+          memberProfiles={memberProfiles}
           onSelectList={setSelectedListId}
           onDeleteList={handleDeleteList}
           onAddList={() => setListDialog({ open: true, name: '', copyFromStandard: true })}

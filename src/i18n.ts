@@ -15,6 +15,8 @@ export const resources = {
       back: 'Back',
       myLists: 'My Lists',
       sharedWithMe: 'Shared with me',
+      sharedByMe: 'Shared by me',
+      member: 'Member',
       inventory: 'Inventory',
       inbox: 'Inbox',
       confirmInventoryClear: 'Clear Inventory',
