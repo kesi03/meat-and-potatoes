@@ -224,7 +224,10 @@ export function AppProvider({ children }: AppProviderProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [currency, setCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY);
-  const [language, setLanguage] = useState<string>('en');
+  const [language, setLanguage] = useState<string>(() => {
+    const stored = localStorage.getItem(`${STORAGE_KEY}-language`);
+    return stored || 'en';
+  });
   const [firebaseConfig, setFirebaseConfig] = useState<FirebaseConfig | null>(null);
   const [profile, setProfile] = useState<Profile>(() => {
     const stored = localStorage.getItem(`${STORAGE_KEY}-profile`);

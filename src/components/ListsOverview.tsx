@@ -44,22 +44,22 @@ const isListShared = (listId: string, sharedLists: SharedList[]) => {
   return sharedLists.some(l => l.listId === listId && l.members && Object.keys(l.members).length > 0);
 };
 
-const getSharedMembers = (listId: string, sharedLists: SharedList[], memberProfiles?: Record<string, MemberProfile>) => {
-  const sharedEntry = sharedLists.find(l => l.listId === listId && l.members);
-  if (sharedEntry?.members) {
-    const memberIds = Object.keys(sharedEntry.members);
-    const names = memberIds.map(id => getMemberName(id, memberProfiles));
-    if (names.length <= 2) {
-      return `Shared with ${names.join(', ')}`;
-    }
-    return `Shared with ${names.slice(0, 2).join(', ')} +${names.length - 2} more`;
-  }
-  return null;
-};
-
 export default function ListsOverview({ lists, sharedLists = [], memberProfiles = {}, onSelectList, onDeleteList, onAddList }: ListsOverviewProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const getSharedMembers = (listId: string) => {
+    const sharedEntry = sharedLists.find(l => l.listId === listId && l.members);
+    if (sharedEntry?.members) {
+      const memberIds = Object.keys(sharedEntry.members);
+      const names = memberIds.map(id => getMemberName(id, memberProfiles));
+      if (names.length <= 2) {
+        return `${t('sharedWith')} ${names.join(', ')}`;
+      }
+      return `${t('sharedWith')} ${names.slice(0, 2).join(', ')} +${names.length - 2} more`;
+    }
+    return null;
+  };
 
   const sharedListIds = new Set(sharedLists.filter(l => l.members && Object.keys(l.members).length > 0).map(l => l.listId));
   const myLists = lists.filter(list => !sharedListIds.has(list.id));
@@ -125,7 +125,7 @@ export default function ListsOverview({ lists, sharedLists = [], memberProfiles 
                     </ListItemIcon>
                     <ListItemText 
                       primary={list.name} 
-                      secondary={getSharedMembers(list.id, sharedLists, memberProfiles) || ''}
+                      secondary={getSharedMembers(list.id) || ''}
                     />
                   </ListItemButton>
                 </Card>
