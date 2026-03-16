@@ -358,7 +358,7 @@ export function AppProvider({ children }: AppProviderProps) {
           ...value,
         })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         setNotifications(notifs);
-        setUnreadCount(notifs.filter((n: Notification) => !n.read).length);
+        setUnreadCount(notifs.filter((n: Notification) => !n.read && n.status !== 'accepted').length);
       } else {
         setNotifications([]);
         setUnreadCount(0);
@@ -578,6 +578,7 @@ export function AppProvider({ children }: AppProviderProps) {
       // Update notification status if notificationId provided
       if (notificationId) {
         await set(ref(db, `userData/${user.uid}/notifications/${notificationId}/status`), 'accepted');
+        setUnreadCount(notifications.filter((n: Notification) => !n.read && n.status !== 'accepted').length);
       }
       
       // Refresh shared lists
@@ -618,10 +619,11 @@ export function AppProvider({ children }: AppProviderProps) {
   const markNotificationRead = useCallback((notificationId: string) => {
     if (!user?.uid) return;
     
-    setNotifications(prev => 
-      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
+    setNotifications(prev => {
+      const updated = prev.map(n => n.id === notificationId ? { ...n, read: true } : n);
+      setUnreadCount(updated.filter((n: Notification) => !n.read && n.status !== 'accepted').length);
+      return updated;
+    });
     
     // Update in Firebase
     if (db && user?.uid) {
@@ -675,7 +677,7 @@ export function AppProvider({ children }: AppProviderProps) {
             ...value,
           })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
           setNotifications(notifs);
-          setUnreadCount(notifs.filter(n => !n.read).length);
+          setUnreadCount(notifs.filter((n: Notification) => !n.read && n.status !== 'accepted').length);
         }
       } else {
         // First login - create profile from user data
