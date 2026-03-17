@@ -1,7 +1,8 @@
-import { Box, Typography, Card, CardActions, Button, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Breadcrumbs, Link, Divider } from '@mui/material';
-import { ShoppingCart, Add, HomeMaxOutlined, Home, People, FolderShared } from '@mui/icons-material';
+import { Box, Typography, Card, CardActions, Button, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Breadcrumbs, Link, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, Chip } from '@mui/material';
+import { ShoppingCart, Add, HomeMaxOutlined, Home, People, FolderShared, Email, Person } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 interface ShoppingList {
   id: string;
@@ -23,6 +24,8 @@ interface MemberProfile {
   firstName?: string;
   lastName?: string;
   alias?: string;
+  email?: string;
+  image?: string;
 }
 
 interface ListsOverviewProps {
@@ -64,6 +67,24 @@ export default function ListsOverview({ lists, sharedLists = [], memberProfiles 
   const sharedListIds = new Set(sharedLists.filter(l => l.members && Object.keys(l.members).length > 0).map(l => l.listId));
   const myLists = lists.filter(list => !sharedListIds.has(list.id));
   const sharedByMeLists = lists.filter(list => sharedListIds.has(list.id));
+
+  const [memberDialogOpen, setMemberDialogOpen] = useState(false);
+  const [selectedListMembers, setSelectedListMembers] = useState<{ id: string; profile?: { firstName?: string; lastName?: string; alias?: string; email?: string; image?: string } }[]>([]);
+  const [selectedListName, setSelectedListName] = useState('');
+
+  const handleShowMembers = (listId: string, listName: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const sharedEntry = sharedLists.find(l => l.listId === listId);
+    if (sharedEntry?.members) {
+      const members = Object.entries(sharedEntry.members).map(([id, _]) => ({
+        id,
+        profile: memberProfiles[id] as MemberProfile | undefined
+      }));
+      setSelectedListMembers(members);
+      setSelectedListName(listName);
+      setMemberDialogOpen(true);
+    }
+  };
 
   const handleSelectList = (id: string, name: string) => {
     if (!name) return;
@@ -127,6 +148,13 @@ export default function ListsOverview({ lists, sharedLists = [], memberProfiles 
                       primary={list.name} 
                       secondary={getSharedMembers(list.id) || ''}
                     />
+                    <Button 
+                      size="small" 
+                      onClick={(e) => handleShowMembers(list.id, list.name, e)}
+                      sx={{ mr: 1 }}
+                    >
+                      {t('sharedWith')}
+                    </Button>
                   </ListItemButton>
                 </Card>
               </ListItem>
@@ -182,6 +210,43 @@ export default function ListsOverview({ lists, sharedLists = [], memberProfiles 
           ))}
         </List>
       )}
+
+      <Dialog open={memberDialogOpen} onClose={() => setMemberDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <People color="warning" />
+          {selectedListName} - {t('sharedByMe')}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="subtitle2" sx={{ mb: 2 }}>
+            {selectedListMembers.length} {selectedListMembers.length === 1 ? t('member') : t('members') || 'members'}
+          </Typography>
+          <List>
+            {selectedListMembers.map(member => (
+              <ListItem key={member.id} sx={{ bgcolor: 'action.hover', mb: 1, borderRadius: 1 }}>
+                {member.profile?.image ? (
+                  <Avatar src={member.profile.image} sx={{ mr: 2, width: 48, height: 48 }} />
+                ) : (
+                  <Avatar sx={{ mr: 2, bgcolor: 'primary.main', width: 48, height: 48 }}>
+                    {member.profile?.firstName?.[0] || member.profile?.alias?.[0] || member.profile?.email?.[0] || '?'}
+                  </Avatar>
+                )}
+                <ListItemText
+                  primary={member.profile?.alias || `${member.profile?.firstName || ''} ${member.profile?.lastName || ''}`.trim() || 'Unknown'}
+                  secondary={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                      <Email fontSize="small" sx={{ mr: 0.5 }} />
+                      {member.profile?.email || 'No email'}
+                    </Box>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMemberDialogOpen(false)}>{t('close') || 'Close'}</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

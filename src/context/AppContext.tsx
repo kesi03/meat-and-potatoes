@@ -123,7 +123,7 @@ interface AppContextType {
   inventory: InventoryItem[];
   activeListId: string;
   sharedLists: SharedList[];
-  memberProfiles: Record<string, { firstName?: string; lastName?: string; alias?: string }>;
+  memberProfiles: Record<string, { firstName?: string; lastName?: string; alias?: string; email?: string; image?: string }>;
   sharedListItems: ShoppingItem[];
   sharedListPickedItems: string[];
   memberPickedItems: string[];
@@ -220,7 +220,7 @@ export function AppProvider({ children }: AppProviderProps) {
   const [sharedLists, setSharedLists] = useState<SharedList[]>([]);
   const [sharedListItems, setSharedListItems] = useState<ShoppingItem[]>([]);
   const [sharedListPickedItems, setSharedListPickedItems] = useState<string[]>([]);
-  const [memberProfiles, setMemberProfiles] = useState<Record<string, { firstName?: string; lastName?: string; alias?: string }>>({});
+  const [memberProfiles, setMemberProfiles] = useState<Record<string, { firstName?: string; lastName?: string; alias?: string; email?: string; image?: string }>>({});
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [currency, setCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY);
